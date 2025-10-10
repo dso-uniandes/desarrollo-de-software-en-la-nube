@@ -1,0 +1,12 @@
+pydantic
+pydantic-settings
+fastapi
+uvicorn[standard]
+sqlalchemy
+databases[aiosqlite]
+python-dotenv
+
+python-jose
+python-multipart
+passlib[bcrypt]
+bcrypt==4.3.0
