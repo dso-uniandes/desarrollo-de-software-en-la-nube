@@ -20,7 +20,7 @@ def b2_api():
 
 @lru_cache()
 def b2_get_bucket(api: b2.B2Api):
-    return api.get_bucket_by_name(config.B2_KEY_NAME)
+    return api.get_bucket_by_name(config.B2_BUCKET_NAME)
 
 
 def b2_upload_file(local_file: str, file_name: str) -> str:
