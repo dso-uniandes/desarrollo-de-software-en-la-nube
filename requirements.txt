@@ -1,21 +1,21 @@
-pydantic
-pydantic-settings
-fastapi
-uvicorn[standard]
+pydantic==2.12.0
+pydantic-settings==2.11.0
+fastapi==0.118.3
+uvicorn[standard]==0.37.0
 
-sqlalchemy
-databases[aiosqlite]
-python-dotenv
+sqlalchemy==2.0.43
+databases[aiosqlite]==0.9.0
+python-dotenv==1.1.1
 
-rich
-asgi-correlation-id
-python-json-logger
-logtail-python
+rich==14.2.0
+asgi-correlation-id==4.3.4
+python-json-logger==4.0.0
+logtail-python==0.3.4
 
-python-jose
-python-multipart
-passlib[bcrypt]
+python-jose==3.5.0
+python-multipart==0.0.20
+passlib[bcrypt]==1.7.4
 bcrypt==4.0.1
 
-aiofiles
-b2sdk
+aiofiles==25.1.0
+b2sdk==2.10.0
