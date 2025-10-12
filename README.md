@@ -1,12 +1,12 @@
 # 🏀 ANB - Cloud Project
 
-Este proyecto implementa una API REST con **FastAPI** que permite subir archivos a **Backblaze B2** (servicio compatible con S3), autenticarse mediante JWT y manejar una base de datos MySQL o SQLite según el entorno.
+Este proyecto implementa una API REST con **FastAPI** que permite subir archivos a **AWS S3 Bucket**, autenticarse mediante JWT y manejar una base de datos PostgreSQL o SQLite según el entorno.
 
 ---
 
 ## 🚀 Características principales
 
-* Upload de archivos directamente a **Backblaze B2 Cloud Storage**
+* Upload de archivos directamente a **AWS Cloud Storage**
 * Soporte para entornos **test**, **dev** y **prod**
 * Configuración basada en **Pydantic Settings** y **dotenv (.env)**
 * Conexión a base de datos vía **SQLAlchemy**:
@@ -20,8 +20,8 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 
 * **Python 3.11.14**
 * **PostgreSQL** (para entorno de desarrollo)
-* **Cuenta en Backblaze B2** con credenciales válidas
-* **Acceso al bucket creado en B2**
+* **Cuenta en AWS** con credenciales válidas
+* **Acceso al bucket creado en AWS S3**
 
 ---
 
@@ -36,10 +36,9 @@ ENV_STATE=dev
 # Base de datos de prod 
 PROD_DATABASE_URL=anb-database.csxqmc4ywsa4.us-east-1.rds.amazonaws.com
 
-# Credenciales de Backblaze B2
-PROD_B2_KEY_ID=003579b919866a70000000001
-PROD_B2_APPLICATION_KEY=K003SlZHT3Rr3ztIUNbPkFUF0Ue6PvU
-PROD_B2_BUCKET_NAME=ANBbucket
+# Credenciales de AWS S3
+DEV_AWS_BUCKET_NAME=anb-s3-bucket
+DEV_AWS_REGION=us-east-1
 ```
 
 ---
