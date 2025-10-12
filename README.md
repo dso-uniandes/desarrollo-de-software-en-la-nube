@@ -1,4 +1,4 @@
-# 🏀 NAB - Cloud Project
+# 🏀 ANB - Cloud Project
 
 Este proyecto implementa una API REST con **FastAPI** que permite subir archivos a **Backblaze B2** (servicio compatible con S3), autenticarse mediante JWT y manejar una base de datos MySQL o SQLite según el entorno.
 
