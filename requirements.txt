@@ -6,6 +6,9 @@ uvicorn[standard]==0.37.0
 sqlalchemy==2.0.43
 databases[aiosqlite]==0.9.0
 python-dotenv==1.1.1
+psycopg2-binary
+databases[asyncpg]
+greenlet==3.1.1
 
 rich==14.2.0
 asgi-correlation-id==4.3.4
