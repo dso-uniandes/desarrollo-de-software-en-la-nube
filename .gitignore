@@ -1,0 +1,10 @@
+.DS_Store
+*.pyc
+__pychache__
+.env
+*.h2.db.venv
+.vscode/
+*.png
+.idea/
+.venv/
+*.db
