@@ -4,7 +4,7 @@ import aiofiles
 
 from fastapi import APIRouter, UploadFile, HTTPException, status
 
-from storeapi.libs.b2 import b2_upload_file
+from storeapi.libs.s3 import s3_upload_file
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,8 @@ async def upload_file(file: UploadFile):
                 while chunk := await file.read(CHUNK_SIZE):
                     await f.write(chunk)
 
-            file_url = b2_upload_file(local_file=filename, file_name=file.filename)
+            logger.debug(f"Uploading {filename} to S3 as {file.filename}")
+            file_url = s3_upload_file(filename, file.filename)
     except Exception as e:
         logger.exception(f"Error uploading file: {e}")
         raise HTTPException(
