@@ -5,7 +5,7 @@ from typing import Annotated
 
 from storeapi.database import post_table, comment_table, database
 from storeapi.models.post import UserPost, UserPostIn, Comment, CommentIn, UserPostWithComments
-from storeapi.models.user import User
+from storeapi.models.user import UserIn, UserOut
 from storeapi.security import get_current_user, oauth2_scheme
 
 router = APIRouter()
@@ -20,7 +20,7 @@ async def find_post(post_id: int):
 
 
 @router.post("/post", response_model=UserPost, status_code=201)
-async def create_post(post: UserPostIn, current_user: Annotated[User, Depends(get_current_user)]):
+async def create_post(post: UserPostIn, current_user: Annotated[UserOut, Depends(get_current_user)]):
     logger.info("Creating post")
 
     data = {**post.dict(), "user_id": current_user.id}
@@ -44,7 +44,7 @@ async def get_all_post():
 
 
 @router.post("/comment", response_model=Comment, status_code=201)
-async def create_comment(comment: CommentIn, current_user: Annotated[User, Depends(get_current_user)]):
+async def create_comment(comment: CommentIn, current_user: Annotated[UserOut, Depends(get_current_user)]):
     logger.info("Creating comment")
 
     post = await find_post(comment.post_id)

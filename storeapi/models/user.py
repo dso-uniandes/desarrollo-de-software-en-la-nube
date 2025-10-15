@@ -1,10 +1,26 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 
 
-class User(BaseModel):
-    id: int | None = None
-    email: str
+class UserIn(BaseModel):
+    first_name: str = Field(...)
+    last_name: str = Field(...)
+    email: EmailStr = Field(...)
+    password1: str = Field(...)
+    password2: str = Field(...)
+    city: str = Field(...)
+    country: str = Field(...)
 
 
-class UserIn(User):
+class UserOut(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: EmailStr
+    city: str
+    country: str
+
+    model_config = {"from_attributes": True}
+
+
+class USerDB(UserOut):
     password: str

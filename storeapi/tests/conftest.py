@@ -36,18 +36,27 @@ async def async_client(client) -> AsyncGenerator:
 
 @pytest.fixture()
 async def registered_user(async_client: AsyncClient) -> dict:
-    user_details = {"email": "test@email.com", "password": "1234"}
-    await async_client.post("/register", json=user_details)
+    user_details = {
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john@email.com",
+        "password1": "StrongPass123",
+        "password2": "StrongPass123",
+        "city": "Bogotá",
+        "country": "Colombia"
+    }
+    await async_client.post("/api/auth/signup", json=user_details)
     query = user_table.select().where(user_table.c.email == user_details["email"])
     user = await database.fetch_one(query)
     user_details["id"] = user.id
+    user_details["password"] = user_details["password1"]
     return user_details
 
 
 @pytest.fixture()
 async def logged_in_token(async_client: AsyncClient, registered_user: dict) -> str:
     response = await async_client.post(
-        "/token",
+        "/api/auth/login",
         data={
             "username": registered_user["email"],
             "password": registered_user["password"],

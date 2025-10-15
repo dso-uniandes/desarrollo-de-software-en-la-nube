@@ -17,8 +17,12 @@ user_table = sqlalchemy.Table(
     "users",
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("email", sqlalchemy.String, unique=True),
-    sqlalchemy.Column("password", sqlalchemy.String),
+    sqlalchemy.Column("first_name", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("last_name", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("email", sqlalchemy.String, unique=True, nullable=False),
+    sqlalchemy.Column("password", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("city", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("country", sqlalchemy.String, nullable=False),
 )
 
 comment_table = sqlalchemy.Table(
