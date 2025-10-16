@@ -6,7 +6,7 @@ import pytest
 
 from httpx import AsyncClient
 
-from conftest import registered_user
+from ..conftest import registered_user
 
 
 @pytest.fixture
