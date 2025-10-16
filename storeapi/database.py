@@ -38,6 +38,19 @@ video_table = sqlalchemy.Table(
     sqlalchemy.Column("processed_at", sqlalchemy.DateTime, nullable=True),
 )
 
+video_vote_table = sqlalchemy.Table(
+    "video_votes",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("video_id", sqlalchemy.ForeignKey("videos.id"), nullable=False),
+    sqlalchemy.Column(
+        "created_at",
+        sqlalchemy.DateTime,
+        server_default=sqlalchemy.func.now(),
+        nullable=False,
+    ),
+)
+
 comment_table = sqlalchemy.Table(
     "comments",
     metadata,
