@@ -14,17 +14,6 @@ jobs:
     outputs:
       respuesta-ok: ${{ steps.success.outputs.respuesta }}
       respuesta-fail: ${{ steps.failure.outputs.respuesta }}
-    
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: test_db
-        ports:
-          - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
@@ -40,23 +29,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Esperar a que MySQL esté listo
-        run: |
-          while ! mysqladmin ping -h"127.0.0.1" -P3306 -uroot -ppassword --silent; do
-            echo "Esperando a que MySQL esté listo..."
-            sleep 2
-          done
-          echo "MySQL está listo!"
-
-      - name: Crear base de datos de test
-        run: |
-          mysql -h127.0.0.1 -P3306 -uroot -ppassword -e "CREATE DATABASE IF NOT EXISTS test_db;"
-
-      - name: Configurar variables de entorno para tests
-        run: |
-          echo "ENV_STATE=test" >> $GITHUB_ENV
-          echo "TEST_DATABASE_URL=mysql+aiomysql://root:password@127.0.0.1:3306/test_db" >> $GITHUB_ENV
 
       - name: Correr pruebas con pytest
         id: correr-pruebas
