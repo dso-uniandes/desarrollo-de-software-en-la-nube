@@ -60,6 +60,17 @@ comment_table = sqlalchemy.Table(
     sqlalchemy.Column("user_id", sqlalchemy.ForeignKey("users.id"), nullable=False)
 )
 
+vote_table = sqlalchemy.Table(
+    "votes",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("user_id", sqlalchemy.ForeignKey("users.id"), nullable=False),
+    sqlalchemy.Column("video_id", sqlalchemy.ForeignKey("videos.id"), nullable=False),
+    sqlalchemy.Column("vote_type", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("created_at", sqlalchemy.DateTime, default=sqlalchemy.func.now()),
+    sqlalchemy.UniqueConstraint("user_id", "video_id", name="unique_user_video_vote")
+)
+
 connect_args = {"check_same_thread": False} if "sqlite" in config.DATABASE_URL else {}
 engine = sqlalchemy.create_engine(config.DATABASE_URL, connect_args=connect_args)
 
