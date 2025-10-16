@@ -18,6 +18,8 @@ class GlobalConfig(BaseConfig):
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
     AWS_BUCKET_NAME: Optional[str] = None
     AWS_REGION: Optional[str] = None
+    REDIS_URL: Optional[str] = None
+    RANKING_CACHE_TTL: int = 120
 
 
 class DevConfig(GlobalConfig):

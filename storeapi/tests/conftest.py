@@ -6,7 +6,14 @@ import pytest
 from typing import AsyncGenerator, Generator
 from fastapi.testclient import TestClient
 from httpx import AsyncClient, ASGITransport
-from storeapi.database import database, user_table
+from storeapi.database import (
+    database,
+    user_table,
+    video_table,
+    post_table,
+    comment_table,
+    video_vote_table,
+)
 from storeapi.main import app
 
 
@@ -32,6 +39,14 @@ async def async_client(client) -> AsyncGenerator:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url=client.base_url) as ac:
         yield ac
+
+
+@pytest.fixture(autouse=True)
+async def clean_tables(db) -> AsyncGenerator:
+    # Clean dependent tables first to satisfy FKs
+    for table in (video_vote_table, comment_table, post_table, video_table, user_table):
+        await database.execute(table.delete())
+    yield
 
 
 @pytest.fixture()

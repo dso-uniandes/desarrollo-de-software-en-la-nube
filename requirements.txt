@@ -25,3 +25,4 @@ bcrypt==4.0.1
 aiofiles==25.1.0
 b2sdk==2.10.0
 boto3==1.40.50
+                                                                                                                                                                                                                                                                                                                        redis==5.0.8
