@@ -6,6 +6,8 @@ import pytest
 
 from httpx import AsyncClient
 
+from conftest import registered_user
+
 
 @pytest.fixture
 def sample_image(fs) -> pathlib.Path:
@@ -35,6 +37,35 @@ def aiofiles_mock_open(mocker, fs):
 
     mock_open.side_effect = async_file_open
     return mock_open
+
+
+@pytest.fixture
+def mock_uploaded_video(mocker):
+    uploaded_video = mocker.Mock(
+        id=654321,
+        title="Habilidades de dribleo",
+        status="uploaded",
+        uploaded_at="2025-03-11T10:15:00Z",
+        processed_at=None,
+        processed_url=None,
+    )
+
+    return uploaded_video
+
+
+@pytest.fixture
+def mock_processed_video(mocker, registered_user):
+    processed_video = mocker.Mock(
+        id=123456,
+        user_id=registered_user["id"],
+        title="Mi mejor tiro de 3",
+        status="processed",
+        uploaded_at="2025-03-10T14:30:00Z",
+        processed_at="2025-03-10T14:35:00Z",
+        processed_url="https://anb.com/videos/processed/123456.mp4",
+    )
+
+    return processed_video
 
 
 async def call_upload_endpoint(
@@ -70,3 +101,89 @@ async def test_temp_file_removed_after_upload(
     assert response.status_code == 201
     created_temp_file = named_temp_file_spy.spy_return
     assert not os.path.exists(created_temp_file.name)
+
+
+@pytest.mark.anyio
+async def test_get_videos_returns_empty_list(async_client: AsyncClient, logged_in_token: str):
+    response = await async_client.get(
+        "/api/videos",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert data == []
+
+
+@pytest.mark.anyio
+async def test_get_videos_uploaded(async_client: AsyncClient, logged_in_token: str, mock_uploaded_video, mocker):
+    mocker.patch("storeapi.routers.video.database.fetch_all", return_value=[mock_uploaded_video])
+
+    response = await async_client.get(
+        "/api/videos",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+
+    video = data[0]
+    assert video["status"] == "uploaded"
+    assert video["processed_url"] is None
+    assert video["processed_at"] is None
+
+
+@pytest.mark.anyio
+async def test_get_videos_processed(
+        async_client: AsyncClient, logged_in_token: str, mock_processed_video, mocker
+):
+    mocker.patch("storeapi.routers.video.database.fetch_all", return_value=[mock_processed_video])
+
+    response = await async_client.get(
+        "/api/videos",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+
+    video = data[0]
+    assert video["status"] == "processed"
+    assert video["processed_url"] == "https://anb.com/videos/processed/123456.mp4"
+    assert video["processed_at"] == "2025-03-10T14:35:00Z"
+
+
+@pytest.mark.anyio
+async def test_get_video_detail_success(
+        async_client: AsyncClient, logged_in_token: str, mock_processed_video, mocker
+):
+    mocker.patch(
+        "storeapi.security.get_user",
+        return_value=mocker.Mock(
+            id=1,
+            first_name="John",
+            last_name="Doe",
+            email="john@email.com",
+            city="Bogotá",
+            country="Colombia",
+        ),
+    )
+
+    mocker.patch("storeapi.routers.video.database.fetch_one", return_value=mock_processed_video)
+
+    response = await async_client.get(
+        f"/api/videos/{mock_processed_video.id}",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert {
+               "video_id": 123456,
+               "title": "Mi mejor tiro de 3",
+               "status": "processed",
+               "processed_url": "https://anb.com/videos/processed/123456.mp4",
+               "processed_at": "2025-03-10T14:35:00Z",
+           }.items() <= data.items()

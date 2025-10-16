@@ -40,13 +40,14 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
                 while chunk := await file.read(CHUNK_SIZE):
                     await f.write(chunk)
 
-            logger.debug(f"Uploading {filename} to S3 as {file.filename}")
-            file_url = s3_upload_video(filename, file.filename)
+            final_name = title or file.filename
+            logger.debug(f"Uploading {filename} to S3 as {final_name}")
+            original_url = s3_upload_video(filename, final_name)
 
         query = video_table.insert().values(
             user_id=current_user.id,
-            title=title or file.filename,
-            original_url=file_url,
+            title=final_name,
+            original_url=original_url,
             processed_url=None,
             status="uploaded",
             uploaded_at=datetime.utcnow()
@@ -101,10 +102,10 @@ async def get_video_detail(
         query = video_table.select().where(video_table.c.id == video_id)
         video = await database.fetch_one(query)
 
-        if video.user_id != current_user.id:
-            raise HTTPException(status_code=403, detail="Access forbidden: not your video")
         if not video:
             raise HTTPException(status_code=404, detail="Video not found")
+        if video.user_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Access forbidden: not your video")
 
         return {
             "video_id": video.id,
