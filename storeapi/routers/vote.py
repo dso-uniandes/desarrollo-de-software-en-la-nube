@@ -7,7 +7,7 @@ from storeapi.libs.cache import cache_delete_pattern
 from storeapi.models.video import VideoOut
 from storeapi.models.vote import VoteIn, Vote, VideoWithVotes
 from storeapi.models.user import UserOut
-from storeapi.security import get_current_user
+from storeapi.security import get_current_user 
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
