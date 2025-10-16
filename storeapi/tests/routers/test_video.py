@@ -157,12 +157,12 @@ async def test_get_videos_processed(
 
 @pytest.mark.anyio
 async def test_get_video_detail_success(
-        async_client: AsyncClient, logged_in_token: str, mock_processed_video, mocker
+        async_client: AsyncClient, logged_in_token: str, mock_processed_video, mocker, registered_user
 ):
     mocker.patch(
         "storeapi.security.get_user",
         return_value=mocker.Mock(
-            id=1,
+            id=registered_user["id"],
             first_name="John",
             last_name="Doe",
             email="john@email.com",
@@ -180,10 +180,8 @@ async def test_get_video_detail_success(
 
     assert response.status_code == 200
     data = response.json()
-    assert {
-               "video_id": 123456,
-               "title": "Mi mejor tiro de 3",
-               "status": "processed",
-               "processed_url": "https://anb.com/videos/processed/123456.mp4",
-               "processed_at": "2025-03-10T14:35:00Z",
-           }.items() <= data.items()
+    assert data["video_id"] == 123456
+    assert data["title"] == "Mi mejor tiro de 3"
+    assert data["status"] == "processed"
+    assert data["processed_url"] == "https://anb.com/videos/processed/123456.mp4"
+    assert data["processed_at"] == "2025-03-10T14:35:00Z"
