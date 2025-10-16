@@ -41,3 +41,19 @@ async def cache_set(key: str, value: Any, ttl_seconds: Optional[int] = None) -> 
         client.set(key, payload)
 
 
+async def cache_delete_pattern(pattern: str) -> None:
+    """Delete all keys that match the given pattern"""
+    client = _get_client()
+    if client is None:
+        return
+    try:
+        # Find all keys that match the pattern
+        keys = client.keys(pattern)
+        if keys:
+            # Delete all found keys
+            client.delete(*keys)
+    except Exception:
+        # If there's any error, just continue
+        pass
+
+

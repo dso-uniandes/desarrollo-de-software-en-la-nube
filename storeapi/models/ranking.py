@@ -6,6 +6,6 @@ class RankingItem(BaseModel):
     position: int
     username: str
     city: Optional[str]
-    votes: int
+    likes: int
 
 
