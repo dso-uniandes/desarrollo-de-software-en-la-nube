@@ -50,7 +50,7 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
             original_url=original_url,
             processed_url=None,
             status="uploaded",
-            uploaded_at=datetime.utcnow()
+            uploaded_at=datetime.now()
         )
         await database.execute(query)
 

@@ -13,8 +13,8 @@ async def test_video(registered_user: dict):
         "original_url": "https://test-bucket.s3.amazonaws.com/test-video.mp4",
         "processed_url": "https://test-bucket.s3.amazonaws.com/processed-test-video.mp4",
         "status": "processed",
-        "uploaded_at": datetime.now(timezone.utc),
-        "processed_at": datetime.now(timezone.utc)
+        "uploaded_at": datetime.now(),
+        "processed_at": datetime.now()
     }
     
     query = video_table.insert().values(video_data)
@@ -36,7 +36,7 @@ async def test_video_pending(registered_user: dict):
         "original_url": "https://test-bucket.s3.amazonaws.com/pending-video.mp4",
         "processed_url": None,
         "status": "uploaded",
-        "uploaded_at": datetime.now(timezone.utc),
+        "uploaded_at": datetime.now(),
         "processed_at": None
     }
     

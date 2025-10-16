@@ -5,7 +5,7 @@ from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
 from fastapi.exception_handlers import http_exception_handler
 
-from storeapi.database import database
+from storeapi.database import database, create_tables_async
 #from storeapi.logging_conf import configure_logging
 from storeapi.routers.post import router as post_router
 from storeapi.routers.video import router as upload_router
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     #configure_logging()
     await database.connect()
+    await create_tables_async()  # Crear tablas al iniciar la aplicación
     yield
     await database.disconnect()
 

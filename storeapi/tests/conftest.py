@@ -1,4 +1,5 @@
 import os
+from storeapi.database import create_tables_async
 
 os.environ["ENV_STATE"] = "test"
 
@@ -26,6 +27,11 @@ def anyio_backend():
 def client() -> Generator:
     yield TestClient(app)
 
+
+@pytest.fixture(scope="session", autouse=True)
+async def create_test_database():
+    await create_tables_async()
+    yield
 
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
