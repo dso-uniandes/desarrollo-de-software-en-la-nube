@@ -1,12 +1,12 @@
 import logging
 
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, HTTPException, Depends
 from typing import Annotated
 
 from storeapi.database import post_table, comment_table, database
 from storeapi.models.post import UserPost, UserPostIn, Comment, CommentIn, UserPostWithComments
-from storeapi.models.user import UserIn, UserOut
-from storeapi.security import get_current_user, oauth2_scheme
+from storeapi.models.user import UserOut
+from storeapi.security import get_current_user
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

@@ -15,9 +15,9 @@ def sample_image(fs) -> pathlib.Path:
 
 
 @pytest.fixture(autouse=True)
-def mock_s3_upload_file(mocker):
+def mock_s3_upload_video(mocker):
     return mocker.patch(
-        "storeapi.routers.upload.s3_upload_file", return_value="https://fakeurl.com")
+        "storeapi.routers.video.s3_upload_video", return_value="https://fakeurl.com")
 
 
 @pytest.fixture(autouse=True)
@@ -41,19 +41,24 @@ async def call_upload_endpoint(
         async_client: AsyncClient, token: str, sample_image: pathlib.Path
 ):
     return await async_client.post(
-        "/upload",
-        files={"file": open(sample_image, "rb")},
+        "/api/videos/upload",
+        files={
+            "file": ("video.mp4", open(sample_image, "rb"), "video/mp4"),
+            "title": (None, "Test Video")
+        },
         headers={"Authorization": f"Bearer {token}"},
     )
 
 
 @pytest.mark.anyio
-async def test_upload_image(
+async def test_upload_video(
         async_client: AsyncClient, logged_in_token: str, sample_image: pathlib.Path
 ):
     response = await call_upload_endpoint(async_client, logged_in_token, sample_image)
     assert response.status_code == 201
-    assert response.json()["file_url"] == "https://fakeurl.com"
+    data = response.json()
+    assert "task_id" in data
+    assert data["message"] == "Successfully uploaded video.mp4"
 
 
 @pytest.mark.anyio

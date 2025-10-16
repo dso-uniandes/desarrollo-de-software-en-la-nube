@@ -25,6 +25,19 @@ user_table = sqlalchemy.Table(
     sqlalchemy.Column("country", sqlalchemy.String, nullable=False),
 )
 
+video_table = sqlalchemy.Table(
+    "videos",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("user_id", sqlalchemy.ForeignKey("users.id"), nullable=False),
+    sqlalchemy.Column("title", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("original_url", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("processed_url", sqlalchemy.String, nullable=True),
+    sqlalchemy.Column("status", sqlalchemy.String, nullable=False),
+    sqlalchemy.Column("uploaded_at", sqlalchemy.DateTime, nullable=False),
+    sqlalchemy.Column("processed_at", sqlalchemy.DateTime, nullable=True),
+)
+
 comment_table = sqlalchemy.Table(
     "comments",
     metadata,

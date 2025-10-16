@@ -25,7 +25,7 @@ def s3_get_bucket():
     return s3.Bucket(AWS_BUCKET_NAME)
 
 
-def s3_upload_file(local_file: str, object_name: str) -> str:
+def s3_upload_video(local_file: str, object_name: str) -> str:
     bucket = s3_get_bucket()
     logger.debug("Creating and authorizing S3 AWS")
     try:

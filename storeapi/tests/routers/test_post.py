@@ -61,7 +61,7 @@ async def test_create_post_expired_token(async_client: AsyncClient, registered_u
     )
 
     assert response.status_code == 401
-    assert "Token has expired" in response.json()["detail"]
+    assert "Session expired. Please log in again." in response.json()["detail"]
 
 
 @pytest.mark.anyio
