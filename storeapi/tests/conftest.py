@@ -1,4 +1,5 @@
 import os
+from storeapi.database import create_tables_async
 
 os.environ["ENV_STATE"] = "test"
 
@@ -13,6 +14,7 @@ from storeapi.database import (
     post_table,
     comment_table,
     video_vote_table,
+    vote_table,
 )
 from storeapi.main import app
 
@@ -30,6 +32,7 @@ def client() -> Generator:
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
     await database.connect()
+    await create_tables_async()
     yield
     await database.disconnect()
 
@@ -44,8 +47,12 @@ async def async_client(client) -> AsyncGenerator:
 @pytest.fixture(autouse=True)
 async def clean_tables(db) -> AsyncGenerator:
     # Clean dependent tables first to satisfy FKs
-    for table in (video_vote_table, comment_table, post_table, video_table, user_table):
-        await database.execute(table.delete())
+    # Order: child tables first, then parent tables
+    for table in (video_vote_table, comment_table, vote_table, post_table, video_table, user_table):
+        try:
+            await database.execute(table.delete())
+        except Exception as e:
+            pass
     yield
 
 

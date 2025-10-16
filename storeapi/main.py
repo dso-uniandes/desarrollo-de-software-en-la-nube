@@ -1,12 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
-
-from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI
-from fastapi.exception_handlers import http_exception_handler
-
-from storeapi.database import database
-#from storeapi.logging_conf import configure_logging
+from storeapi.database import database, create_tables_async
 from storeapi.routers.post import router as post_router
 from storeapi.routers.video import router as upload_router
 from storeapi.routers.ranking import router as ranking_router
@@ -20,6 +15,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     #configure_logging()
     await database.connect()
+    await create_tables_async()
     yield
     await database.disconnect()
 

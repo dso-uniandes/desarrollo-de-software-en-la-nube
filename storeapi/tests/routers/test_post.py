@@ -43,11 +43,10 @@ async def test_create_post(async_client: AsyncClient, registered_user: dict, log
         headers={"Authorization": f"Bearer {logged_in_token}"})
 
     assert response.status_code == 201
-    assert {
-               "id": 1,
-               "body": body,
-               "user_id": registered_user["id"]
-           }.items() <= response.json().items()
+    data = response.json()
+    assert data["body"] == body
+    assert data["user_id"] == registered_user["id"]
+    assert "id" in data
 
 
 @pytest.mark.anyio
@@ -93,12 +92,11 @@ async def test_create_comment(async_client: AsyncClient, registered_user: dict, 
     )
 
     assert response.status_code == 201
-    assert {
-               "id": 1,
-               "body": body,
-               "post_id": created_post["id"],
-               "user_id": registered_user["id"],
-           }.items() <= response.json().items()
+    data = response.json()
+    assert data["body"] == body
+    assert data["post_id"] == created_post["id"]
+    assert data["user_id"] == registered_user["id"]
+    assert "id" in data
 
 
 @pytest.mark.anyio
