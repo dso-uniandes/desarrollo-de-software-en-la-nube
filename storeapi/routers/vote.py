@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy import func, select
 from storeapi.database import database, vote_table, video_table
+from storeapi.libs.cache import cache_delete_pattern
 from storeapi.models.video import VideoOut
 from storeapi.models.vote import VoteIn, Vote, VideoWithVotes
 from storeapi.models.user import UserOut
@@ -10,6 +11,16 @@ from storeapi.security import get_current_user
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+async def _invalidate_ranking_cache():
+    """Invalidate ranking cache when votes are updated"""
+    try:
+        # Invalidate all ranking caches (both normal and detailed)
+        await cache_delete_pattern("ranking:*")
+        logger.info("Ranking cache invalidated after vote update")
+    except Exception as e:
+        logger.warning(f"Failed to invalidate ranking cache: {e}")
 
 
 @router.post("/api/videos/vote", response_model=Vote, status_code=201)
@@ -62,6 +73,9 @@ async def vote_video(
         await database.execute(update_query)
         logger.info(f"Updated vote for user {current_user.id} on video {vote.video_id}")
         
+        # Invalidate ranking cache
+        await _invalidate_ranking_cache()
+        
         return {
             "id": existing_vote.id,
             "user_id": current_user.id,
@@ -83,6 +97,9 @@ async def vote_video(
         # Retrieve the created vote to return the actual created_at
         new_vote_query = vote_table.select().where(vote_table.c.id == last_record_id)
         new_vote = await database.fetch_one(new_vote_query)
+        
+        # Invalidate ranking cache
+        await _invalidate_ranking_cache()
         
         return {
             "id": last_record_id,
@@ -119,6 +136,9 @@ async def remove_vote(
     # Delete the vote
     delete_query = vote_table.delete().where(vote_table.c.id == vote.id)
     await database.execute(delete_query)
+    
+    # Invalidar cache del ranking
+    await _invalidate_ranking_cache()
     
     logger.info(f"Removed vote for user {current_user.id} from video {video_id}")
     return {"detail": "Vote removed successfully"}

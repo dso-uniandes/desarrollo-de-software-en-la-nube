@@ -23,7 +23,7 @@ async def find_post(post_id: int):
 async def create_post(post: UserPostIn, current_user: Annotated[UserOut, Depends(get_current_user)]):
     logger.info("Creating post")
 
-    data = {**post.dict(), "user_id": current_user.id}
+    data = {**post.model_dump(), "user_id": current_user.id}
     query = post_table.insert().values(data)
 
     logger.debug(query)
@@ -51,7 +51,7 @@ async def create_comment(comment: CommentIn, current_user: Annotated[UserOut, De
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 
-    data = data = {**comment.dict(), "user_id": current_user.id}
+    data = {**comment.model_dump(), "user_id": current_user.id}
     query = comment_table.insert().values(data)
 
     logger.debug(query)

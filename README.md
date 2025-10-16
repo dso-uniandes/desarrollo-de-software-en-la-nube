@@ -49,7 +49,6 @@ DEV_AWS_REGION=us-east-1
 
    ```bash
    pip install -r requirements.txt
-   pip install -r requirements-dev.txt
    ```
 
 2. Ejecuta el servidor FastAPI:

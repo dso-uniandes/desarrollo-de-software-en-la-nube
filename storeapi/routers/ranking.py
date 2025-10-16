@@ -33,6 +33,7 @@ async def get_ranking(
     if cached is not None:
         return [RankingItem(**item) for item in cached]
 
+    # Count votes from video_vote_table
     votes_count = func.count(video_vote_table.c.id).label("votes")
 
     stmt = (
@@ -70,5 +71,4 @@ async def get_ranking(
     await cache_set(key, [r.model_dump() for r in ranking], ttl_seconds=config.RANKING_CACHE_TTL)
 
     return ranking
-
 
