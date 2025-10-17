@@ -21,6 +21,7 @@ class GlobalConfig(BaseConfig):
     AWS_REGION: Optional[str] = None
     REDIS_URL: Optional[str] = None
     RANKING_CACHE_TTL: int = 120
+    KAFKA_BOOTSTRAP_SERVERS: Optional[str] = None
 
 
 class DevConfig(GlobalConfig):
