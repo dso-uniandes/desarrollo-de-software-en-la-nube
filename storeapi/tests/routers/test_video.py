@@ -4,10 +4,11 @@ import pathlib
 import tempfile
 import pytest
 
+from datetime import datetime
 from httpx import AsyncClient
 
 from ..conftest import registered_user
-
+from storeapi.database import database, video_table
 
 @pytest.fixture
 def sample_image(fs) -> pathlib.Path:
@@ -185,3 +186,62 @@ async def test_get_video_detail_success(
     assert data["processed_url"] == "https://anb.com/videos/processed/123456.mp4"
     assert data["processed_at"] == "2025-03-10T14:35:00Z"
     assert "video_id" in data
+
+@pytest.mark.anyio
+async def test_delete_video_success(
+        async_client: AsyncClient, logged_in_token: str, registered_user
+):
+    query = video_table.insert().values(
+        user_id=registered_user["id"],
+        title="Video to delete",
+        original_url="https://fakeurl.com/original.mp4",
+        processed_url=None,
+        status="uploaded",
+        uploaded_at=datetime.now(),
+    )
+    await database.execute(query)
+    mock_uploaded_video = await database.fetch_one(video_table.select().where(video_table.c.user_id == registered_user["id"]))
+
+    response = await async_client.delete(
+        f"/api/videos/{mock_uploaded_video.id}",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["message"] == "El video ha sido eliminado exitosamente."
+
+@pytest.mark.anyio
+async def test_delete_video_cannot_delete_processed(
+        async_client: AsyncClient, logged_in_token: str, registered_user
+):
+    query = video_table.insert().values(
+        user_id=registered_user["id"],
+        title="Processed Video",
+        original_url="https://fakeurl.com/original.mp4",
+        processed_url="https://anb.com/videos/processed/123456.mp4",
+        status="processed",
+        uploaded_at=datetime.now(),
+        processed_at=datetime.now(),
+    )
+    await database.execute(query)
+    mock_processed_video = await database.fetch_one(video_table.select().where(video_table.c.user_id == registered_user["id"]))
+
+    response = await async_client.delete(
+        f"/api/videos/{mock_processed_video.id}",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+    assert response.status_code == 400
+    data = response.json()
+    assert data["detail"] == "Cannot delete a published video"
+
+@pytest.mark.anyio
+async def test_delete_video_not_found(
+        async_client: AsyncClient, logged_in_token: str
+):
+    response = await async_client.delete(
+        "/api/videos/99999",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+    assert response.status_code == 404
+    data = response.json()
+    assert data["detail"] == "Video not found"

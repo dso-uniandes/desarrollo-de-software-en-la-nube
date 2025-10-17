@@ -124,3 +124,34 @@ async def get_video_detail(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error retrieving video detail",
         )
+
+@router.delete("/api/videos/{video_id}", status_code=200)
+async def delete_video(
+        video_id: int,
+        current_user: Annotated[UserOut, Depends(get_current_user)],
+):
+    try:
+        query = video_table.select().where(video_table.c.id == video_id)
+        video = await database.fetch_one(query)
+
+        if not video:
+            raise HTTPException(status_code=404, detail="Video not found")
+        if video.user_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Access forbidden: not your video")
+
+        if video.status == "processed":
+            raise HTTPException(status_code=400, detail="Cannot delete a published video")
+        
+        delete_query = video_table.delete().where(video_table.c.id == video_id)
+        await database.execute(delete_query)
+
+        return {"message": "El video ha sido eliminado exitosamente.", "video_id": video_id}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error deleting video: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error deleting video",
+        )
