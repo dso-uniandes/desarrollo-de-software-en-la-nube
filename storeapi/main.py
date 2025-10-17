@@ -7,7 +7,7 @@ from fastapi.exception_handlers import http_exception_handler
 
 from storeapi.database import database, create_tables_async
 #from storeapi.logging_conf import configure_logging
-from storeapi.routers.post import router as post_router
+
 from storeapi.routers.video import router as upload_router
 from storeapi.routers.ranking import router as ranking_router
 from storeapi.routers.user import router as user_router
@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 #app.add_middleware(CorrelationIdMiddleware)
-app.include_router(post_router)
+
 app.include_router(upload_router)
 app.include_router(user_router)
 app.include_router(ranking_router)
