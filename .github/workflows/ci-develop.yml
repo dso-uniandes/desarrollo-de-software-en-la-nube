@@ -60,6 +60,20 @@ jobs:
             --cov=storeapi --cov-report=xml:coverage.xml \
             --junitxml=test-results.xml
 
+      - name: Verificar reportes generados
+        run: |
+          echo "=== VERIFICANDO REPORTES GENERADOS ==="
+          ls -l coverage.xml || echo "❌ coverage.xml no generado"
+          ls -l test-results.xml || echo "❌ test-results.xml no generado"
+          if [ -f "coverage.xml" ]; then
+            echo "✅ coverage.xml generado correctamente"
+            head -5 coverage.xml
+          fi
+          if [ -f "test-results.xml" ]; then
+            echo "✅ test-results.xml generado correctamente"
+            head -5 test-results.xml
+          fi
+
       - name: Publicar reportes de pruebas
         if: always()
         uses: actions/upload-artifact@v4
@@ -127,16 +141,15 @@ jobs:
 
       - name: Mostrar árbol y properties
         run: |
-          echo "=== DIRECTORIO ACTUAL ==="
-          pwd
-          echo "=== ARCHIVOS EN DIRECTORIO ==="
-          ls -la
-          echo "=== ESTRUCTURA DE STOREAPI ==="
-          find storeapi -name "*.py" | head -10
-          echo "=== CONTEO DE ARCHIVOS PYTHON ==="
-          find storeapi -name "*.py" | wc -l
-          echo "=== sonar-project.properties ==="
+          pwd && ls -la
+          echo "----- sonar-project.properties -----"
           cat sonar-project.properties
+          echo "----- Verificación: projectKey en properties -----"
+          if grep -q '^sonar\.projectKey=' sonar-project.properties; then
+            echo "❌ Aún hay sonar.projectKey en sonar-project.properties (quítalo)."
+            exit 1
+          fi
+          echo "✅ No hay sonar.projectKey en properties"
 
       - name: Verificar configuración antes del scan
         run: |
@@ -150,10 +163,22 @@ jobs:
         uses: gitricko/sonarless@v1.3
         id: sonarless-scan
         with:
-          sonar-source-path: "storeapi"
-          sonar-project-key: "MISW4204-202515-anb-Grupo03:sonar-local"
+          sonar-source-path: "."
+          sonar-project-key: "MISW4204-202515-anb-Grupo03-local"
           sonar-project-name: "MISW4204-202515-anb-Grupo03-local"
           sonar-metrics-path: "sonar-metrics.json"
+
+      - name: Verificar resultado del scan
+        run: |
+          echo "=== VERIFICANDO RESULTADO DEL SCAN ==="
+          if [ -f "sonar-metrics.json" ]; then
+            echo "✅ sonar-metrics.json generado"
+            echo "Tamaño del archivo: $(wc -c < sonar-metrics.json) bytes"
+            echo "Primeras líneas:"
+            head -10 sonar-metrics.json
+          else
+            echo "❌ sonar-metrics.json NO generado"
+          fi
 
       - name: Obtener detalles específicos de problemas
         run: |
