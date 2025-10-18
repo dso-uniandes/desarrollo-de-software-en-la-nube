@@ -4,9 +4,9 @@ from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 
-from storeapi.config import config
+from utils.config import config
 from storeapi.database import database, user_table, video_table, video_vote_table
-from storeapi.libs.cache import cache_get, cache_set
+from utils.cache import cache_get, cache_set
 from storeapi.models.ranking import RankingItem
 
 

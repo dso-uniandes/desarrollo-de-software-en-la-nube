@@ -1,7 +1,9 @@
+import os
 from typing import Optional
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
+import logging
+logger = logging.getLogger(__name__)
 
 class BaseConfig(BaseSettings):
     ENV_STATE: Optional[str] = None
@@ -22,6 +24,9 @@ class GlobalConfig(BaseConfig):
     REDIS_URL: Optional[str] = None
     RANKING_CACHE_TTL: int = 120
     KAFKA_BOOTSTRAP_SERVERS: Optional[str] = None
+    UPLOADED_FOLDER: str = "{}/videos/uploaded".format(os.path.curdir)
+    PROCESSED_FOLDER: str = "{}/videos/processed".format(os.path.curdir)
+    APP_HOST: Optional[str] = None
 
 
 class DevConfig(GlobalConfig):
@@ -55,3 +60,14 @@ def get_config(envi_state: str):
 
 
 config = get_config(BaseConfig().ENV_STATE)
+
+for dir in [
+    config.PROCESSED_FOLDER,
+    config.UPLOADED_FOLDER,
+]:
+    subdirs = dir.split("/")
+    for pos in range(len(subdirs)):
+        curr_dir = "/".join(subdirs[: pos + 1])
+        if not os.path.exists(curr_dir):
+            logger.info(f"Creating directory: {curr_dir}")
+            os.mkdir(curr_dir)

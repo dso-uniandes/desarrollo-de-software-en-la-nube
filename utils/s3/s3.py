@@ -1,9 +1,9 @@
 import boto3
 import logging
 from functools import lru_cache
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError
 
-from storeapi.config import config
+from utils.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,6 @@ def s3_upload_video(local_file: str, object_name: str) -> str:
         url = f"https://{AWS_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{object_name}"
         logger.debug(f"Uploaded {local_file} to S3 as {object_name}, URL: {url}")
         return url
-    except ClientError as e:
+    except (ClientError, Exception, NoCredentialsError) as e:
         logger.error(f"Error uploading file to S3: {e}")
         return ""

@@ -102,7 +102,7 @@ async def test_ranking_invalid_params(async_client: AsyncClient):
 async def test_ranking_cache_hit(async_client: AsyncClient, mocker):
     # Seed once; first call stores cache
     await _seed_users_and_votes()
-    from storeapi.libs import cache as cache_module
+    from utils import cache as cache_module
 
     # First call builds data
     r1 = await async_client.get("/api/ranking", params={"city": "Bogotá", "limit": 2})
