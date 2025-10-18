@@ -57,7 +57,8 @@ jobs:
       - name: Correr pruebas con coverage
         run: |
           pytest storeapi/tests/ -v --tb=short \
-            --cov=storeapi --cov-report=xml:coverage.xml \
+            --cov=storeapi --cov-config=.coveragerc \
+            --cov-report=xml:coverage.xml \
             --junitxml=test-results.xml
 
       - name: Verificar reportes generados
@@ -141,6 +142,7 @@ jobs:
             echo "Tamaño: $(wc -c < coverage.xml) bytes"
             echo "¿Contiene packages? $(grep -c '<packages>' coverage.xml || echo '0')"
             echo "¿Contiene storeapi? $(grep -c 'storeapi' coverage.xml || echo '0')"
+            echo "¿Usa rutas relativas? $(grep -c '<source>storeapi</source>' coverage.xml || echo '0')"
           else
             echo "❌ coverage.xml no encontrado"
           fi
@@ -164,26 +166,6 @@ jobs:
           echo "¿Existe coverage.xml? $(test -f coverage.xml && echo 'SÍ' || echo 'NO')"
           echo "¿Existe test-results.xml? $(test -f test-results.xml && echo 'SÍ' || echo 'NO')"
           echo "Archivos Python en storeapi: $(find storeapi -name '*.py' | wc -l)"
-
-      - name: Normalizar rutas en coverage.xml al path del contenedor
-        run: |
-          if [ -f coverage.xml ]; then
-            echo "== Primeras líneas ANTES =="
-            head -n 20 coverage.xml || true
-
-            # Extrae el primer <source> y lo reemplaza por /usr/src (donde el action monta el repo)
-            SRC_PREFIX=$(grep -m1 -oP '(?<=<source>).*?(?=</source>)' coverage.xml || true)
-            if [ -n "$SRC_PREFIX" ]; then
-              echo "Detectado source en coverage.xml: $SRC_PREFIX"
-              sed -i "s#<source>$SRC_PREFIX#<source>/usr/src#g" coverage.xml
-            fi
-
-            echo "== Primeras líneas DESPUÉS =="
-            head -n 20 coverage.xml || true
-          else
-            echo "coverage.xml no encontrado"
-            exit 1
-          fi
 
       - name: Sonarless Scan
         uses: gitricko/sonarless@v1.3
