@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.dialects.postgresql import UUID
 import asyncio
 
-from storeapi.config import config
+from utils.config import config
 
 metadata = sqlalchemy.MetaData()
 

@@ -1,0 +1,11 @@
+[run]
+branch = True
+source = storeapi
+relative_files = True
+
+[paths]
+source =
+    storeapi
+    /home/runner/work/desarrollo-de-software-en-la-nube/desarrollo-de-software-en-la-nube/storeapi
+    /__w/desarrollo-de-software-en-la-nube/desarrollo-de-software-en-la-nube/storeapi
+    /usr/src/storeapi

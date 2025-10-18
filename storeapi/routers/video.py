@@ -3,11 +3,15 @@ import logging
 import os
 import tempfile
 import uuid
+import aiofiles
 
 from datetime import datetime
 from typing import Annotated
+
+
 from fastapi import APIRouter, UploadFile, HTTPException, status, Form, Depends, File
 
+from message_broker.tasks_dispatcher import dispatch_task
 from storeapi.database import database, video_table
 from storeapi.libs.video_storage import save_video
 # from storeapi.libs.s3.video_storage import save_video
@@ -55,10 +59,12 @@ async def upload_video(
             processed_url=None,
             status="uploaded",
             uploaded_at=datetime.now()
-        )
-        await database.execute(query)
+        ).returning(video_table.c.id)
 
+        video_id = await database.execute(query)
         task_id = str(uuid.uuid4())
+        task_info = {"video_id": video_id, "user_id": current_user.id, "task_id": task_id}
+        dispatch_task([task_info], "video_tasks")
 
         return {"message": f"Video uploaded successfully. Processing...", "task_id": task_id}
 
