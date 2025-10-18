@@ -32,6 +32,9 @@ Ejecuta el siguiente comando para levantar PostgreSQL:
 ```bash
 docker run --name postgres-anb -e POSTGRES_PASSWORD=password -e POSTGRES_DB=dev_db -p 5432:5432 -d postgres:15
 ```
+```bash
+docker run --name postgres-test -e POSTGRES_PASSWORD=password -e POSTGRES_DB=test_db -p 5433:5432 -d postgres:15
+```
 
 ### Verificar que PostgreSQL esté corriendo
 ```bash

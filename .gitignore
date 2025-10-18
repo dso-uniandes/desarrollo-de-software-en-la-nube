@@ -8,3 +8,4 @@ __pychache__
 .idea/
 .venv/
 *.db
+/storeapi/uploads/

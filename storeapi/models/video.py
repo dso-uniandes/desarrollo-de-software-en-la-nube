@@ -8,7 +8,7 @@ class VideoIn(BaseModel):
 
 
 class VideoOut(BaseModel):
-    video_id: int
+    video_id: str
     title: str
     status: str
     uploaded_at: datetime
@@ -19,7 +19,7 @@ class VideoOut(BaseModel):
 
 
 class VideoDB(VideoOut):
-    user_id: int
+    user_id: str
     original_url: str
     processed_url: Optional[str] = None
     status: str

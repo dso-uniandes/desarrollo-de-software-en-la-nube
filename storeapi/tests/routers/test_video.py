@@ -2,6 +2,8 @@ import os
 import contextlib
 import pathlib
 import tempfile
+import uuid
+
 import pytest
 
 from datetime import datetime
@@ -9,6 +11,7 @@ from httpx import AsyncClient
 
 from ..conftest import registered_user
 from storeapi.database import database, video_table
+
 
 @pytest.fixture
 def sample_image(fs) -> pathlib.Path:
@@ -18,9 +21,8 @@ def sample_image(fs) -> pathlib.Path:
 
 
 @pytest.fixture(autouse=True)
-def mock_s3_upload_video(mocker):
-    return mocker.patch(
-        "storeapi.routers.video.s3_upload_video", return_value="https://fakeurl.com")
+def mock_save_video(mocker):
+    mocker.patch("storeapi.libs.video_storage.save_video", return_value="https://fakeurl.com")
 
 
 @pytest.fixture(autouse=True)
@@ -43,7 +45,7 @@ def aiofiles_mock_open(mocker, fs):
 @pytest.fixture
 def mock_uploaded_video(mocker):
     uploaded_video = mocker.Mock(
-        id=654321,
+        id=str(uuid.uuid4()),
         title="Habilidades de dribleo",
         status="uploaded",
         uploaded_at="2025-03-11T10:15:00Z",
@@ -57,7 +59,7 @@ def mock_uploaded_video(mocker):
 @pytest.fixture
 def mock_processed_video(mocker, registered_user):
     processed_video = mocker.Mock(
-        id=123456,
+        id=str(uuid.uuid4()),
         user_id=registered_user["id"],
         title="Mi mejor tiro de 3",
         status="processed",
@@ -90,7 +92,7 @@ async def test_upload_video(
     assert response.status_code == 201
     data = response.json()
     assert "task_id" in data
-    assert data["message"] == "Successfully uploaded video.mp4"
+    assert data["message"] == "Video uploaded successfully. Processing..."
 
 
 @pytest.mark.anyio
@@ -187,6 +189,7 @@ async def test_get_video_detail_success(
     assert data["processed_at"] == "2025-03-10T14:35:00Z"
     assert "video_id" in data
 
+
 @pytest.mark.anyio
 async def test_delete_video_success(
         async_client: AsyncClient, logged_in_token: str, registered_user
@@ -200,7 +203,8 @@ async def test_delete_video_success(
         uploaded_at=datetime.now(),
     )
     await database.execute(query)
-    mock_uploaded_video = await database.fetch_one(video_table.select().where(video_table.c.user_id == registered_user["id"]))
+    mock_uploaded_video = await database.fetch_one(
+        video_table.select().where(video_table.c.user_id == registered_user["id"]))
 
     response = await async_client.delete(
         f"/api/videos/{mock_uploaded_video.id}",
@@ -209,6 +213,7 @@ async def test_delete_video_success(
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "El video ha sido eliminado exitosamente."
+
 
 @pytest.mark.anyio
 async def test_delete_video_cannot_delete_processed(
@@ -224,7 +229,8 @@ async def test_delete_video_cannot_delete_processed(
         processed_at=datetime.now(),
     )
     await database.execute(query)
-    mock_processed_video = await database.fetch_one(video_table.select().where(video_table.c.user_id == registered_user["id"]))
+    mock_processed_video = await database.fetch_one(
+        video_table.select().where(video_table.c.user_id == registered_user["id"]))
 
     response = await async_client.delete(
         f"/api/videos/{mock_processed_video.id}",
@@ -234,12 +240,14 @@ async def test_delete_video_cannot_delete_processed(
     data = response.json()
     assert data["detail"] == "Cannot delete a published video"
 
+
 @pytest.mark.anyio
 async def test_delete_video_not_found(
         async_client: AsyncClient, logged_in_token: str
 ):
+    invalid_id = str(uuid.uuid4())
     response = await async_client.delete(
-        "/api/videos/99999",
+        f"/api/videos/{invalid_id}",
         headers={"Authorization": f"Bearer {logged_in_token}"},
     )
     assert response.status_code == 404

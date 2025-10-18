@@ -1,17 +1,16 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
 
 
 class VoteIn(BaseModel):
-    video_id: int
+    video_id: str
     vote_type: str  # "like" o "dislike"
 
 
 class Vote(BaseModel):
-    id: int
-    user_id: int
-    video_id: int
+    id: str
+    user_id: str
+    video_id: str
     vote_type: str
     created_at: datetime
 

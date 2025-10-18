@@ -1,16 +1,16 @@
+import contextlib
 import logging
+import os
 import tempfile
 import uuid
-import aiofiles
 
 from datetime import datetime
 from typing import Annotated
-
-
 from fastapi import APIRouter, UploadFile, HTTPException, status, Form, Depends, File
 
 from storeapi.database import database, video_table
-from storeapi.libs.s3 import s3_upload_video
+from storeapi.libs.video_storage import save_video
+# from storeapi.libs.s3.video_storage import save_video
 from storeapi.models.user import UserOut
 from storeapi.models.video import VideoOut
 from storeapi.security import get_current_user
@@ -23,31 +23,35 @@ CHUNK_SIZE = 1024 * 1024
 
 
 @router.post("/api/videos/upload", status_code=201)
-async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user)],
-                       file: UploadFile = File(...),
-                       title: str = Form(None),
-                       ):
+async def upload_video(
+        current_user: Annotated[UserOut, Depends(get_current_user)],
+        file: UploadFile = File(...),
+        title: str = Form(...),
+):
     try:
         content = await file.read()
         if file.content_type not in ["video/mp4", "application/mp4"] or len(content) > 100 * 1024 * 1024:
             raise HTTPException(status_code=400, detail="Invalid file. Must be MP4 and less than 100 MB.")
         await file.seek(0)
 
-        with tempfile.NamedTemporaryFile() as temp_file:
-            filename = temp_file.name
-            logger.info(f"Saving uploaded file temporarily to {filename}")
-            async with aiofiles.open(filename, "wb") as f:
-                while chunk := await file.read(CHUNK_SIZE):
-                    await f.write(chunk)
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            while chunk := await file.read(1024 * 1024):
+                tmp.write(chunk)
+            temp_path = tmp.name
 
-            final_name = title or file.filename
-            logger.debug(f"Uploading {filename} to S3 as {final_name}")
-            original_url = s3_upload_video(filename, final_name)
+        video_id = uuid.uuid4()
+        original_filename, original_ext = os.path.splitext(file.filename or "")
+        original_ext = original_ext.lower()
+
+        stored_path = save_video(temp_path, str(video_id), original_ext)
+        with contextlib.suppress(FileNotFoundError):
+            os.unlink(temp_path)
 
         query = video_table.insert().values(
+            id=video_id,
             user_id=current_user.id,
-            title=final_name,
-            original_url=original_url,
+            title=title,
+            original_url=stored_path,
             processed_url=None,
             status="uploaded",
             uploaded_at=datetime.now()
@@ -56,14 +60,16 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
 
         task_id = str(uuid.uuid4())
 
+        return {"message": f"Video uploaded successfully. Processing...", "task_id": task_id}
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.exception(f"Error uploading file: {e}")
+        logger.exception(f"Error uploading video: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="There was an error uploading the file",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="There was an error uploading the file"
         )
-    return {"message": f"Successfully uploaded {file.filename}", "task_id": task_id}
 
 
 @router.get("/api/videos", status_code=200)
@@ -95,7 +101,7 @@ async def get_videos(current_user: Annotated[UserOut, Depends(get_current_user)]
 
 @router.get("/api/videos/{video_id}", response_model=VideoOut, status_code=200)
 async def get_video_detail(
-        video_id: int,
+        video_id: str,
         current_user: Annotated[UserOut, Depends(get_current_user)],
 ):
     try:
@@ -113,6 +119,7 @@ async def get_video_detail(
             "status": video.status,
             "uploaded_at": video.uploaded_at,
             "processed_at": video.processed_at,
+            "original_url": video.original_url,
             "processed_url": video.processed_url,
         }
 
@@ -125,9 +132,10 @@ async def get_video_detail(
             detail="Error retrieving video detail",
         )
 
+
 @router.delete("/api/videos/{video_id}", status_code=200)
 async def delete_video(
-        video_id: int,
+        video_id: str,
         current_user: Annotated[UserOut, Depends(get_current_user)],
 ):
     try:
@@ -141,7 +149,7 @@ async def delete_video(
 
         if video.status == "processed":
             raise HTTPException(status_code=400, detail="Cannot delete a published video")
-        
+
         delete_query = video_table.delete().where(video_table.c.id == video_id)
         await database.execute(delete_query)
 
