@@ -117,15 +117,34 @@ jobs:
 
       - name: Verificar reportes presentes
         run: |
-          ls -l coverage.xml || true
-          ls -l test-results.xml || true
+          echo "=== VERIFICANDO REPORTES ==="
+          ls -l coverage.xml || echo "❌ coverage.xml no encontrado"
+          ls -l test-results.xml || echo "❌ test-results.xml no encontrado"
+          echo "=== CONTENIDO DE coverage.xml ==="
+          head -20 coverage.xml || echo "No se puede leer coverage.xml"
+          echo "=== CONTENIDO DE test-results.xml ==="
+          head -20 test-results.xml || echo "No se puede leer test-results.xml"
 
       - name: Mostrar árbol y properties
         run: |
+          echo "=== DIRECTORIO ACTUAL ==="
           pwd
+          echo "=== ARCHIVOS EN DIRECTORIO ==="
           ls -la
-          echo "----- sonar-project.properties -----"
+          echo "=== ESTRUCTURA DE STOREAPI ==="
+          find storeapi -name "*.py" | head -10
+          echo "=== CONTEO DE ARCHIVOS PYTHON ==="
+          find storeapi -name "*.py" | wc -l
+          echo "=== sonar-project.properties ==="
           cat sonar-project.properties
+
+      - name: Verificar configuración antes del scan
+        run: |
+          echo "=== VERIFICACIÓN FINAL ==="
+          echo "¿Existe storeapi? $(test -d storeapi && echo 'SÍ' || echo 'NO')"
+          echo "¿Existe coverage.xml? $(test -f coverage.xml && echo 'SÍ' || echo 'NO')"
+          echo "¿Existe test-results.xml? $(test -f test-results.xml && echo 'SÍ' || echo 'NO')"
+          echo "Archivos Python en storeapi: $(find storeapi -name '*.py' | wc -l)"
 
       - name: Sonarless Scan
         uses: gitricko/sonarless@v1.3
