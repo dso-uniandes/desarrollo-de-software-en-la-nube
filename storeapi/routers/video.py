@@ -9,6 +9,7 @@ from typing import Annotated
 
 
 from fastapi import APIRouter, UploadFile, HTTPException, status, Form, Depends, File
+from fastapi.responses import StreamingResponse
 
 from message_broker.tasks_dispatcher import dispatch_task
 from storeapi.database import database, video_table
@@ -131,6 +132,7 @@ async def get_video_detail(
             detail="Error retrieving video detail",
         )
 
+
 @router.delete("/api/videos/{video_id}", status_code=200)
 async def delete_video(
         video_id: int,
@@ -161,3 +163,30 @@ async def delete_video(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error deleting video",
         )
+
+@router.get("/api/videos/stream/{file_path:path}", status_code=200)
+async def stream_video(file_path: str):
+    try:
+        logger.info(f"Streaming video from path: {file_path}")
+        if not file_path or not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="Video file not found")
+
+        def file_iterator(path, chunk_size=CHUNK_SIZE):
+            with open(path, "rb") as f:
+                while True:
+                    chunk = f.read(chunk_size)
+                    if not chunk:
+                        break
+                    yield chunk
+
+        return StreamingResponse(file_iterator(file_path), media_type="video/mp4")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error streaming video: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error streaming video",
+        )
+

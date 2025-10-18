@@ -2,6 +2,7 @@ import logging
 import shutil
 from pathlib import Path
 from typing import Optional
+from utils.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ def s3_upload_video(local_file: str, object_name: str) -> str:
         with src.open("rb") as fsrc, dest.open("wb") as fdst:
             shutil.copyfileobj(fsrc, fdst)
 
-        url = f"http://fake_s3.com/{object_name}"
+        url = get_shared_url(object_name)
         logger.info("Uploaded %s to Local as %s, URL: %s", local_file, object_name, url)
         return url
     except Exception as e:
@@ -61,3 +62,17 @@ def s3_get_object(object_name: str) -> Optional[bytes]:
     except Exception as e:
         logger.error("Error retrieving file from S3: %s", e)
         return None
+    
+def get_shared_url(object_name: str) -> str:
+    """Simulate generating a pre-signed URL for an S3 object.
+
+    Returns a fake pre-signed URL.
+    """
+
+    url = f"http://{config.APP_HOST}/api/videos/stream/{object_name}"
+    logger.debug("Generated pre-signed URL for %s: %s", object_name, url)
+    return url
+
+def get_object_key_from_url(url: str) -> str:
+    """Extract the object key from a given URL."""
+    return url.split(f'{config.APP_HOST}/api/videos/stream/')[-1]

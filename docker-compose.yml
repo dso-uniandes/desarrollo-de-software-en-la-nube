@@ -68,6 +68,21 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_LOG_DIRS=/tmp/kraft-combined-logs
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    command:
+      - /bin/bash
+      - -c
+      - |
+        /opt/bitnami/scripts/kafka/run.sh &
+        echo "⏳ Waiting for Kafka to start..."
+        until kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1; do
+            echo "⏳ Kafka not ready yet..."
+          sleep 2
+        done
+        echo "🔄 Creating topics..."
+        kafka-topics.sh --create --if-not-exists --bootstrap-server localhost:9092 --topic video_tasks --partitions 1 --replication-factor 1
+        echo "✅ Done. Keeping container alive..."
+        tail -f /dev/null
     healthcheck:
       test: ["CMD", "bash", "-c", "kafka-topics.sh --bootstrap-server kafka:9092 --list || exit 1"]
       interval: 5s
