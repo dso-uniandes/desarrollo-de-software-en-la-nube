@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import os
+import time
 from confluent_kafka import Consumer, KafkaException
 import logging
 
@@ -41,38 +42,60 @@ async def process_video_processing(message: dict):
     The final video structure is: [Intro (2.5s)] + [Main Video (max 30s)] + [Outro (2.5s)]
     All segments are standardized to 1280x720 @ 30fps with AAC audio.
     """
+    # Start timing the task
+    task_start_time = time.time()
+    video_id = message.get('video_id', 'unknown')
+    task_id = message.get('task_id', 'unknown')
+    
     logger.info(f"Processing video: {message}")
     
-    video = await database.fetch_one(
-        video_table.select().where(video_table.c.id == int(message['video_id']))
-    )
-    
-    if not video:
-        logger.error(f"Video not found in database: {message['video_id']}")
-        return
-        
-    logger.info(f"Fetched video from DB: {video.id}")
-
-    object_key = get_object_key_from_url(video.original_url)
-
-    file_bytes = s3_get_object(object_key)
-    if not file_bytes:
-        logger.error(f"Failed to get S3 object for Key: {object_key}")
-        return
-
-    output_key = edit_video(file_bytes, object_key, video)
-
-    await database.execute(
-            video_table.update()
-            .where(video_table.c.id == video.id)
-            .values(
-                processed_url=get_shared_url(output_key),
-                status="processed",
-                processed_at=datetime.now()
-            )
+    try:
+        # Fetch video from database
+        db_fetch_start = time.time()
+        video = await database.fetch_one(
+            video_table.select().where(video_table.c.id == int(video_id))
         )
-            
-    logger.info(f"Video Saving complete: {output_key}")
+        db_fetch_duration = time.time() - db_fetch_start
+        
+
+        object_key = get_object_key_from_url(video.original_url)
+
+        # Download from S3
+        s3_download_start = time.time()
+        file_bytes = s3_get_object(object_key)
+        if not file_bytes:
+            logger.error(f"[task_id={task_id}] Failed to get S3 object for Key: {object_key}")
+            return
+        s3_download_duration = time.time() - s3_download_start
+       
+
+        # Process video with FFmpeg
+        video_processing_start = time.time()
+        output_key = edit_video(file_bytes, object_key, video)
+        video_processing_duration = time.time() - video_processing_start
+
+        # Update database
+        db_update_start = time.time()
+        await database.execute(
+                video_table.update()
+                .where(video_table.c.id == video.id)
+                .values(
+                    processed_url=get_shared_url(output_key),
+                    status="processed",
+                    processed_at=datetime.now()
+                )
+            )
+        db_update_duration = time.time() - db_update_start
+   
+        # Total task time
+        total_duration = time.time() - task_start_time
+        logger.info(f"[video_id={video.id}] Video processing complete: {output_key}")
+        logger.info(f"[task_id={task_id}] TOTAL TASK TIME: {total_duration:.2f}s (DB Fetch: {db_fetch_duration:.2f}s, S3 Download: {s3_download_duration:.2f}s, FFmpeg: {video_processing_duration:.2f}s, DB Update: {db_update_duration:.2f}s)")
+
+    except Exception as e:
+        total_duration = time.time() - task_start_time
+        logger.error(f"[task_id={task_id}] Error processing video after {total_duration:.2f}s: {e}")
+
 
 
 
