@@ -1,0 +1,349 @@
+{
+	"info": {
+		"_postman_id": "9d96de3f-e1bc-420b-9e20-f8ab62e360a8",
+		"name": "Cloud-ANB",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "43669078",
+		"_collection_link": "https://jona-8700242.postman.co/workspace/Jona's-Workspace~b6b29bed-e14a-42d3-8c19-3f8c423c52b8/collection/43669078-9d96de3f-e1bc-420b-9e20-f8ab62e360a8?action=share&source=collection_link&creator=43669078"
+	},
+	"item": [
+		{
+			"name": "Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"first_name\": \"Benito\",\n  \"last_name\": \"Camelas\",\n  \"email\": \"jonatan@yopmail.com\",\n  \"password1\": \"string\",\n  \"password2\": \"string\",\n  \"city\": \"Bogota\",\n  \"country\": \"Colombia\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://{{backUrl}}/api/auth/signup"
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var res = pm.response.json()",
+							"pm.globals.set('Auth', res.access_token)"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "jonatan@yopmail.com",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "string",
+							"type": "text"
+						}
+					]
+				},
+				"url": "http://{{backUrl}}/api/auth/login"
+			},
+			"response": []
+		},
+		{
+			"name": "Upload video",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{Auth}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/Users/jonatan/Downloads/video.mp4"
+						},
+						{
+							"key": "title",
+							"value": "Best_Video",
+							"type": "text"
+						}
+					]
+				},
+				"url": "http://{{backUrl}}/api/videos/upload"
+			},
+			"response": []
+		},
+		{
+			"name": "Get all videos",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{Auth}}",
+						"type": "text"
+					}
+				],
+				"url": "http://{{backUrl}}/api/videos"
+			},
+			"response": []
+		},
+		{
+			"name": "Get video detail",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{Auth}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://{{backUrl}}/api/videos/:id",
+					"protocol": "http",
+					"host": [
+						"{{backUrl}}"
+					],
+					"path": [
+						"api",
+						"videos",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete video",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{Auth}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://{{backUrl}}/api/videos/:id",
+					"protocol": "http",
+					"host": [
+						"{{backUrl}}"
+					],
+					"path": [
+						"api",
+						"videos",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Stream video",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{backUrl}}/api/videos/stream/:file_path",
+					"protocol": "http",
+					"host": [
+						"{{backUrl}}"
+					],
+					"path": [
+						"api",
+						"videos",
+						"stream",
+						":file_path"
+					],
+					"variable": [
+						{
+							"key": "file_path",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Vote video",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{Auth}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"video_id\": 1,\n  \"vote_type\": \"like\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://{{backUrl}}/api/videos/vote"
+			},
+			"response": []
+		},
+		{
+			"name": "Remove vote",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{Auth}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://{{backUrl}}/api/videos/:id/vote",
+					"protocol": "http",
+					"host": [
+						"{{backUrl}}"
+					],
+					"path": [
+						"api",
+						"videos",
+						":id",
+						"vote"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get video votes",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{Auth}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://{{backUrl}}/api/videos/:id/votes",
+					"protocol": "http",
+					"host": [
+						"{{backUrl}}"
+					],
+					"path": [
+						"api",
+						"videos",
+						":id",
+						"votes"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get public videos",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{Auth}}",
+						"type": "text"
+					}
+				],
+				"url": "http://{{backUrl}}/api/videos/public/all"
+			},
+			"response": []
+		},
+		{
+			"name": "Get ranking",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{backUrl}}/api/ranking?city=&offset=0&limit=50",
+					"protocol": "http",
+					"host": [
+						"{{backUrl}}"
+					],
+					"path": [
+						"api",
+						"ranking"
+					],
+					"query": [
+						{
+							"key": "city",
+							"value": "",
+							"description": "Filtrar por ciudad (opcional)"
+						},
+						{
+							"key": "offset",
+							"value": "0",
+							"description": "Número de registros a omitir"
+						},
+						{
+							"key": "limit",
+							"value": "50",
+							"description": "Número máximo de registros a retornar"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
