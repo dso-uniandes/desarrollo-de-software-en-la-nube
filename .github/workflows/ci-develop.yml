@@ -131,13 +131,19 @@ jobs:
 
       - name: Verificar reportes presentes
         run: |
-          echo "=== VERIFICANDO REPORTES ==="
-          ls -l coverage.xml || echo "❌ coverage.xml no encontrado"
-          ls -l test-results.xml || echo "❌ test-results.xml no encontrado"
-          echo "=== CONTENIDO DE coverage.xml ==="
-          head -20 coverage.xml || echo "No se puede leer coverage.xml"
-          echo "=== CONTENIDO DE test-results.xml ==="
-          head -20 test-results.xml || echo "No se puede leer test-results.xml"
+          echo "== ls coverage/test results =="
+          ls -l coverage.xml || true
+          head -n 20 coverage.xml || true
+          ls -l test-results.xml || true
+          echo "=== VERIFICANDO ESTRUCTURA DE COVERAGE ==="
+          if [ -f "coverage.xml" ]; then
+            echo "✅ coverage.xml encontrado"
+            echo "Tamaño: $(wc -c < coverage.xml) bytes"
+            echo "¿Contiene packages? $(grep -c '<packages>' coverage.xml || echo '0')"
+            echo "¿Contiene storeapi? $(grep -c 'storeapi' coverage.xml || echo '0')"
+          else
+            echo "❌ coverage.xml no encontrado"
+          fi
 
       - name: Mostrar árbol y properties
         run: |
@@ -162,6 +168,8 @@ jobs:
       - name: Sonarless Scan
         uses: gitricko/sonarless@v1.3
         id: sonarless-scan
+        env:
+          SONAR_SCANNER_OPTS: "-Dsonar.projectBaseDir=."
         with:
           sonar-source-path: "."
           sonar-project-key: "MISW4204-202515-anb-Grupo03-local"
@@ -174,6 +182,13 @@ jobs:
           if [ -f "sonar-metrics.json" ]; then
             echo "✅ sonar-metrics.json generado"
             echo "Tamaño del archivo: $(wc -c < sonar-metrics.json) bytes"
+            echo "=== MÉTRICA DE COVERAGE ==="
+            if jq -e '.component.measures[] | select(.metric == "coverage")' sonar-metrics.json > /dev/null; then
+              COVERAGE_VALUE=$(jq -r '.component.measures[] | select(.metric == "coverage").value' sonar-metrics.json)
+              echo "✅ Coverage encontrado: ${COVERAGE_VALUE}%"
+            else
+              echo "❌ No se encontró métrica de coverage"
+            fi
             echo "Primeras líneas:"
             head -10 sonar-metrics.json
           else
