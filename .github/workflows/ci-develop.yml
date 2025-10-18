@@ -389,7 +389,7 @@ jobs:
           node-version: '20'
 
       - name: Instalar jscpd
-        run: npm i -g jscpd@3
+        run: npm install -g jscpd@3.5.1
 
       - name: Ejecutar jscpd sobre Python
         run: |
@@ -401,47 +401,67 @@ jobs:
             --ignore "**/migrations/**" \
             --ignore "**/venv/**" \
             --ignore "**/.venv/**" \
+            --ignore "**/.git/**" \
+            --ignore "**/*.pyc" \
             --reporters "html,json,console" \
             --output "jscpd-report" \
-            --min-lines 15 \
-            --min-tokens 50 \
-            --gitignore \
-            --no-blame
+            --min-lines 10 \
+            --min-tokens 30 \
+            --gitignore
 
-      - name: Resumen de duplicación (desde JSON)
+      - name: Instalar jq para procesar JSON
+        run: sudo apt-get update && sudo apt-get install -y jq bc
+
+      - name: Resumen de duplicación
         run: |
-          sudo apt-get update -y && sudo apt-get install -y jq
-          if [ -f jscpd-report/jscpd-report.json ]; then
-            TOTAL=$(jq -r '.statistics.total.lines' jscpd-report/jscpd-report.json)
-            DUP_LINES=$(jq -r '.statistics.total.duplicatedLines' jscpd-report/jscpd-report.json)
-            PERCENT=$(jq -r '.statistics.total.percentage' jscpd-report/jscpd-report.json)
-            FINDINGS=$(jq -r '.duplicates | length' jscpd-report/jscpd-report.json)
-            echo "📊 Líneas totales:         ${TOTAL}"
-            echo "📊 Líneas duplicadas:      ${DUP_LINES}"
-            echo "📊 Porcentaje duplicación: ${PERCENT}%"
-            echo "📊 Bloques duplicados:     ${FINDINGS}"
+          if [ -f "jscpd-report/jscpd-report.json" ]; then
+            echo "📊 ===== REPORTE DE DUPLICACIÓN ====="
+            TOTAL_LINES=$(jq -r '.statistics.total.lines // 0' jscpd-report/jscpd-report.json)
+            DUP_LINES=$(jq -r '.statistics.total.duplicatedLines // 0' jscpd-report/jscpd-report.json)
+            PERCENT=$(jq -r '.statistics.total.percentage // 0' jscpd-report/jscpd-report.json)
+            CLONES=$(jq -r '.duplicates | length // 0' jscpd-report/jscpd-report.json)
+            
+            echo "📈 Líneas totales analizadas: $TOTAL_LINES"
+            echo "🔁 Líneas duplicadas: $DUP_LINES"
+            echo "📈 Porcentaje de duplicación: ${PERCENT}%"
+            echo "🔄 Bloques duplicados encontrados: $CLONES"
           else
-            echo "⚠️ No se encontró jscpd-report/jscpd-report.json"
-            ls -la jscpd-report || true
+            echo "⚠️ No se encontró el reporte JSON"
+            echo "📁 Contenido del directorio:"
+            ls -la jscpd-report/ 2>/dev/null || echo "Directorio no existe"
+            exit 0
           fi
 
-      - name: Subir reporte jscpd (HTML/JSON)
+      - name: Subir reporte como artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: jscpd-report
           path: jscpd-report/
 
-      # - name: Quality Gate CPD (opcional)
+      # - name: Quality Gate
+      #   id: quality-gate
       #   run: |
-      #     sudo apt-get update && sudo apt-get install -y jq
-      #     PERCENT=$(jq -r '.statistics.total.percentage // 0' jscpd-report/jscpd-report.json)
-      #     THRESHOLD=0.5
-      #     awk -v d="$PERCENT" -v t="$THRESHOLD" 'BEGIN{ if (d+0 > t+0) { exit 1 } }' || {
-      #       echo "❌ Duplicación ${PERCENT}% > ${THRESHOLD}%"
-      #       exit 1
-      #     }
-      #     echo "✅ Duplicación ${PERCENT}% ≤ ${THRESHOLD}%"
+      #     if [ -f "jscpd-report/jscpd-report.json" ]; then
+      #       PERCENT=$(jq -r '.statistics.total.percentage // 0' jscpd-report/jscpd-report.json)
+      #       THRESHOLD=5.0
+            
+      #       echo "Porcentaje actual: ${PERCENT}%"
+      #       echo "Umbral máximo: ${THRESHOLD}%"
+            
+      #       # Usar awk para comparación numérica (no requiere bc)
+      #       if awk "BEGIN {exit !($PERCENT > $THRESHOLD)}"; then
+      #         echo "❌ CALIDAD: REPROBADO - Duplicación ${PERCENT}% > ${THRESHOLD}%"
+      #         echo "quality-status=failed" >> $GITHUB_OUTPUT
+      #         exit 1
+      #       else
+      #         echo "✅ CALIDAD: APROBADO - Duplicación ${PERCENT}% ≤ ${THRESHOLD}%"
+      #         echo "quality-status=passed" >> $GITHUB_OUTPUT
+      #       fi
+      #     else
+      #       echo "⚠️ No se pudo verificar quality gate - reporte no encontrado"
+      #       echo "quality-status=skipped" >> $GITHUB_OUTPUT
+      #     fi
 
   merge-develop:
     name: Merge develop
