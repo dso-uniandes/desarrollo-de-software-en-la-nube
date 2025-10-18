@@ -397,6 +397,8 @@ jobs:
           jscpd "storeapi" \
             --format "python" \
             --ignore "**/tests/**" \
+            --ignore "**/test_**.py" \
+            --ignore "**_test.py" \
             --ignore "**/__pycache__/**" \
             --ignore "**/migrations/**" \
             --ignore "**/venv/**" \
@@ -425,6 +427,11 @@ jobs:
             echo "🔁 Líneas duplicadas: $DUP_LINES"
             echo "📈 Porcentaje de duplicación: ${PERCENT}%"
             echo "🔄 Bloques duplicados encontrados: $CLONES"
+            
+            # Mostrar archivos analizados
+            echo ""
+            echo "📁 Archivos analizados:"
+            jq -r '.statistics.formats[].files // 0' jscpd-report/jscpd-report.json
           else
             echo "⚠️ No se encontró el reporte JSON"
             echo "📁 Contenido del directorio:"
@@ -449,7 +456,7 @@ jobs:
       #       echo "Porcentaje actual: ${PERCENT}%"
       #       echo "Umbral máximo: ${THRESHOLD}%"
             
-      #       # Usar awk para comparación numérica (no requiere bc)
+      #       # Usar awk para comparación numérica
       #       if awk "BEGIN {exit !($PERCENT > $THRESHOLD)}"; then
       #         echo "❌ CALIDAD: REPROBADO - Duplicación ${PERCENT}% > ${THRESHOLD}%"
       #         echo "quality-status=failed" >> $GITHUB_OUTPUT
