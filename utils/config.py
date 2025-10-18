@@ -56,10 +56,13 @@ def get_config(envi_state: str):
         "prod": ProdConfig,
         "test": TestConfig
     }
-    return configs[envi_state]()
+    config_instance = configs[envi_state]()
+    config_instance.ENV_STATE = envi_state
+    return config_instance
 
 
 config = get_config(BaseConfig().ENV_STATE)
+
 
 for dir in [
     config.PROCESSED_FOLDER,
