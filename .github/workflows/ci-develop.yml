@@ -56,7 +56,19 @@ jobs:
 
       - name: Correr pruebas con pytest
         id: correr-pruebas
-        run: pytest storeapi/tests/ -v --tb=short
+        run: |
+          pytest storeapi/tests/ -v --tb=short \
+            --cov=storeapi --cov-report=xml:coverage.xml \
+            --junitxml=test-results.xml
+
+      - name: Publicar reportes de pruebas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            coverage.xml
+            test-results.xml
 
       - name: Status Error
         id: failure
@@ -97,6 +109,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           sudo apt-get update && sudo apt-get install -y jq curl
+
+      - name: Descargar reportes de pruebas
+        uses: actions/download-artifact@v4
+        with:
+          name: test-reports
+          path: .
 
       - name: Sonarless Scan
         uses: gitricko/sonarless@v1.3
@@ -233,7 +251,7 @@ jobs:
           
           echo ""
           echo "🔍 === RESUMEN DE MÉTRICAS ==="
-          echo "Líneas de código: ${LINES}"
+          echo "Líneas de código (ncloc): ${NCLOC}"
           echo "Cobertura de pruebas: ${COVERAGE}%"
           echo "Duplicación: ${DUPLICATION}%"
           echo "Code Smells: ${CODE_SMELLS}"
