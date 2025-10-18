@@ -6,7 +6,7 @@ from storeapi import security
 
 
 def test_access_token_expire_minutes():
-    assert security.access_token_expire_minutes() == 30
+    assert security.access_token_expire_minutes() == 60
 
 
 def test_create_access_token():

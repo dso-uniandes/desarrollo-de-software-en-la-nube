@@ -6,7 +6,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from storeapi.database import database, user_table
 from storeapi.models.user import UserIn
-from storeapi.security import get_password_hash, get_user, authenticate_user, create_access_token
+from storeapi.security import get_password_hash, get_user, authenticate_user, create_access_token, \
+    access_token_expire_minutes
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -45,4 +46,9 @@ async def register(user: UserIn):
 async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     user = await authenticate_user(form_data.username, form_data.password)
     access_token = create_access_token(user.email)
-    return {"access_token": access_token, "token_type": "bearer"}
+    expires_in = access_token_expire_minutes() * 60
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "expires": expires_in
+    }
