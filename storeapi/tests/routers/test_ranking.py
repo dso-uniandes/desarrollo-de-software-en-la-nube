@@ -59,7 +59,7 @@ async def _seed_users_and_votes():
 @pytest.mark.anyio
 async def test_ranking_ordering(async_client: AsyncClient):
     await _seed_users_and_votes()
-    r = await async_client.get("/api/ranking")
+    r = await async_client.get("/api/public/rankings")
     assert r.status_code == 200
     data = r.json()
     # Positions should be 1..n and sorted by votes desc: Beto(7), Ana(5), Caro(2)
@@ -72,7 +72,7 @@ async def test_ranking_ordering(async_client: AsyncClient):
 @pytest.mark.anyio
 async def test_ranking_city_filter(async_client: AsyncClient):
     await _seed_users_and_votes()
-    r = await async_client.get("/api/ranking", params={"city": "Bogotá"})
+    r = await async_client.get("/api/public/rankings", params={"city": "Bogotá"})
     assert r.status_code == 200
     data = r.json()
     # Only Ana(5) and Beto(7)
@@ -83,12 +83,12 @@ async def test_ranking_city_filter(async_client: AsyncClient):
 async def test_ranking_pagination(async_client: AsyncClient):
     await _seed_users_and_votes()
     # First page size 1
-    r1 = await async_client.get("/api/ranking", params={"limit": 1})
+    r1 = await async_client.get("/api/public/rankings", params={"limit": 1})
     assert r1.status_code == 200
     d1 = r1.json()
     assert len(d1) == 1 and d1[0]["votes"] == 7 and d1[0]["position"] == 1
     # Second page
-    r2 = await async_client.get("/api/ranking", params={"offset": 1, "limit": 1})
+    r2 = await async_client.get("/api/public/rankings", params={"offset": 1, "limit": 1})
     assert r2.status_code == 200
     d2 = r2.json()
     assert len(d2) == 1 and d2[0]["votes"] == 5 and d2[0]["position"] == 2
@@ -96,9 +96,9 @@ async def test_ranking_pagination(async_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_ranking_invalid_params(async_client: AsyncClient):
-    r = await async_client.get("/api/ranking", params={"limit": 0})
+    r = await async_client.get("/api/public/rankings", params={"limit": 0})
     assert r.status_code == 400
-    r = await async_client.get("/api/ranking", params={"offset": -1})
+    r = await async_client.get("/api/public/rankings", params={"offset": -1})
     assert r.status_code == 400
 
 
@@ -109,14 +109,14 @@ async def test_ranking_cache_hit(async_client: AsyncClient, mocker):
     from utils import cache as cache_module
 
     # First call builds data
-    r1 = await async_client.get("/api/ranking", params={"city": "Bogotá", "limit": 2})
+    r1 = await async_client.get("/api/public/rankings", params={"city": "Bogotá", "limit": 2})
     assert r1.status_code == 200
     data1 = r1.json()
 
     # Monkeypatch cache_get to return the cached value
     mocker.patch.object(cache_module, "cache_get", new=mocker.AsyncMock(return_value=data1))
 
-    r2 = await async_client.get("/api/ranking", params={"city": "Bogotá", "limit": 2})
+    r2 = await async_client.get("/api/public/rankings", params={"city": "Bogotá", "limit": 2})
     assert r2.status_code == 200
     data2 = r2.json()
     assert data2 == data1

@@ -4,7 +4,6 @@ from typing import Optional
 
 
 class VoteIn(BaseModel):
-    video_id: int
     vote_type: str  # "like" o "dislike"
 
 

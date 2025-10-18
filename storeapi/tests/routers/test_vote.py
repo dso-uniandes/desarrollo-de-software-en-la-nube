@@ -99,12 +99,11 @@ class TestVoteSystem:
     ):
         """Test successfully liking a processed video"""
         vote_data = {
-            "video_id": test_video.id,
             "vote_type": "like"
         }
         
         response = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
@@ -125,12 +124,11 @@ class TestVoteSystem:
     ):
         """Test successfully disliking a processed video"""
         vote_data = {
-            "video_id": test_video.id,
             "vote_type": "dislike"
         }
         
         response = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
@@ -147,12 +145,11 @@ class TestVoteSystem:
     ):
         """Test voting on a non-existent video"""
         vote_data = {
-            "video_id": 99999,
             "vote_type": "like"
         }
         
         response = await async_client.post(
-            "/api/videos/vote",
+            "/api/public/videos/99999/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
@@ -169,12 +166,11 @@ class TestVoteSystem:
     ):
         """Test voting on a video that is not processed"""
         vote_data = {
-            "video_id": test_video_pending.id,
             "vote_type": "like"
         }
         
         response = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video_pending.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
@@ -191,12 +187,11 @@ class TestVoteSystem:
     ):
         """Test voting with an invalid vote type"""
         vote_data = {
-            "video_id": test_video.id,
             "vote_type": "invalid"
         }
         
         response = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
@@ -212,12 +207,11 @@ class TestVoteSystem:
     ):
         """Test voting without authentication"""
         vote_data = {
-            "video_id": test_video.id,
             "vote_type": "like"
         }
         
         response = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data
         )
         
@@ -233,21 +227,20 @@ class TestVoteSystem:
         """Test updating an existing vote"""
         # First, vote like
         vote_data = {
-            "video_id": test_video.id,
             "vote_type": "like"
         }
         
         response = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
         assert response.status_code == 201
         
         # Then change to dislike
-        vote_data["vote_type"] = "dislike"
+        vote_data = {"vote_type": "dislike"}
         response = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
@@ -287,12 +280,11 @@ class TestVoteSystem:
         """Test retrieving video vote stats including the user's vote"""
         # First, vote
         vote_data = {
-            "video_id": test_video.id,
             "vote_type": "like"
         }
         
         await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
@@ -334,12 +326,11 @@ class TestVoteSystem:
         """Test successfully removing a vote"""
         # First, vote
         vote_data = {
-            "video_id": test_video.id,
             "vote_type": "like"
         }
         
         await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
@@ -377,7 +368,7 @@ class TestVoteSystem:
     ):
         """Test retrieving public videos when none are processed"""
         response = await async_client.get(
-            "/api/videos/public/all",
+            "/api/public/videos",
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
         
@@ -397,31 +388,29 @@ class TestVoteSystem:
         """Test retrieving public videos with votes from multiple users"""
         # User 1 votes like
         vote_data_1 = {
-            "video_id": test_video.id,
             "vote_type": "like"
         }
         
         await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data_1,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
         
         # User 2 votes dislike
         vote_data_2 = {
-            "video_id": test_video.id,
             "vote_type": "dislike"
         }
 
         await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data_2,
             headers={"Authorization": f"Bearer {another_user_token}"}
         )
         
         # Retrieve public videos
         response = await async_client.get(
-            "/api/videos/public/all",
+            "/api/public/videos",
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
         
@@ -447,21 +436,20 @@ class TestVoteSystem:
         """Test multiple users voting on the same video"""
         # User 1 votes like
         vote_data = {
-            "video_id": test_video.id,
             "vote_type": "like"
         }
         
         response1 = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
         assert response1.status_code == 201
         
         # User 2 votes dislike
-        vote_data["vote_type"] = "dislike"
+        vote_data = {"vote_type": "dislike"}
         response2 = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {another_user_token}"}
         )
@@ -488,22 +476,21 @@ class TestVoteSystem:
     ):
         """Test anti-fraud protection: a user cannot vote multiple times"""
         vote_data = {
-            "video_id": test_video.id,
             "vote_type": "like"
         }
         
         # First vote
         response1 = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
         assert response1.status_code == 201
         
         # Second vote (should update, not create duplicate)
-        vote_data["vote_type"] = "dislike"
+        vote_data = {"vote_type": "dislike"}
         response2 = await async_client.post(
-            "/api/videos/vote",
+            f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
