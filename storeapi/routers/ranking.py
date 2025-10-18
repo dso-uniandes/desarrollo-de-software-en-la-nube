@@ -18,7 +18,7 @@ def _cache_key(city: Optional[str], offset: int, limit: int) -> str:
     return hashlib.sha256(base.encode("utf-8")).hexdigest()
 
 
-@router.get("/api/ranking", response_model=List[RankingItem], status_code=200)
+@router.get("/api/public/rankings", response_model=List[RankingItem], status_code=200)
 async def get_ranking(
     city: Optional[str] = Query(default=None, description="Filtrar por ciudad"),
     offset: int = Query(default=0),

@@ -23,8 +23,9 @@ async def _invalidate_ranking_cache():
         logger.warning(f"Failed to invalidate ranking cache: {e}")
 
 
-@router.post("/api/videos/vote", response_model=Vote, status_code=201)
+@router.post("/api/public/videos/{video_id}/vote", response_model=Vote, status_code=201)
 async def vote_video(
+    video_id: int,
     vote: VoteIn, 
     current_user: Annotated[UserOut, Depends(get_current_user)]
 ):
@@ -32,7 +33,7 @@ async def vote_video(
     Vote for a video (like or dislike).
     If the user has already voted, update their vote.
     """
-    logger.info(f"User {current_user.id} voting {vote.vote_type} on video {vote.video_id}")
+    logger.info(f"User {current_user.id} voting {vote.vote_type} on video {video_id}")
     
     # Validate that the vote type is valid
     if vote.vote_type not in ["like", "dislike"]:
@@ -42,7 +43,7 @@ async def vote_video(
         )
     
     # Check that the video exists
-    video_query = video_table.select().where(video_table.c.id == vote.video_id)
+    video_query = video_table.select().where(video_table.c.id == video_id)
     video = await database.fetch_one(video_query)
     if not video:
         raise HTTPException(
@@ -60,7 +61,7 @@ async def vote_video(
     # Check if the user has already voted for this video
     existing_vote_query = vote_table.select().where(
         (vote_table.c.user_id == current_user.id) & 
-        (vote_table.c.video_id == vote.video_id)
+        (vote_table.c.video_id == video_id)
     )
     existing_vote = await database.fetch_one(existing_vote_query)
     
@@ -71,7 +72,7 @@ async def vote_video(
         ).values(vote_type=vote.vote_type)
         
         await database.execute(update_query)
-        logger.info(f"Updated vote for user {current_user.id} on video {vote.video_id}")
+        logger.info(f"Updated vote for user {current_user.id} on video {video_id}")
         
         # Invalidate ranking cache
         await _invalidate_ranking_cache()
@@ -79,7 +80,7 @@ async def vote_video(
         return {
             "id": existing_vote.id,
             "user_id": current_user.id,
-            "video_id": vote.video_id,
+            "video_id": video_id,
             "vote_type": vote.vote_type,
             "created_at": existing_vote.created_at
         }
@@ -87,12 +88,12 @@ async def vote_video(
         # Create a new vote
         insert_query = vote_table.insert().values(
             user_id=current_user.id,
-            video_id=vote.video_id,
+            video_id=video_id,
             vote_type=vote.vote_type
         )
         
         last_record_id = await database.execute(insert_query)
-        logger.info(f"Created new vote for user {current_user.id} on video {vote.video_id}")
+        logger.info(f"Created new vote for user {current_user.id} on video {video_id}")
         
         # Retrieve the created vote to return the actual created_at
         new_vote_query = vote_table.select().where(vote_table.c.id == last_record_id)
@@ -104,7 +105,7 @@ async def vote_video(
         return {
             "id": last_record_id,
             "user_id": current_user.id,
-            "video_id": vote.video_id,
+            "video_id": video_id,
             "vote_type": vote.vote_type,
             "created_at": new_vote.created_at
         }
@@ -202,7 +203,7 @@ async def get_video_votes(
     )
 
 
-@router.get("/api/videos/public/all", response_model=list[VideoWithVotes])
+@router.get("/api/public/videos", response_model=list[VideoWithVotes])
 async def get_public_videos(
     current_user: Annotated[UserOut, Depends(get_current_user)]
 ):

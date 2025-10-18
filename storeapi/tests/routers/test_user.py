@@ -45,3 +45,4 @@ async def test_login_user(async_client: AsyncClient, registered_user: dict):
     assert response.status_code == 200
     assert "access_token" in response.json()
     assert response.json()["token_type"] == "bearer"
+    assert "expires_in" in response.json()
