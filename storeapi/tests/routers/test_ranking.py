@@ -23,10 +23,14 @@ async def _seed_users_and_votes():
     # Videos
     ts = datetime(2024, 1, 1)
     videos = [
-        {"user_id": user_id_map["ana@a.com"], "title": "v1", "original_url": "u1", "processed_url": None, "status": "uploaded", "uploaded_at": ts},
-        {"user_id": user_id_map["beto@b.com"], "title": "v2", "original_url": "u2", "processed_url": None, "status": "uploaded", "uploaded_at": ts},
-        {"user_id": user_id_map["beto@b.com"], "title": "v3", "original_url": "u3", "processed_url": None, "status": "uploaded", "uploaded_at": ts},
-        {"user_id": user_id_map["caro@c.com"], "title": "v4", "original_url": "u4", "processed_url": None, "status": "uploaded", "uploaded_at": ts},
+        {"user_id": user_id_map["ana@a.com"], "title": "v1", "original_url": "u1", "processed_url": "p1",
+         "status": "processed", "uploaded_at": ts, "processed_at": ts},
+        {"user_id": user_id_map["beto@b.com"], "title": "v2", "original_url": "u2", "processed_url": "p2",
+         "status": "processed", "uploaded_at": ts, "processed_at": ts},
+        {"user_id": user_id_map["beto@b.com"], "title": "v3", "original_url": "u3", "processed_url": "p3",
+         "status": "processed", "uploaded_at": ts, "processed_at": ts},
+        {"user_id": user_id_map["caro@c.com"], "title": "v4", "original_url": "u4", "processed_url": "p4",
+         "status": "processed", "uploaded_at": ts, "processed_at": ts},
     ]
     await database.execute_many(insert(video_table), videos)
 

@@ -2,7 +2,7 @@ import hashlib
 from typing import Annotated, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func, select
+from sqlalchemy import func, select, and_
 
 from utils.config import config
 from storeapi.database import database, user_table, video_table, video_vote_table
@@ -47,7 +47,8 @@ async def get_ranking(
             user_table.join(video_table, video_table.c.user_id == user_table.c.id)
             .join(video_vote_table, video_vote_table.c.video_id == video_table.c.id)
         )
-        .group_by(user_table.c.id, user_table.c.first_name, user_table.c.last_name, user_table.c.city)
+        .where(video_table.c.status == "processed")
+       .group_by(user_table.c.id, user_table.c.first_name, user_table.c.last_name, user_table.c.city)
     )
 
     if city:
