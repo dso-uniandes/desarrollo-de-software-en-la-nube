@@ -374,10 +374,79 @@ jobs:
           echo "✅ === ANÁLISIS DE SONARLESS COMPLETADO ==="
           echo "   Los detalles de problemas se muestran arriba para revisión"
 
+  cpd-jscpd:
+    name: Reporte de duplicación (CPD) - jscpd
+    needs: verificar-pruebas
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar jscpd
+        run: npm i -g jscpd@3
+
+      - name: Ejecutar jscpd sobre Python
+        run: |
+          mkdir -p jscpd-report
+          jscpd "storeapi" \
+            --format "python" \
+            --ignore "**/tests/**" \
+            --ignore "**/__pycache__/**" \
+            --ignore "**/migrations/**" \
+            --ignore "**/venv/**" \
+            --ignore "**/.venv/**" \
+            --reporters "html,json,console" \
+            --output "jscpd-report" \
+            --min-lines 15 \
+            --min-tokens 50 \
+            --gitignore \
+            --no-blame
+
+      - name: Resumen de duplicación (desde JSON)
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y jq
+          if [ -f jscpd-report/jscpd-report.json ]; then
+            TOTAL=$(jq -r '.statistics.total.lines' jscpd-report/jscpd-report.json)
+            DUP_LINES=$(jq -r '.statistics.total.duplicatedLines' jscpd-report/jscpd-report.json)
+            PERCENT=$(jq -r '.statistics.total.percentage' jscpd-report/jscpd-report.json)
+            FINDINGS=$(jq -r '.duplicates | length' jscpd-report/jscpd-report.json)
+            echo "📊 Líneas totales:         ${TOTAL}"
+            echo "📊 Líneas duplicadas:      ${DUP_LINES}"
+            echo "📊 Porcentaje duplicación: ${PERCENT}%"
+            echo "📊 Bloques duplicados:     ${FINDINGS}"
+          else
+            echo "⚠️ No se encontró jscpd-report/jscpd-report.json"
+            ls -la jscpd-report || true
+          fi
+
+      - name: Subir reporte jscpd (HTML/JSON)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jscpd-report
+          path: jscpd-report/
+
+      # - name: Quality Gate CPD (opcional)
+      #   run: |
+      #     sudo apt-get update && sudo apt-get install -y jq
+      #     PERCENT=$(jq -r '.statistics.total.percentage // 0' jscpd-report/jscpd-report.json)
+      #     THRESHOLD=0.5
+      #     awk -v d="$PERCENT" -v t="$THRESHOLD" 'BEGIN{ if (d+0 > t+0) { exit 1 } }' || {
+      #       echo "❌ Duplicación ${PERCENT}% > ${THRESHOLD}%"
+      #       exit 1
+      #     }
+      #     echo "✅ Duplicación ${PERCENT}% ≤ ${THRESHOLD}%"
+
   merge-develop:
     name: Merge develop
     runs-on: ubuntu-latest
-    needs: [verificar-pruebas, sonarless]
+    needs: [verificar-pruebas, sonarless, cpd-jscpd]
     if: ${{ needs.verificar-pruebas.outputs.respuesta-ok == 'OK' && contains(github.event.head_commit.message, 'END_HU') }}
 
     steps:
