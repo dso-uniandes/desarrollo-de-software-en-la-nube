@@ -54,8 +54,7 @@ jobs:
           echo "ENV_STATE=test" >> $GITHUB_ENV
           echo "TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/test_db" >> $GITHUB_ENV
 
-      - name: Correr pruebas con pytest
-        id: correr-pruebas
+      - name: Correr pruebas con coverage
         run: |
           pytest storeapi/tests/ -v --tb=short \
             --cov=storeapi --cov-report=xml:coverage.xml \
@@ -115,6 +114,18 @@ jobs:
         with:
           name: test-reports
           path: .
+
+      - name: Verificar reportes presentes
+        run: |
+          ls -l coverage.xml || true
+          ls -l test-results.xml || true
+
+      - name: Mostrar árbol y properties
+        run: |
+          pwd
+          ls -la
+          echo "----- sonar-project.properties -----"
+          cat sonar-project.properties
 
       - name: Sonarless Scan
         uses: gitricko/sonarless@v1.3
