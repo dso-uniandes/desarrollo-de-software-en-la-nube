@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy import func, select
 from storeapi.database import database, vote_table, video_table
-from storeapi.libs.cache import cache_delete_pattern
+from utils.cache import cache_delete_pattern
 from storeapi.models.video import VideoOut
 from storeapi.models.vote import VoteIn, Vote, VideoWithVotes
 from storeapi.models.user import UserOut

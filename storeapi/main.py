@@ -6,19 +6,21 @@ from fastapi import FastAPI
 from fastapi.exception_handlers import http_exception_handler
 
 from storeapi.database import database, create_tables_async
-#from storeapi.logging_conf import configure_logging
+from utils.logging_conf import configure_logging
 
 from storeapi.routers.video import router as upload_router
 from storeapi.routers.ranking import router as ranking_router
 from storeapi.routers.user import router as user_router
 from storeapi.routers.vote import router as vote_router
 
-logger = logging.getLogger(__name__)
+logger = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    #configure_logging()
+    configure_logging()
+    logger = logging.getLogger("storeapi")
+    logger.info("Starting up application...")
     await database.connect()
     await create_tables_async()  # Crear tablas al iniciar la aplicación
     yield

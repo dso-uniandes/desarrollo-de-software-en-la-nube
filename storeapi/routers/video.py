@@ -1,4 +1,5 @@
 import logging
+import os
 import tempfile
 import uuid
 import aiofiles
@@ -9,8 +10,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, UploadFile, HTTPException, status, Form, Depends, File
 
+from message_broker.tasks_dispatcher import dispatch_task
 from storeapi.database import database, video_table
-from storeapi.libs.s3 import s3_upload_video
+from utils.s3.s3_local import s3_upload_video
+from utils.config import config
 from storeapi.models.user import UserOut
 from storeapi.models.video import VideoOut
 from storeapi.security import get_current_user
@@ -37,24 +40,27 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
             filename = temp_file.name
             logger.info(f"Saving uploaded file temporarily to {filename}")
             async with aiofiles.open(filename, "wb") as f:
-                while chunk := await file.read(CHUNK_SIZE):
-                    await f.write(chunk)
+                await f.write(content)
 
-            final_name = title or file.filename
+            title_file = title or file.filename
+            filename_ext = (file.filename.split('.')[-1] if file.filename and '.' in file.filename else 'mp4')
+            final_name = os.path.join(config.UPLOADED_FOLDER, f"user_{current_user.id}", f"{uuid.uuid4()}.{filename_ext}")
             logger.debug(f"Uploading {filename} to S3 as {final_name}")
             original_url = s3_upload_video(filename, final_name)
 
         query = video_table.insert().values(
             user_id=current_user.id,
-            title=final_name,
+            title=title_file,
             original_url=original_url,
             processed_url=None,
             status="uploaded",
             uploaded_at=datetime.now()
-        )
-        await database.execute(query)
-
+        ).returning(video_table.c.id)
+        
+        video_id = await database.execute(query)
         task_id = str(uuid.uuid4())
+        task_info = {"video_id": video_id, "user_id": current_user.id, "task_id": task_id}
+        dispatch_task([task_info], "video_tasks")
 
     except HTTPException:
         raise

@@ -3,7 +3,7 @@ import sqlalchemy
 from sqlalchemy.ext.asyncio import create_async_engine
 import asyncio
 
-from storeapi.config import config
+from utils.config import config
 
 metadata = sqlalchemy.MetaData()
 

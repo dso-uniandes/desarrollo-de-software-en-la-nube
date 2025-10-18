@@ -2,7 +2,7 @@ import json
 from functools import lru_cache
 from typing import Any, Optional
 
-from storeapi.config import config
+from utils.config import config
 
 try:
     import redis
