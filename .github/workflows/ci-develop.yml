@@ -165,6 +165,26 @@ jobs:
           echo "¿Existe test-results.xml? $(test -f test-results.xml && echo 'SÍ' || echo 'NO')"
           echo "Archivos Python en storeapi: $(find storeapi -name '*.py' | wc -l)"
 
+      - name: Normalizar rutas en coverage.xml al path del contenedor
+        run: |
+          if [ -f coverage.xml ]; then
+            echo "== Primeras líneas ANTES =="
+            head -n 20 coverage.xml || true
+
+            # Extrae el primer <source> y lo reemplaza por /usr/src (donde el action monta el repo)
+            SRC_PREFIX=$(grep -m1 -oP '(?<=<source>).*?(?=</source>)' coverage.xml || true)
+            if [ -n "$SRC_PREFIX" ]; then
+              echo "Detectado source en coverage.xml: $SRC_PREFIX"
+              sed -i "s#<source>$SRC_PREFIX#<source>/usr/src#g" coverage.xml
+            fi
+
+            echo "== Primeras líneas DESPUÉS =="
+            head -n 20 coverage.xml || true
+          else
+            echo "coverage.xml no encontrado"
+            exit 1
+          fi
+
       - name: Sonarless Scan
         uses: gitricko/sonarless@v1.3
         id: sonarless-scan
