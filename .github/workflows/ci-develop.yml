@@ -130,42 +130,6 @@ jobs:
           name: test-reports
           path: .
 
-      - name: Verificar reportes presentes
-        run: |
-          echo "== ls coverage/test results =="
-          ls -l coverage.xml || true
-          head -n 20 coverage.xml || true
-          ls -l test-results.xml || true
-          echo "=== VERIFICANDO ESTRUCTURA DE COVERAGE ==="
-          if [ -f "coverage.xml" ]; then
-            echo "✅ coverage.xml encontrado"
-            echo "Tamaño: $(wc -c < coverage.xml) bytes"
-            echo "¿Contiene packages? $(grep -c '<packages>' coverage.xml || echo '0')"
-            echo "¿Contiene storeapi? $(grep -c 'storeapi' coverage.xml || echo '0')"
-            echo "¿Usa rutas relativas? $(grep -c '<source>storeapi</source>' coverage.xml || echo '0')"
-          else
-            echo "❌ coverage.xml no encontrado"
-          fi
-
-      - name: Mostrar árbol y properties
-        run: |
-          pwd && ls -la
-          echo "----- sonar-project.properties -----"
-          cat sonar-project.properties
-          echo "----- Verificación: projectKey en properties -----"
-          if grep -q '^sonar\.projectKey=' sonar-project.properties; then
-            echo "❌ Aún hay sonar.projectKey en sonar-project.properties (quítalo)."
-            exit 1
-          fi
-          echo "✅ No hay sonar.projectKey en properties"
-
-      - name: Verificar configuración antes del scan
-        run: |
-          echo "=== VERIFICACIÓN FINAL ==="
-          echo "¿Existe storeapi? $(test -d storeapi && echo 'SÍ' || echo 'NO')"
-          echo "¿Existe coverage.xml? $(test -f coverage.xml && echo 'SÍ' || echo 'NO')"
-          echo "¿Existe test-results.xml? $(test -f test-results.xml && echo 'SÍ' || echo 'NO')"
-          echo "Archivos Python en storeapi: $(find storeapi -name '*.py' | wc -l)"
 
       - name: Sonarless Scan
         uses: gitricko/sonarless@v1.3
@@ -177,25 +141,6 @@ jobs:
           sonar-project-key: "MISW4204-202515-anb-Grupo03-local"
           sonar-project-name: "MISW4204-202515-anb-Grupo03-local"
           sonar-metrics-path: "sonar-metrics.json"
-
-      - name: Verificar resultado del scan
-        run: |
-          echo "=== VERIFICANDO RESULTADO DEL SCAN ==="
-          if [ -f "sonar-metrics.json" ]; then
-            echo "✅ sonar-metrics.json generado"
-            echo "Tamaño del archivo: $(wc -c < sonar-metrics.json) bytes"
-            echo "=== MÉTRICA DE COVERAGE ==="
-            if jq -e '.component.measures[] | select(.metric == "coverage")' sonar-metrics.json > /dev/null; then
-              COVERAGE_VALUE=$(jq -r '.component.measures[] | select(.metric == "coverage").value' sonar-metrics.json)
-              echo "✅ Coverage encontrado: ${COVERAGE_VALUE}%"
-            else
-              echo "❌ No se encontró métrica de coverage"
-            fi
-            echo "Primeras líneas:"
-            head -10 sonar-metrics.json
-          else
-            echo "❌ sonar-metrics.json NO generado"
-          fi
 
       - name: Obtener detalles específicos de problemas
         run: |
