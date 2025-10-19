@@ -4,6 +4,29 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 
 ---
 
+## 📘 Documentación del Proyecto
+
+Dentro del repositorio existe una carpeta `/docs/Entrega_1` que contiene toda la documentación técnica de la primera entrega, incluyendo:
+
+- **Modelo de datos (ERD):** `data_model.md`
+- **Diagrama de componentes de la arquitectura:** `component_diagram.md`
+- **Flujo de procesamiento de videos:** `process_flow.md`
+- **Guía de despliegue e infraestructura:** `deployment.md`
+- **Colecciones de Postman:** `/collections/`
+
+```
+📂 root-folder/
+└── 📂 docs/
+    └── 📂 Entrega_1/
+        ├── data_model.md
+        ├── component_diagram.md
+        ├── process_flow.md
+        ├── deployment.md
+        └── sonar_reporte.pdf
+```
+
+---
+
 ## 🚀 Características principales
 
 * Upload de archivos directamente a **AWS Cloud Storage**
