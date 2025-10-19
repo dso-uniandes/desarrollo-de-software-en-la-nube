@@ -38,14 +38,22 @@ Dentro del repositorio existe una carpeta `/docs/Entrega_1` que contiene toda la
 - **Colecciones de Postman:** `/collections/`
 
 ```
-📂 root-folder/
+📂 ANB-back/
+├── 📂 capacity-planning/
+│   ├── 📂 postman/
+│   │   ├── collection.json
+│   │   ├── report.html
+│   │   └── report_20.html
+│   └── plan_de_capacidad.md
+├── 📂 collections/
+│   ├── Cloud-ANB.postman_collection.json
+│   └── postman_environment.json
 └── 📂 docs/
     └── 📂 Entrega_1/
-        ├── data_model.md
         ├── component_diagram.md
-        ├── process_flow.md
+        ├── data_model.md
         ├── deployment.md
-        └── sonar_reporte.pdf
+        └── process_flow.md
 ```
 
 ---
