@@ -4,6 +4,29 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 
 ---
 
+## 🚦 Inicio Rápido
+
+### Para ejecutar la aplicación:
+```bash
+# Opción 1: Docker Compose (Recomendado)
+docker compose up -d
+# Acceder: http://localhost/docs
+
+# Opción 2: Desarrollo Local
+# Ver sección "Ejecución en Desarrollo Local"
+```
+
+### Para ejecutar tests:
+```bash
+# Tests unitarios (pytest)
+ENV_STATE=test TEST_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/test_db" python -m pytest storeapi/tests/ -v
+
+# Tests de integración (Newman)
+newman run collections/Cloud-ANB.postman_collection.json --environment collections/postman_environment.json
+```
+
+---
+
 ## 📘 Documentación del Proyecto
 
 Dentro del repositorio existe una carpeta `/docs/Entrega_1` que contiene toda la documentación técnica de la primera entrega, incluyendo:
@@ -87,100 +110,205 @@ DEV_AWS_BUCKET_NAME=anb-s3-bucket
 DEV_AWS_REGION=us-east-1
 DEV_AWS_ACCESS_KEY_ID=tu_access_key
 DEV_AWS_SECRET_ACCESS_KEY=tu_secret_key
+
+# Kafka (Message Broker)
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+KAFKA_GROUP_ID=video_tasks_group
+
+# Redis (Caché - opcional)
+REDIS_URL=redis://localhost:6379
+RANKING_CACHE_TTL=300
+
+# Almacenamiento local de videos
+UPLOADED_FOLDER=videos/uploaded
+PROCESSED_FOLDER=videos/processed
+
+# Configuración del servidor
+APP_HOST=0.0.0.0
+APP_PORT=8000
 ```
 
 ---
 
-## ▶️ Ejecución local
+## 🧪 Tests Automatizados (pytest)
+
+### Requisitos
+- PostgreSQL corriendo (contenedor Docker standalone)
+- Python 3.13 con dependencias instaladas
+
+### 1. Levantar PostgreSQL para Tests
+```bash
+# Levantar PostgreSQL standalone (si no está corriendo)
+docker run --name postgres-anb -e POSTGRES_PASSWORD=password -e POSTGRES_DB=dev_db -p 5432:5432 -d postgres:15
+
+# Verificar que esté corriendo
+docker ps
+```
+
+### 2. Ejecutar Tests con pytest
+
+#### Tests básicos
+```bash
+# Todos los tests (PowerShell)
+$env:ENV_STATE="test"; $env:TEST_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/test_db"; python -m pytest storeapi/tests/ -v
+
+# Tests básicos (Bash/zsh)
+ENV_STATE=test TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/test_db python -m pytest storeapi/tests/ -v
+```
+
+#### Tests con salida detallada
+```bash
+# PowerShell
+$env:ENV_STATE="test"; $env:TEST_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/test_db"; python -m pytest storeapi/tests/ -v --tb=short
+
+# Bash/zsh
+ENV_STATE=test TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/test_db python -m pytest storeapi/tests/ -v --tb=short
+```
+
+#### Tests específicos
+```bash
+# Test de un módulo específico (PowerShell)
+$env:ENV_STATE="test"; $env:TEST_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/test_db"; python -m pytest storeapi/tests/routers/test_user.py -v
+
+# Test de un módulo específico (Bash/zsh)
+ENV_STATE=test TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/test_db python -m pytest storeapi/tests/routers/test_user.py -v
+
+# Test específico por nombre
+ENV_STATE=test TEST_DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/test_db python -m pytest storeapi/tests/routers/test_user.py::test_create_user -v
+```
+
+### ℹ️ Características de los Tests
+- ✅ **Base de datos separada**: Usa `test_db` (aislada de desarrollo)
+- ✅ **Rollback automático**: Los datos se limpian después de cada test
+- ✅ **Tests asíncronos**: Utilizan `pytest-asyncio`
+- ✅ **Cobertura completa**: Autenticación, usuarios, videos, votos, ranking
+
+---
+
+## 🐳 Ejecución con Docker Compose (Recomendado)
+
+### 1. Configurar archivo .env
+Asegúrate de tener un archivo `.env` en la raíz con la siguiente configuración mínima:
+
+```dotenv
+# Estado del entorno
+ENV_STATE=dev
+
+# AWS S3 (usar credenciales locales para desarrollo)
+DEV_AWS_BUCKET_NAME=anb-local-bucket
+DEV_AWS_REGION=us-east-1
+DEV_AWS_ACCESS_KEY_ID=test_key
+DEV_AWS_SECRET_ACCESS_KEY=test_secret
+
+# Kafka (no es necesario configurar, Docker Compose lo maneja)
+# DEV_DATABASE_URL se configura automáticamente en docker-compose.yml
+```
+
+### 2. Levantar todos los servicios
+
+```bash
+# Levantar toda la infraestructura
+docker compose up -d
+
+# Ver logs en tiempo real (opcional)
+docker compose logs -f
+
+# Verificar estado de servicios
+docker compose ps
+```
+
+**Servicios levantados:**
+- 🗄️ **PostgreSQL** (puerto 5432)
+- 🌐 **StoreAPI** (expuesto internamente en puerto 8000)
+- 🔄 **Nginx** (puerto 80) - Proxy reverso
+- 📨 **Kafka** (puerto 9092) - Message broker
+- ⚙️ **Worker** - Procesamiento de videos con FFmpeg
+- 💾 **Redis** (puerto 6379) - Caché
+
+### 3. Verificar que los servicios estén listos
+
+```bash
+# Verificar todos los contenedores
+docker compose ps
+
+# Salida esperada:
+# NAME          STATUS          PORTS
+# database      Up (healthy)    0.0.0.0:5432->5432/tcp
+# storeapi      Up              8000/tcp
+# proxy         Up              0.0.0.0:80->80/tcp
+# kafka         Up (healthy)    0.0.0.0:9092->9092/tcp
+# worker        Up              
+# redis         Up              0.0.0.0:6379->6379/tcp
+
+# Ver logs de un servicio específico
+docker compose logs storeapi --tail 50
+docker compose logs worker --tail 50
+```
+
+### 4. Acceder a la API
+
+🌐 **API**: [http://localhost/docs](http://localhost/docs)  
+🔗 **Endpoints**:
+- `http://localhost/api/auth/login`
+- `http://localhost/api/videos/upload`
+- `http://localhost/api/ranking`
+
+### 5. Ejecutar Tests con Newman (Docker Compose)
+
+**Prerequisitos:**
+```bash
+# Instalar Newman si no lo tienes
+npm install -g newman
+
+# Verificar instalación
+newman --version
+```
+
+**Ejecutar tests:**
+```bash
+# Ejecutar toda la colección de tests
+newman run collections/Cloud-ANB.postman_collection.json --environment collections/postman_environment.json
+```
+
+**Resultados esperados:**
+Al ejecutar los tests exitosamente, deberías ver:
+- **25 requests ejecutados** ✅
+- **22 test scripts ejecutados** ✅  
+- **26 pre-request scripts ejecutados** ✅
+- **61 de 61 assertions pasaron** ✅ (100% de éxito)
+
+**Nota importante:**
+- Los tests incluyen un delay de 10 segundos para esperar que los videos se procesen
+- El worker de Kafka debe estar corriendo para que los videos se procesen correctamente
+- Los tests de votación requieren que los videos estén en estado "processed"
+
+---
+
+## ▶️ Ejecución en Desarrollo Local (Sin Docker Compose)
+
+Para desarrollo local con más control y debugging.
 
 ### 1. Instalar dependencias
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Configurar variables de entorno
-Asegúrate de que tu archivo `.env` esté configurado correctamente (ver sección anterior).
+### 2. Levantar servicios individuales
 
-### 3. Ejecutar el servidor FastAPI
+#### PostgreSQL
 ```bash
-# Con variables de entorno (PowerShell)
-$env:ENV_STATE="dev"; $env:DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db"; python -m uvicorn storeapi.main:app --reload --host 0.0.0.0 --port 8000
-
-# Con archivo .env configurado
-python -m uvicorn storeapi.main:app --reload --host 0.0.0.0 --port 8000
+docker run --name postgres-anb -e POSTGRES_PASSWORD=password -e POSTGRES_DB=dev_db -p 5432:5432 -d postgres:15
 ```
 
-### 4. Acceder a la documentación
-🌐  [http://localhost:8000/docs](http://localhost:8000/docs)
-
-**Nota**: El servidor creará automáticamente las tablas en PostgreSQL al iniciar.
-
----
-
-## 🧪 Ejecutar Tests Asíncronos
-
-### Requisitos para los tests
-Los tests requieren que PostgreSQL esté corriendo (usando Docker) y que las variables de entorno estén configuradas.
-
-### Comandos para ejecutar tests
-
-#### 1. Tests básicos (PowerShell)
+#### Kafka (opcional, si necesitas procesamiento de videos)
 ```bash
-# Configurar entorno de test y ejecutar
-$env:ENV_STATE="test"; $env:TEST_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/test_db"; python -m pytest storeapi/tests/ -v
+docker run --name kafka-dev -p 9092:9092 -e KAFKA_ENABLE_KRAFT=yes -e KAFKA_CFG_NODE_ID=1 -e KAFKA_CFG_PROCESS_ROLES=broker,controller -e KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@localhost:9093 -e KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093 -e KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 -e KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER bitnamilegacy/kafka:4.0.0-debian-12-r10
 ```
 
-#### 2. Tests con salida detallada
-```bash
-# Con información detallada de cada test
-$env:ENV_STATE="test"; $env:TEST_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/test_db"; python -m pytest storeapi/tests/ -v --tb=short
-```
+### 3. Configurar variables de entorno
 
-#### 3. Tests específicos
-```bash
-# Ejecutar solo tests de un módulo específico
-$env:ENV_STATE="test"; $env:TEST_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/test_db"; python -m pytest storeapi/tests/routers/test_user.py -v
-
-# Ejecutar un test específico
-$env:ENV_STATE="test"; $env:TEST_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/test_db"; python -m pytest storeapi/tests/routers/test_user.py::test_create_user -v
-```
-
-### ⚠️ Notas importantes sobre los tests
-
-1. **Base de datos de test**: Los tests usan una base de datos separada (`test_db`) que se crea automáticamente
-2. **Rollback automático**: Los tests están configurados para hacer rollback automático de los datos
-3. **Tests asíncronos**: Todos los tests son asíncronos y usan `pytest-asyncio`
-4. **Docker requerido**: PostgreSQL debe estar corriendo en Docker para que los tests funcionen
-
----
-
-## 🚀 Ejecutar Tests con Newman (Postman CLI)
-
-### Requisitos para Newman
-- **Newman instalado**: `npm install -g newman`
-- **Servidor corriendo**: FastAPI debe estar ejecutándose en `http://localhost:8000`
-- **PostgreSQL corriendo**: Docker container `postgres-anb` debe estar activo
-- **Kafka corriendo**: Para el procesamiento asíncrono de videos
-- **Worker corriendo**: Para procesar los videos subidos
-
-### Procedimiento Completo para Ejecutar Tests
-
-#### 1. Configuración Inicial
-Asegúrate de que todos los servicios estén corriendo:
-
-```bash
-# 1. Verificar que PostgreSQL esté corriendo
-docker ps
-
-# 2. Verificar que el contenedor postgres-anb esté activo
-docker logs postgres-anb
-```
-
-#### 2. Configuración de Variables de Entorno
-Configura las variables de entorno necesarias para el desarrollo:
-
-```bash
-# Variables de entorno para desarrollo (PowerShell)
+**PowerShell:**
+```powershell
 $env:ENV_STATE="dev"
 $env:DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db"
 $env:DEV_AWS_ACCESS_KEY_ID="test_key"
@@ -190,121 +318,141 @@ $env:DEV_AWS_REGION="us-east-1"
 $env:KAFKA_BOOTSTRAP_SERVERS="localhost:9092"
 ```
 
-#### 3. Levantar el Servidor FastAPI
+**Bash/zsh:**
 ```bash
-# Iniciar el servidor FastAPI con todas las variables de entorno
-$env:ENV_STATE="dev"; $env:DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db"; $env:DEV_AWS_ACCESS_KEY_ID="test_key"; $env:DEV_AWS_SECRET_ACCESS_KEY="test_secret"; $env:DEV_AWS_BUCKET_NAME="test_bucket"; $env:DEV_AWS_REGION="us-east-1"; $env:KAFKA_BOOTSTRAP_SERVERS="localhost:9092"; python -m uvicorn storeapi.main:app --reload --host 0.0.0.0 --port 8000
+export ENV_STATE=dev
+export DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db"
+export DEV_AWS_ACCESS_KEY_ID="test_key"
+export DEV_AWS_SECRET_ACCESS_KEY="test_secret"
+export DEV_AWS_BUCKET_NAME="test_bucket"
+export DEV_AWS_REGION="us-east-1"
+export KAFKA_BOOTSTRAP_SERVERS="localhost:9092"
 ```
 
-#### 4. Levantar el Worker de Procesamiento
-En una terminal separada, inicia el worker que procesa los videos:
+### 4. Ejecutar el API
 
+**PowerShell:**
+```powershell
+$env:ENV_STATE="dev"; $env:DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db"; python -m uvicorn storeapi.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Bash/zsh:**
 ```bash
-# Iniciar el worker de Kafka para procesamiento de videos
-$env:ENV_STATE="dev"; $env:DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db"; $env:DEV_AWS_ACCESS_KEY_ID="test_key"; $env:DEV_AWS_SECRET_ACCESS_KEY="test_secret"; $env:DEV_AWS_BUCKET_NAME="test_bucket"; $env:DEV_AWS_REGION="us-east-1"; $env:KAFKA_BOOTSTRAP_SERVERS="localhost:9092"; python -m message_broker.worker
+ENV_STATE=dev DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db" python -m uvicorn storeapi.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-#### 5. Verificar que los Servicios Estén Funcionando
-- **FastAPI**: Debe estar disponible en `http://localhost:8000`
-- **Worker**: Debe mostrar logs de conexión a la base de datos y Kafka
-- **PostgreSQL**: Debe estar corriendo en el puerto 5432
+### 5. Ejecutar el Worker (opcional, en otra terminal)
 
-#### 6. Ejecutar Tests con Newman
+**PowerShell:**
+```powershell
+$env:ENV_STATE="dev"; $env:DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db"; $env:KAFKA_BOOTSTRAP_SERVERS="localhost:9092"; python -m message_broker.worker
+```
+
+**Bash/zsh:**
 ```bash
-# Ejecutar toda la colección de tests
-newman run collections/Cloud-ANB.postman_collection.json --environment collections/postman_environment.json
+ENV_STATE=dev DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db" KAFKA_BOOTSTRAP_SERVERS="localhost:9092" python -m message_broker.worker
 ```
 
-### ⚠️ Notas Importantes sobre los Tests
+### 6. Acceder a la documentación
 
-1. **Procesamiento Asíncrono**: Los tests incluyen un delay de 10 segundos para esperar que los videos se procesen
-2. **Worker Requerido**: El worker de Kafka debe estar corriendo para que los videos se procesen correctamente
-3. **Base de Datos**: Los tests crean usuarios y videos de prueba que se almacenan en la base de datos
-4. **Votación**: Los tests de votación requieren que los videos estén en estado "processed"
-5. **Autenticación**: Los tests manejan automáticamente la autenticación JWT
+🌐 **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-### 🔧 Solución de Problemas
-
-#### Si los tests fallan:
-1. **Verificar que el worker esté corriendo**: Debe mostrar logs de procesamiento de videos
-2. **Verificar la base de datos**: Los videos deben cambiar de estado "uploaded" a "processed"
-3. **Verificar Kafka**: El worker debe conectarse correctamente a Kafka
-4. **Verificar el logo**: El archivo `img/logo_nba.png` debe existir para el procesamiento
-
-#### Logs esperados del Worker:
-```
-2025-10-18 22:21:09 - INFO - databases - Connected to database postgresql+asyncpg://postgres:********@localhost:5432/dev_db
-2025-10-18 22:21:09 - INFO - worker - Database connection established.
-2025-10-18 22:21:13 - INFO - worker - Received message: {"video_id": 54, "user_id": 49, "task_id": "..."}
-2025-10-18 22:21:13 - INFO - worker - Processing video: {...}
-```
-
-### 📊 Resultados Esperados
-Al ejecutar los tests exitosamente, deberías ver:
-- **25 requests ejecutados** ✅
-- **22 test scripts ejecutados** ✅  
-- **26 pre-request scripts ejecutados** ✅
-- **61 de 61 assertions pasaron** ✅ (100% de éxito)
+**Nota importante**: 
+- En desarrollo local, el API corre directamente en el **puerto 8000** (sin proxy)
+- Con Docker Compose, se accede a través de Nginx en el **puerto 80**: [http://localhost/docs](http://localhost/docs)
+- El servidor creará automáticamente las tablas en PostgreSQL al iniciar
 
 ---
 
-## ⚙️ Comandos útiles
-
-### Docker
-```bash
-# Ver contenedores corriendo
-docker ps
-
-# Ver logs del contenedor PostgreSQL
-docker logs postgres-anb
-
-# Conectar a PostgreSQL desde terminal
-docker exec -it postgres-anb psql -U postgres
-
-# Detener el contenedor
-docker stop postgres-anb
-
-# Iniciar el contenedor
-docker start postgres-anb
-
-# Eliminar el contenedor
-docker rm postgres-anb
-```
-
----
-
-## 📁 Estructura del proyecto
+##  Estructura del Proyecto
 
 ```
-fastApi/
-├── storeapi/                    # Aplicación principal
+proyecto/
+├── 📂 storeapi/                     # Aplicación principal API
 │   ├── __init__.py
-│   ├── main.py                  # Punto de entrada FastAPI
-│   ├── config.py                # Configuración con Pydantic
-│   ├── database.py              # Configuración de base de datos
-│   ├── security.py              # Autenticación JWT
-│   ├── routers/                 # Endpoints de la API
-│   │   ├── user.py             # Gestión de usuarios
-│   │   ├── post.py             # Posts y comentarios
-│   │   ├── video.py            # Upload y procesamiento de videos
-│   │   ├── vote.py             # Sistema de votos
-│   │   └── ranking.py          # Rankings y estadísticas
-│   ├── models/                  # Modelos de datos
+│   ├── main.py                      # Punto de entrada FastAPI
+│   ├── database.py                  # Configuración de base de datos
+│   ├── security.py                  # Autenticación JWT
+│   ├── 📂 routers/                  # Endpoints de la API
+│   │   ├── user.py                 # Gestión de usuarios
+│   │   ├── video.py                # Upload y streaming de videos
+│   │   ├── vote.py                 # Sistema de votos
+│   │   └── ranking.py              # Rankings y estadísticas
+│   ├── 📂 models/                   # Modelos SQLAlchemy
 │   │   ├── user.py
-│   │   ├── post.py
 │   │   ├── video.py
 │   │   ├── vote.py
 │   │   └── ranking.py
-│   ├── tests/                   # Tests unitarios
-│   │   ├── conftest.py         # Configuración de pytest
-│   │   ├── test_security.py    # Tests de autenticación
-│   │   └── routers/            # Tests de endpoints
-│   └── libs/                    # Utilidades
-│       ├── cache.py
-│       └── s3/                  # Integración con AWS S3
-├── requirements.txt             # Dependencias Python
-├── .env                        # Variables de entorno (crear)
-└── README.md                   # Este archivo
+│   └── 📂 tests/                    # Tests unitarios
+│       ├── conftest.py             # Configuración de pytest
+│       ├── test_security.py        # Tests de autenticación
+│       └── routers/                # Tests de endpoints
+│
+├── 📂 message_broker/               # Sistema de mensajería
+│   ├── __init__.py
+│   ├── client.py                   # Cliente de Kafka
+│   ├── tasks_dispatcher.py         # Despachador de tareas
+│   └── worker.py                   # Worker de procesamiento
+│
+├── 📂 utils/                        # Utilidades compartidas
+│   ├── __init__.py
+│   ├── config.py                   # Configuración global
+│   ├── cache.py                    # Gestión de caché Redis
+│   ├── logging_conf.py             # Configuración de logs
+│   ├── ffmpeg.py                   # Procesamiento de video
+│   └── 📂 s3/                       # Integración con S3
+│       ├── s3.py                   # Cliente AWS S3
+│       └── s3_local.py             # Storage local simulado
+│
+├── 📂 docs/                         # Documentación técnica
+│   └── 📂 Entrega_1/
+│       ├── data_model.md
+│       ├── component_diagram.md
+│       ├── process_flow.md
+│       └── deployment.md
+│
+├── 📂 capacity-planning/            # Análisis de capacidad
+│   ├── plan_de_capacidad.md
+│   └── 📂 results/                  # Resultados de pruebas
+│
+├── 📂 postman/                      # Tests de integración
+│   ├── collection.json             # Colección Newman
+│   ├── environment.json            # Variables de entorno
+│   └── report.html                 # Reportes generados
+│
+├── 📂 collections/                  # Colecciones Postman UI
+│   ├── Cloud-ANB.postman_collection.json
+│   └── postman_environment.json
+│
+├── 📂 videos/                       # Almacenamiento local
+│   ├── uploaded/                   # Videos originales
+│   └── processed/                  # Videos procesados
+│
+├── 📂 img/                          # Recursos
+│   └── logo_nba.png                # Logo para branding
+│
+├── 🐳 docker-compose.yml            # Orquestación de servicios
+├── 🐳 api.Dockerfile                # Imagen del API
+├── 🐳 worker.Dockerfile             # Imagen del worker
+├── 🐳 ffmpegpy.Dockerfile           # Imagen con FFmpeg
+├── 📋 requirements.txt              # Dependencias Python
+├── 🔧 .env                          # Variables de entorno (crear)
+├── 🔧 nginx.conf                    # Configuración Nginx
+├── 📜 Makefile                      # Comandos automatizados
+├── 📊 monitor.sh                    # Script de monitoreo
+└── 📖 README.md                     # Este archivo
 ```
+
+### Descripción de Componentes
+
+| Componente | Descripción | Tecnología |
+|------------|-------------|------------|
+| **StoreAPI** | API REST para gestión de videos, votos y ranking | FastAPI + SQLAlchemy |
+| **Message Broker** | Sistema de mensajería asíncrona para tareas | Kafka + Python |
+| **Worker** | Procesador de videos con branding y edición | FFmpeg + Python |
+| **Database** | Almacenamiento de metadatos | PostgreSQL 15 |
+| **Cache** | Caché de ranking y consultas frecuentes | Redis 7 |
+| **Nginx** | Proxy reverso y balanceador de carga | Nginx |
+| **Storage** | Almacenamiento de archivos de video | S3/Local |
 
 ---
