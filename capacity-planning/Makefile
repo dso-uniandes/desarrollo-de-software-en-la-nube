@@ -10,7 +10,27 @@ TIMESTAMP := $(shell date +%Y%m%d_%H%M%S)
 .PHONY: up down ps newman newman-with-monitor monitor-start monitor-stop \
         test-smoke test-capacity test-ramp test-sustained test-stress test-spike \
         test-all run-all-tests clean-results help view-stats calculate-stats \
-        monitor-interactive show-results open-latest-report kill-monitors
+        monitor-interactive show-results open-latest-report kill-monitors install-deps
+
+# =============================================================================
+# Setup
+# =============================================================================
+
+install-deps:
+	@echo "📦 Installing capacity planning dependencies..."
+	@if [ -z "$$VIRTUAL_ENV" ]; then \
+		echo "⚠️  Warning: No virtual environment detected!"; \
+		echo "   Consider activating a venv first:"; \
+		echo "   source ../.venv/bin/activate"; \
+		echo ""; \
+		read -p "Continue anyway? (y/n) " -n 1 -r; \
+		echo; \
+		if [[ ! $$REPLY =~ ^[Yy]$$ ]]; then \
+			exit 1; \
+		fi \
+	fi
+	pip install -r requirements.txt
+	@echo "✅ Dependencies installed successfully!"
 
 # =============================================================================
 # Infrastructure Management
@@ -382,7 +402,10 @@ help:
 	@echo "║  📚 Capacity Planning Test Suite - Help                   ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
-	@echo "🔧 Infrastructure:"
+	@echo "� Setup:"
+	@echo "  make install-deps       - Install Python dependencies (matplotlib, etc.)"
+	@echo ""
+	@echo "�🔧 Infrastructure:"
 	@echo "  make up                 - Start all services (API, Worker, DB, etc.)"
 	@echo "  make down               - Stop and remove all services"
 	@echo "  make ps                 - Show container status"

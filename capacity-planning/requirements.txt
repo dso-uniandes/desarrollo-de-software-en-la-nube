@@ -1,0 +1,12 @@
+# Capacity Planning Tools Dependencies
+# For data analysis and visualization of performance tests
+
+# Data visualization
+matplotlib==3.8.2
+
+# Note: Python standard libraries used (no additional dependencies needed):
+# - csv
+# - json
+# - pathlib
+# - statistics
+# - sys
