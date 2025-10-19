@@ -22,3 +22,11 @@ def dispatch_task(task_data: list[dict], topic: str) -> None:
     mb_producer.flush()
 
     logger.info(f"Dispatched {len(task_data)} tasks to topic '{topic}'")
+    
+    # try:
+    #     for message in task_data:
+    #         mb_producer.produce(topic, value=json.dumps(message).encode('utf-8'))
+    #     mb_producer.flush(timeout=10)
+    #     logger.info(f"Dispatched {len(task_data)} tasks to topic '{topic}'")
+    # except Exception as e:
+    #     logger.warning(f"Failed to dispatch tasks to Kafka: {e}. Continuing without task dispatch.")
