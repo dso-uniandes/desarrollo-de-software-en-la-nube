@@ -13,7 +13,7 @@ configure_logging()
 
 logger = logging.getLogger('worker')
 
-bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 group_id = os.getenv("KAFKA_GROUP_ID", "video_tasks_group")
 
 conf = {
@@ -47,13 +47,13 @@ async def process_video_processing(message: dict):
     video_id = message.get('video_id', 'unknown')
     task_id = message.get('task_id', 'unknown')
     
-    logger.info(f"🎬 Processing video: {message}")
+    logger.info(f"Processing video: {message}")
     
     try:
         # Fetch video from database
         db_fetch_start = time.time()
         video = await database.fetch_one(
-            video_table.select().where(video_table.c.id == int(message['video_id']))
+            video_table.select().where(video_table.c.id == int(video_id))
         )
         db_fetch_duration = time.time() - db_fetch_start
         

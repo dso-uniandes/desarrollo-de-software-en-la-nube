@@ -23,7 +23,7 @@ async def _invalidate_ranking_cache():
         logger.warning(f"Failed to invalidate ranking cache: {e}")
 
 
-@router.post("/api/public/videos/{video_id}/vote", response_model=Vote, status_code=201)
+@router.post("/api/public/videos/{video_id}/vote", status_code=200)
 async def vote_video(
     video_id: int,
     vote: VoteIn, 
@@ -66,24 +66,11 @@ async def vote_video(
     existing_vote = await database.fetch_one(existing_vote_query)
     
     if existing_vote:
-        # Update existing vote
-        update_query = vote_table.update().where(
-            vote_table.c.id == existing_vote.id
-        ).values(vote_type=vote.vote_type)
-        
-        await database.execute(update_query)
-        logger.info(f"Updated vote for user {current_user.id} on video {video_id}")
-        
-        # Invalidate ranking cache
-        await _invalidate_ranking_cache()
-        
-        return {
-            "id": existing_vote.id,
-            "user_id": current_user.id,
-            "video_id": video_id,
-            "vote_type": vote.vote_type,
-            "created_at": existing_vote.created_at
-        }
+        # User has already voted, return error
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ya has votado por este video."
+        )
     else:
         # Create a new vote
         insert_query = vote_table.insert().values(
@@ -103,6 +90,7 @@ async def vote_video(
         await _invalidate_ranking_cache()
         
         return {
+            "message": "Voto registrado exitosamente.",
             "id": last_record_id,
             "user_id": current_user.id,
             "video_id": video_id,

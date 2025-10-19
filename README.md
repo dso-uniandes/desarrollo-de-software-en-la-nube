@@ -4,6 +4,29 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 
 ---
 
+## 📘 Documentación del Proyecto
+
+Dentro del repositorio existe una carpeta `/docs/Entrega_1` que contiene toda la documentación técnica de la primera entrega, incluyendo:
+
+- **Modelo de datos (ERD):** `data_model.md`
+- **Diagrama de componentes de la arquitectura:** `component_diagram.md`
+- **Flujo de procesamiento de videos:** `process_flow.md`
+- **Guía de despliegue e infraestructura:** `deployment.md`
+- **Colecciones de Postman:** `/collections/`
+
+```
+📂 root-folder/
+└── 📂 docs/
+    └── 📂 Entrega_1/
+        ├── data_model.md
+        ├── component_diagram.md
+        ├── process_flow.md
+        ├── deployment.md
+        └── sonar_reporte.pdf
+```
+
+---
+
 ## 🚀 Características principales
 
 * Upload de archivos directamente a **AWS Cloud Storage**
@@ -128,6 +151,100 @@ $env:ENV_STATE="test"; $env:TEST_DATABASE_URL="postgresql+asyncpg://postgres:pas
 2. **Rollback automático**: Los tests están configurados para hacer rollback automático de los datos
 3. **Tests asíncronos**: Todos los tests son asíncronos y usan `pytest-asyncio`
 4. **Docker requerido**: PostgreSQL debe estar corriendo en Docker para que los tests funcionen
+
+---
+
+## 🚀 Ejecutar Tests con Newman (Postman CLI)
+
+### Requisitos para Newman
+- **Newman instalado**: `npm install -g newman`
+- **Servidor corriendo**: FastAPI debe estar ejecutándose en `http://localhost:8000`
+- **PostgreSQL corriendo**: Docker container `postgres-anb` debe estar activo
+- **Kafka corriendo**: Para el procesamiento asíncrono de videos
+- **Worker corriendo**: Para procesar los videos subidos
+
+### Procedimiento Completo para Ejecutar Tests
+
+#### 1. Configuración Inicial
+Asegúrate de que todos los servicios estén corriendo:
+
+```bash
+# 1. Verificar que PostgreSQL esté corriendo
+docker ps
+
+# 2. Verificar que el contenedor postgres-anb esté activo
+docker logs postgres-anb
+```
+
+#### 2. Configuración de Variables de Entorno
+Configura las variables de entorno necesarias para el desarrollo:
+
+```bash
+# Variables de entorno para desarrollo (PowerShell)
+$env:ENV_STATE="dev"
+$env:DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db"
+$env:DEV_AWS_ACCESS_KEY_ID="test_key"
+$env:DEV_AWS_SECRET_ACCESS_KEY="test_secret"
+$env:DEV_AWS_BUCKET_NAME="test_bucket"
+$env:DEV_AWS_REGION="us-east-1"
+$env:KAFKA_BOOTSTRAP_SERVERS="localhost:9092"
+```
+
+#### 3. Levantar el Servidor FastAPI
+```bash
+# Iniciar el servidor FastAPI con todas las variables de entorno
+$env:ENV_STATE="dev"; $env:DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db"; $env:DEV_AWS_ACCESS_KEY_ID="test_key"; $env:DEV_AWS_SECRET_ACCESS_KEY="test_secret"; $env:DEV_AWS_BUCKET_NAME="test_bucket"; $env:DEV_AWS_REGION="us-east-1"; $env:KAFKA_BOOTSTRAP_SERVERS="localhost:9092"; python -m uvicorn storeapi.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+#### 4. Levantar el Worker de Procesamiento
+En una terminal separada, inicia el worker que procesa los videos:
+
+```bash
+# Iniciar el worker de Kafka para procesamiento de videos
+$env:ENV_STATE="dev"; $env:DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/dev_db"; $env:DEV_AWS_ACCESS_KEY_ID="test_key"; $env:DEV_AWS_SECRET_ACCESS_KEY="test_secret"; $env:DEV_AWS_BUCKET_NAME="test_bucket"; $env:DEV_AWS_REGION="us-east-1"; $env:KAFKA_BOOTSTRAP_SERVERS="localhost:9092"; python -m message_broker.worker
+```
+
+#### 5. Verificar que los Servicios Estén Funcionando
+- **FastAPI**: Debe estar disponible en `http://localhost:8000`
+- **Worker**: Debe mostrar logs de conexión a la base de datos y Kafka
+- **PostgreSQL**: Debe estar corriendo en el puerto 5432
+
+#### 6. Ejecutar Tests con Newman
+```bash
+# Ejecutar toda la colección de tests
+newman run collections/Cloud-ANB.postman_collection.json --environment collections/postman_environment.json
+```
+
+### ⚠️ Notas Importantes sobre los Tests
+
+1. **Procesamiento Asíncrono**: Los tests incluyen un delay de 10 segundos para esperar que los videos se procesen
+2. **Worker Requerido**: El worker de Kafka debe estar corriendo para que los videos se procesen correctamente
+3. **Base de Datos**: Los tests crean usuarios y videos de prueba que se almacenan en la base de datos
+4. **Votación**: Los tests de votación requieren que los videos estén en estado "processed"
+5. **Autenticación**: Los tests manejan automáticamente la autenticación JWT
+
+### 🔧 Solución de Problemas
+
+#### Si los tests fallan:
+1. **Verificar que el worker esté corriendo**: Debe mostrar logs de procesamiento de videos
+2. **Verificar la base de datos**: Los videos deben cambiar de estado "uploaded" a "processed"
+3. **Verificar Kafka**: El worker debe conectarse correctamente a Kafka
+4. **Verificar el logo**: El archivo `img/logo_nba.png` debe existir para el procesamiento
+
+#### Logs esperados del Worker:
+```
+2025-10-18 22:21:09 - INFO - databases - Connected to database postgresql+asyncpg://postgres:********@localhost:5432/dev_db
+2025-10-18 22:21:09 - INFO - worker - Database connection established.
+2025-10-18 22:21:13 - INFO - worker - Received message: {"video_id": 54, "user_id": 49, "task_id": "..."}
+2025-10-18 22:21:13 - INFO - worker - Processing video: {...}
+```
+
+### 📊 Resultados Esperados
+Al ejecutar los tests exitosamente, deberías ver:
+- **25 requests ejecutados** ✅
+- **22 test scripts ejecutados** ✅  
+- **26 pre-request scripts ejecutados** ✅
+- **61 de 61 assertions pasaron** ✅ (100% de éxito)
 
 ---
 
