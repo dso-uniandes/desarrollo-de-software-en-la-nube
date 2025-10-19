@@ -22,12 +22,7 @@ docker compose up -d
 ENV_STATE=test TEST_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost:5432/test_db" python -m pytest storeapi/tests/ -v
 
 # Tests de integración (Newman)
-make newman
-```
-
-### Para monitorear recursos:
-```bash
-./monitor.sh
+newman run collections/Cloud-ANB.postman_collection.json --environment collections/postman_environment.json
 ```
 
 ---
@@ -360,28 +355,16 @@ ENV_STATE=dev DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost
 
 ### 6. Acceder a la documentación
 
-🌐 **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)  
-📚 **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+🌐 **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-**Nota**: El servidor creará automáticamente las tablas en PostgreSQL al iniciar.
-
----
-
-## 📊 Comparación de Enfoques
-
-| Característica | Docker Compose | Desarrollo Local |
-|----------------|----------------|------------------|
-| **Setup inicial** | Simple (`docker compose up`) | Manual (varios comandos) |
-| **Aislamiento** | ✅ Completo | ⚠️ Parcial |
-| **Hot reload** | ✅ Sí (con volumes) | ✅ Sí |
-| **Debugging** | ⚠️ Requiere attach | ✅ Directo |
-| **Recursos** | 🔴 Alto (todos los servicios) | 🟢 Bajo (solo necesarios) |
-| **Producción-like** | ✅ Muy similar | ⚠️ Diferente |
-| **Recomendado para** | Tests, demos, CI/CD | Desarrollo activo, debugging |
+**Nota importante**: 
+- En desarrollo local, el API corre directamente en el **puerto 8000** (sin proxy)
+- Con Docker Compose, se accede a través de Nginx en el **puerto 80**: [http://localhost/docs](http://localhost/docs)
+- El servidor creará automáticamente las tablas en PostgreSQL al iniciar
 
 ---
 
-## 📁 Estructura del Proyecto
+##  Estructura del Proyecto
 
 ```
 proyecto/
