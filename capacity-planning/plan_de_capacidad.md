@@ -321,31 +321,36 @@ docker logs -f worker | grep "TOTAL TASK TIME"
 
 ## 12. Ejecución de Pruebas con Makefile
 
-El proyecto incluye un `Makefile` con comandos automatizados para facilitar la ejecución de pruebas.
+El proyecto incluye un `Makefile` en la carpeta `capacity-planning/` con comandos automatizados para facilitar la ejecución de pruebas.
+
+**Importante**: Todos los comandos `make` deben ejecutarse desde la raíz del proyecto usando:
+```bash
+make -C ./capacity-planning/ <comando>
+```
 
 ### 12.1 Comandos Disponibles
 
 ```bash
 # Levantar toda la infraestructura
-make up
+make -C ./capacity-planning/ up
 
 # Ver estado de los contenedores
-make ps
+make -C ./capacity-planning/ ps
 
 # Ejecutar colección de Newman (pruebas de upload)
-make newman
+make -C ./capacity-planning/ newman
 
 # Ejecutar con monitoreo de recursos
-make newman-with-monitor
+make -C ./capacity-planning/ newman-with-monitor
 
 # Iniciar monitoreo manual
-make monitor-start
+make -C ./capacity-planning/ monitor-start
 
 # Detener monitoreo manual
-make monitor-stop
+make -C ./capacity-planning/ monitor-stop
 
 # Apagar todo y limpiar
-make down
+make -C ./capacity-planning/ down
 ```
 
 ### 12.2 Flujo de Ejecución Completo
@@ -353,10 +358,10 @@ make down
 **Paso 1: Preparación del entorno**
 ```bash
 # 1. Levantar servicios
-make up
+make -C ./capacity-planning/ up
 
 # 2. Verificar que todos los servicios estén corriendo
-make ps
+make -C ./capacity-planning/ ps
 
 # Salida esperada:
 # NAME                 STATUS              PORTS
@@ -388,7 +393,7 @@ curl -X POST http://localhost/api/auth/signup \
 **Paso 3: Ejecutar pruebas con monitoreo**
 ```bash
 # Ejecución automatizada con captura de métricas
-make newman-with-monitor
+make -C ./capacity-planning/ newman-with-monitor
 
 # Esto ejecuta:
 # 1. Inicia monitor.sh en background (captura CPU/Mem cada 1s)

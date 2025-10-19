@@ -364,95 +364,97 @@ ENV_STATE=dev DEV_DATABASE_URL="postgresql+asyncpg://postgres:password@localhost
 
 ---
 
-##  Estructura del Proyecto
+## 📁 Estructura del Proyecto
 
 ```
-proyecto/
-├── 📂 storeapi/                     # Aplicación principal API
-│   ├── __init__.py
-│   ├── main.py                      # Punto de entrada FastAPI
-│   ├── database.py                  # Configuración de base de datos
-│   ├── security.py                  # Autenticación JWT
-│   ├── 📂 routers/                  # Endpoints de la API
-│   │   ├── user.py                 # Gestión de usuarios
-│   │   ├── video.py                # Upload y streaming de videos
-│   │   ├── vote.py                 # Sistema de votos
-│   │   └── ranking.py              # Rankings y estadísticas
-│   ├── 📂 models/                   # Modelos SQLAlchemy
-│   │   ├── user.py
-│   │   ├── video.py
-│   │   ├── vote.py
-│   │   └── ranking.py
-│   └── 📂 tests/                    # Tests unitarios
-│       ├── conftest.py             # Configuración de pytest
-│       ├── test_security.py        # Tests de autenticación
-│       └── routers/                # Tests de endpoints
+desarrollo-de-software-en-la-nube/
+├── 📂 storeapi/                         # API REST - FastAPI
+│   ├── main.py                          # Punto de entrada de la aplicación
+│   ├── database.py                      # Configuración de SQLAlchemy
+│   ├── security.py                      # Autenticación JWT
+│   ├── 📂 routers/                      # Endpoints de la API
+│   │   ├── user.py                      # Auth (login, signup)
+│   │   ├── video.py                     # Upload, stream, list, delete
+│   │   ├── vote.py                      # Sistema de votación
+│   │   └── ranking.py                   # Rankings por ciudad
+│   ├── 📂 models/                       # Modelos SQLAlchemy (ORM)
+│   │   ├── user.py                      # Tabla users
+│   │   ├── video.py                     # Tabla videos
+│   │   ├── vote.py                      # Tabla votes
+│   │   └── ranking.py                   # Vista ranking
+│   └── 📂 tests/                        # Tests unitarios (pytest)
+│       ├── conftest.py                  # Fixtures
+│       ├── test_security.py             # Tests de JWT
+│       └── routers/                     # Tests de endpoints
 │
-├── 📂 message_broker/               # Sistema de mensajería
-│   ├── __init__.py
-│   ├── client.py                   # Cliente de Kafka
-│   ├── tasks_dispatcher.py         # Despachador de tareas
-│   └── worker.py                   # Worker de procesamiento
+├── 📂 message_broker/                   # Sistema de cola de mensajes
+│   ├── client.py                        # Cliente Kafka producer
+│   ├── tasks_dispatcher.py              # Encolador de tareas
+│   └── worker.py                        # Consumer - Procesa videos
 │
-├── 📂 utils/                        # Utilidades compartidas
-│   ├── __init__.py
-│   ├── config.py                   # Configuración global
-│   ├── cache.py                    # Gestión de caché Redis
-│   ├── logging_conf.py             # Configuración de logs
-│   ├── ffmpeg.py                   # Procesamiento de video
-│   └── 📂 s3/                       # Integración con S3
-│       ├── s3.py                   # Cliente AWS S3
-│       └── s3_local.py             # Storage local simulado
+├── 📂 utils/                            # Utilidades compartidas
+│   ├── config.py                        # Configuración (Pydantic)
+│   ├── cache.py                         # Cliente Redis
+│   ├── logging_conf.py                  # Logging estructurado
+│   ├── ffmpeg.py                        # Procesamiento con FFmpeg
+│   └── 📂 s3/
+│       ├── s3.py                        # Cliente AWS S3
+│       └── s3_local.py                  # Storage local (desarrollo)
 │
-├── 📂 docs/                         # Documentación técnica
+├── 📂 capacity-planning/                # Plan de análisis de capacidad
+│   ├── Makefile                         # Comandos para pruebas
+│   ├── plan_de_capacidad.md             # Documento del plan
+│   ├── 📂 postman/                      # Tests de integración (Newman)
+│   │   ├── collection.json              # Colección para Newman CLI
+│   │   ├── environment.json             # Variables de entorno
+│   │   └── report.html                  # Reporte HTML generado
+│   └── 📂 results/                      # Resultados de pruebas (crear)
+│
+├── 📂 docs/                             # Documentación técnica
 │   └── 📂 Entrega_1/
-│       ├── data_model.md
-│       ├── component_diagram.md
-│       ├── process_flow.md
-│       └── deployment.md
+│       ├── data_model.md                # Modelo de datos (ERD)
+│       ├── component_diagram.md         # Arquitectura
+│       ├── process_flow.md              # Flujo de procesamiento
+│       └── deployment.md                # Guía de despliegue
 │
-├── 📂 capacity-planning/            # Análisis de capacidad
-│   ├── plan_de_capacidad.md
-│   └── 📂 results/                  # Resultados de pruebas
-│
-├── 📂 postman/                      # Tests de integración
-│   ├── collection.json             # Colección Newman
-│   ├── environment.json            # Variables de entorno
-│   └── report.html                 # Reportes generados
-│
-├── 📂 collections/                  # Colecciones Postman UI
+├── 📂 collections/                      # Colecciones Postman (UI)
 │   ├── Cloud-ANB.postman_collection.json
 │   └── postman_environment.json
 │
-├── 📂 videos/                       # Almacenamiento local
-│   ├── uploaded/                   # Videos originales
-│   └── processed/                  # Videos procesados
+├── 📂 videos/                           # Almacenamiento local de videos
+│   ├── uploaded/                        # Videos subidos (originales)
+│   └── processed/                       # Videos procesados (con branding)
 │
-├── 📂 img/                          # Recursos
-│   └── logo_nba.png                # Logo para branding
+├── 📂 img/
+│   └── logo_nba.png                     # Logo para intro/outro de videos
 │
-├── 🐳 docker-compose.yml            # Orquestación de servicios
-├── 🐳 api.Dockerfile                # Imagen del API
-├── 🐳 worker.Dockerfile             # Imagen del worker
-├── 🐳 ffmpegpy.Dockerfile           # Imagen con FFmpeg
-├── 📋 requirements.txt              # Dependencias Python
-├── 🔧 .env                          # Variables de entorno (crear)
-├── 🔧 nginx.conf                    # Configuración Nginx
-├── 📜 Makefile                      # Comandos automatizados
-├── 📊 monitor.sh                    # Script de monitoreo
-└── 📖 README.md                     # Este archivo
+├── 🐳 docker-compose.yml                # Orquestación de servicios
+├── 🐳 api.Dockerfile                    # Imagen del API (FastAPI)
+├── 🐳 worker.Dockerfile                 # Imagen del worker (FFmpeg)
+├── 🐳 ffmpegpy.Dockerfile               # Base con FFmpeg + Python
+├── � nginx.conf                        # Configuración Nginx (proxy)
+├── � Makefile                          # Comandos Docker Compose (raíz)
+├── � monitor.sh                        # Script de monitoreo de recursos
+├── � requirements.txt                  # Dependencias Python
+├── � .env                              # Variables de entorno (crear)
+└── 📖 README.md                         # Este archivo
 ```
 
-### Descripción de Componentes
+### Descripción de Servicios (Docker Compose)
 
-| Componente | Descripción | Tecnología |
-|------------|-------------|------------|
-| **StoreAPI** | API REST para gestión de videos, votos y ranking | FastAPI + SQLAlchemy |
-| **Message Broker** | Sistema de mensajería asíncrona para tareas | Kafka + Python |
-| **Worker** | Procesador de videos con branding y edición | FFmpeg + Python |
-| **Database** | Almacenamiento de metadatos | PostgreSQL 15 |
-| **Cache** | Caché de ranking y consultas frecuentes | Redis 7 |
-| **Nginx** | Proxy reverso y balanceador de carga | Nginx |
-| **Storage** | Almacenamiento de archivos de video | S3/Local |
+| Servicio | Puerto | Descripción | Tecnología |
+|----------|--------|-------------|------------|
+| **nginx** | 80 | Proxy reverso y balanceador | Nginx |
+| **storeapi** | 8000 (interno) | API REST principal | FastAPI + Python 3.11 |
+| **worker** | - | Procesador asíncrono de videos | Python 3.11 + FFmpeg |
+| **db** | 5432 | Base de datos relacional | PostgreSQL 15 |
+| **kafka** | 9092 | Message broker para tareas | Apache Kafka (KRaft) |
+| **redis** | 6379 | Caché para ranking | Redis 7 |
+
+### Flujo de Datos
+
+1. **Upload**: Cliente → Nginx (80) → StoreAPI → S3/Local + Kafka
+2. **Procesamiento**: Kafka → Worker → FFmpeg → S3/Local → DB (update status)
+3. **Consultas**: Cliente → Nginx → StoreAPI → Redis (cache) / DB → Response
 
 ---
