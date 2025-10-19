@@ -13,7 +13,7 @@
 				"type": "text/javascript",
 				"exec": [
 					"// Base URL sanity",
-					"pm.variables.set('backUrl', pm.environment.get('backUrl') || 'http://localhost:8000');",
+					"pm.variables.set('backUrl', pm.environment.get('backUrl') || 'http://localhost:80');",
 					"",
 					"// Email único por corrida",
 					"if (!pm.environment.get('email')) {",
