@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger('worker')
     
 def edit_video(file_bytes: bytes, object_key: str, video) -> str:
-    tmp_dir = Path('/tmp')
+    tmp_dir = Path(tempfile.gettempdir())
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
     file_extension = object_key.split('.')[-1]

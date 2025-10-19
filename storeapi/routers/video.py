@@ -32,12 +32,21 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
                        title: str = Form(None),
                        ):
     try:
-        content = await file.read()
-        if file.content_type not in ["video/mp4", "application/mp4"] or len(content) > 100 * 1024 * 1024:
+        ct = (file.content_type or "").lower()
+        filename = file.filename or f"{uuid.uuid4()}.mp4"
+        ext = (filename.split(".")[-1] if "." in filename else "").lower()
+        
+        allowed_ct = {"video/mp4", "application/mp4", "application/octet-stream"}
+        if ct not in allowed_ct or ext != "mp4":
             raise HTTPException(status_code=400, detail="Invalid file. Must be MP4 and less than 100 MB.")
+        
+        content = await file.read()
+        if len(content) > 100 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Invalid file. Must be MP4 and less than 100 MB.")
+        
         await file.seek(0)
 
-        with tempfile.NamedTemporaryFile() as temp_file:
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             filename = temp_file.name
             logger.info(f"Saving uploaded file temporarily to {filename}")
             async with aiofiles.open(filename, "wb") as f:
@@ -48,6 +57,11 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
             final_name = os.path.join(config.UPLOADED_FOLDER, f"user_{current_user.id}", f"{uuid.uuid4()}.{filename_ext}")
             logger.debug(f"Uploading {filename} to S3 as {final_name}")
             original_url = s3_upload_video(filename, final_name)
+        
+        try:
+            os.remove(filename)
+        except Exception:
+            logger.warning(f"No se pudo borrar temporal {filename}")
 
         query = video_table.insert().values(
             user_id=current_user.id,
