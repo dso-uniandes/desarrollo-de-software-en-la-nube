@@ -1,0 +1,8 @@
+2025-10-19 13:20:26
+proxy,0.01%,8.941MiB / 512MiB
+storeapi,0.10%,92.78MiB / 1GiB
+worker,204.85%,408.8MiB / 2GiB
+database,1.70%,27.15MiB / 1GiB
+redis,0.15%,7.926MiB / 512MiB
+kafka,58.25%,514.4MiB / 1GiB
+buildx_buildkit_multiarch-builder0,0.01%,332.1MiB / 7.654GiB
