@@ -1,0 +1,12 @@
+{
+  "name": "Local",
+  "values": [
+    {"key": "HOST", "value": "http://127.0.0.1:8000", "enabled": true},
+    {"key": "EMAIL", "value": "test@example.com", "enabled": true},
+    {"key": "PASSWORD", "value": "pass123", "enabled": true},
+    {"key": "TOKEN", "value": "", "enabled": true},
+    {"key": "FILE_PATH", "value": "sample.mp4", "enabled": true}
+  ]
+}
+
+
