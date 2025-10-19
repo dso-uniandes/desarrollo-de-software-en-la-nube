@@ -57,11 +57,11 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
             final_name = os.path.join(config.UPLOADED_FOLDER, f"user_{current_user.id}", f"{uuid.uuid4()}.{filename_ext}")
             logger.debug(f"Uploading {filename} to S3 as {final_name}")
             original_url = s3_upload_video(filename, final_name)
-            
-            try:
-                os.remove(filename)
-            except Exception:
-                logger.warning(f"No se pudo borrar temporal {filename}")
+        
+        try:
+            os.remove(filename)
+        except Exception:
+            logger.warning(f"No se pudo borrar temporal {filename}")
 
         query = video_table.insert().values(
             user_id=current_user.id,

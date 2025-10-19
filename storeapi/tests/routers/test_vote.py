@@ -108,7 +108,7 @@ class TestVoteSystem:
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
         
-        assert response.status_code == 201
+        assert response.status_code == 200
         data = response.json()
         assert data["user_id"] is not None
         assert data["video_id"] == test_video.id
@@ -133,7 +133,7 @@ class TestVoteSystem:
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
         
-        assert response.status_code == 201
+        assert response.status_code == 200
         data = response.json()
         assert data["vote_type"] == "dislike"
 
@@ -235,9 +235,9 @@ class TestVoteSystem:
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
-        assert response.status_code == 201
+        assert response.status_code == 200
         
-        # Then change to dislike
+        # Then try to change to dislike (should fail - user already voted)
         vote_data = {"vote_type": "dislike"}
         response = await async_client.post(
             f"/api/public/videos/{test_video.id}/vote",
@@ -245,9 +245,9 @@ class TestVoteSystem:
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
         
-        assert response.status_code == 201
+        assert response.status_code == 400
         data = response.json()
-        assert data["vote_type"] == "dislike"
+        assert data["detail"] == "Ya has votado por este video."
 
     @pytest.mark.anyio
     async def test_get_video_votes_success(
@@ -444,7 +444,7 @@ class TestVoteSystem:
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
-        assert response1.status_code == 201
+        assert response1.status_code == 200
         
         # User 2 votes dislike
         vote_data = {"vote_type": "dislike"}
@@ -453,7 +453,7 @@ class TestVoteSystem:
             json=vote_data,
             headers={"Authorization": f"Bearer {another_user_token}"}
         )
-        assert response2.status_code == 201
+        assert response2.status_code == 200
         
         # Verify both votes exist
         response = await async_client.get(
@@ -485,16 +485,18 @@ class TestVoteSystem:
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
-        assert response1.status_code == 201
+        assert response1.status_code == 200
         
-        # Second vote (should update, not create duplicate)
+        # Second vote (should fail - user already voted)
         vote_data = {"vote_type": "dislike"}
         response2 = await async_client.post(
             f"/api/public/videos/{test_video.id}/vote",
             json=vote_data,
             headers={"Authorization": f"Bearer {logged_in_token}"}
         )
-        assert response2.status_code == 201
+        assert response2.status_code == 400
+        data = response2.json()
+        assert data["detail"] == "Ya has votado por este video."
         
         # Verify only one vote exists in the database
         votes_query = vote_table.select().where(
@@ -503,4 +505,4 @@ class TestVoteSystem:
         )
         votes = await database.fetch_all(votes_query)
         assert len(votes) == 1
-        assert votes[0].vote_type == "dislike"
+        assert votes[0].vote_type == "like"
