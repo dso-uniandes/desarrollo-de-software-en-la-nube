@@ -5,7 +5,7 @@
     {"key": "EMAIL", "value": "test@example.com", "enabled": true},
     {"key": "PASSWORD", "value": "pass123", "enabled": true},
     {"key": "TOKEN", "value": "", "enabled": true},
-    {"key": "FILE_PATH", "value": "sample_video.mp4", "enabled": true}
+    {"key": "FILE_PATH", "value": "./../sample_video.mp4", "enabled": true}
   ]
 }
 
