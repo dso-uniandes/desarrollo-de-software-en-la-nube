@@ -60,15 +60,14 @@ Las pruebas se ejecutarán en **entorno local** con **Docker Compose**, garantiz
 - **Duración:** entre 1 y 10 minutos por escenario.  
 - **Tamaños de archivo:** 50 MB y 100 MB.  
 - **Mensajes en cola:** 10 a 500 por ejecución.  
-- **Datos anonimizados:** usuarios, tokens y rutas de archivos simuladas.  
-- **Endpoints bajo prueba:** `/upload`, `/status`, `/queue/metrics`.
+- **Endpoints bajo prueba:** `/api/videos/upload`.
+- **Worker:** `worker`
 
 ---
 
 ## 7. Iteraciones
 
 Cada escenario se repetirá **mínimo 5 veces** para validar consistencia y confiabilidad.  
-Se realizarán **3 iteraciones preliminares** de ajuste (smoke tests) antes del ciclo final.  
 El promedio y desviación estándar de las métricas definirán los resultados oficiales.
 
 ---
@@ -104,7 +103,7 @@ graph TD
 
 ### Configuración Docker Compose
 
-- **Servicios principales:** `web`, `worker`, `redis`, `db`.  
+- **Servicios principales:** `web`, `worker`, `db`.  
 - **Herramientas de prueba:** `locust` o `jmeter` como contenedor adicional.  
 - **Base de datos:** PostgreSQL 15 con datos sintéticos.  
 - **Red interna:** `docker_network: test_env`.      
