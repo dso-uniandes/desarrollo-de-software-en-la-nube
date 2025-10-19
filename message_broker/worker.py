@@ -12,7 +12,7 @@ configure_logging()
 
 logger = logging.getLogger('worker')
 
-bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 group_id = os.getenv("KAFKA_GROUP_ID", "video_tasks_group")
 
 conf = {
@@ -46,6 +46,11 @@ async def process_video_processing(message: dict):
     video = await database.fetch_one(
         video_table.select().where(video_table.c.id == int(message['video_id']))
     )
+    
+    if not video:
+        logger.error(f"Video not found in database: {message['video_id']}")
+        return
+        
     logger.info(f"Fetched video from DB: {video.id}")
 
     object_key = get_object_key_from_url(video.original_url)

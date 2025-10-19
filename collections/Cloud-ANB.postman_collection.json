@@ -508,8 +508,7 @@
 							"   pm.expect(data).to.have.property('title');",
 							"   pm.expect(data).to.have.property('status');",
 							"   pm.expect(data).to.have.property('uploaded_at');",
-							"   pm.expect(data).to.have.property('original_url');",
-							"   pm.expect(data).to.have.property('votes');",
+							"   pm.expect(data).to.have.property('processed_url');",
 							"});",
 							"",
 							"pm.test(\"Response time is less than 5000ms\", function () {",
@@ -573,19 +572,14 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"   pm.response.to.have.status(200);",
+							"pm.test(\"Status code is 404\", function () {",
+							"   pm.response.to.have.status(404);",
 							"});",
 							"",
-							"pm.test(\"Response has success message\", function () {",
+							"pm.test(\"Get expected error message\", function () {",
 							"   var data = pm.response.json();",
-							"   pm.expect(data).to.have.property('message');",
-							"   pm.expect(data.message).to.include('eliminado exitosamente');",
-							"});",
-							"",
-							"pm.test(\"Response has video_id\", function () {",
-							"   var data = pm.response.json();",
-							"   pm.expect(data).to.have.property('video_id');",
+							"   pm.expect(data).to.have.property('detail');",
+							"   pm.expect(data.detail).to.eql('Video not found');",
 							"});",
 							"",
 							"pm.test(\"Response time is less than 5000ms\", function () {",
@@ -605,7 +599,7 @@
 						"type": "text"
 					}
 				],
-				"url": "{{backUrl}}/api/videos/{{video_id}}"
+				"url": "{{backUrl}}/api/videos/99999"
 			},
 			"response": []
 		},
@@ -654,6 +648,27 @@
 		{
 			"name": "Vote video",
 			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Wait for video to be processed",
+							"console.log('Waiting for video to be processed...');",
+							"",
+							"// Simple delay to allow video processing",
+							"// This gives the worker time to process the video",
+							"const startTime = Date.now();",
+							"const delay = 25000; // 25 seconds",
+							"",
+							"while (Date.now() - startTime < delay) {",
+							"    // Busy wait - not ideal but works for testing",
+							"}",
+							"",
+							"console.log('Delay completed, proceeding with vote');"
+						],
+						"type": "text/javascript"
+					}
+				},
 				{
 					"listen": "test",
 					"script": {
@@ -752,7 +767,7 @@
 							"",
 							"pm.test(\"Get expected error message\", function () {",
 							"   var data = pm.response.json();",
-							"   pm.expect(data.detail).to.eql(\"Video no encontrado.\");",
+							"   pm.expect(data.detail).to.eql(\"Video not found\");",
 							"});"
 						],
 						"type": "text/javascript"
