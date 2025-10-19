@@ -421,6 +421,62 @@ Ubicación: `capacity-planning/postman/results/`
 - **CPU < 85%** = Margen para picos de tráfico ✅
 - **Worker queue estable** = Throughput suficiente ✅
 
+### Resultados
+
+- **Smoke Test - Validación rápida (5 usuarios)**
+  
+  ```bash
+  make -C ./capacity-planning/ test-smoke
+  ```
+
+  **Métricas de API:**
+  
+  ![Newman API Metrics](./resultados/Escenario1/newman_api_metrics.png)
+
+  **Recursos de Contenedores:**
+  
+  ![Container Resources](./resultados/Escenario1/container_resources.png)
+
+  **Tiempos de Worker:**
+  
+  ![Worker Timing](./resultados/Escenario1/worker_timing.png)
+
+  **Desglose de Procesamiento:**
+  
+  ![Worker Breakdown](./resultados/Escenario1/worker_breakdown_pie.png)
+
+- **Capacity Test - Encontrar límite (50→300 usuarios)**
+  
+  ```bash
+  make -C ./capacity-planning/ test-capacity
+  ```
+
+- **Ramp Test - Rampa gradual**
+  
+  ```bash
+  make -C ./capacity-planning/ test-ramp
+  ```
+
+- **Sustained Test - Carga sostenida (10 min)**
+  
+  ```bash
+  make -C ./capacity-planning/ test-sustained
+  ```
+
+- **Stress Test - Sobrecarga hasta fallo**
+  
+  ```bash
+  make -C ./capacity-planning/ test-stress
+  ```
+
+- **Spike Test - Picos repentinos**
+  
+  ```bash
+  make -C ./capacity-planning/ test-spike
+  ```
+
+
+
 ### Acciones según Resultados
 
 1. **Si p95 > 1s con <100 usuarios**: Optimizar código de API (profiling, caching)
