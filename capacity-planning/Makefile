@@ -49,9 +49,9 @@ monitor-start:
 
 monitor-stop:
 	@echo "🛑 Stopping monitors and calculating statistics..."
-	@# Wait for worker to finish processing tasks
+	@# Wait for worker to finish processing tasks (10 minutes timeout for large batches)
 	@chmod +x wait_for_worker.sh 2>/dev/null || true
-	@./wait_for_worker.sh 180 || true
+	@./wait_for_worker.sh 600 || true
 	@echo ""
 	@# Stop monitoring processes
 	@if [ -f .monitor_resources.pid ]; then \
@@ -110,7 +110,7 @@ test-smoke:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 5 \
-		--delay-request 200 \
+		--delay-request 50 \
 		-r cli,html \
 		--reporter-html-export $(RESULTS_DIR)/report_smoke_$(TIMESTAMP).html || true
 	@$(MAKE) monitor-stop
@@ -129,7 +129,7 @@ test-capacity:
 		newman run postman/collection.json \
 			-e postman/environment.json \
 			-n $$users \
-			--delay-request 100 \
+			--delay-request 20 \
 			-r cli,html \
 			--reporter-html-export $(RESULTS_DIR)/report_capacity_$${users}users_$(TIMESTAMP).html || true; \
 		$(MAKE) monitor-stop; \
@@ -152,7 +152,7 @@ test-ramp:
 		newman run postman/collection.json \
 			-e postman/environment.json \
 			-n $$users \
-			--delay-request 50 \
+			--delay-request 20 \
 			-r cli,html \
 			--reporter-html-export $(RESULTS_DIR)/report_ramp_$${users}users_$(TIMESTAMP).html || true; \
 		$(MAKE) monitor-stop; \
@@ -167,7 +167,7 @@ test-sustained:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 200 \
-		--delay-request 150 \
+		--delay-request 30 \
 		-r cli,html \
 		--reporter-html-export $(RESULTS_DIR)/report_sustained_$(TIMESTAMP).html || true
 	@$(MAKE) monitor-stop
@@ -179,7 +179,7 @@ test-stress:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 400 \
-		--delay-request 50 \
+		--delay-request 10 \
 		-r cli,html \
 		--reporter-html-export $(RESULTS_DIR)/report_stress_$(TIMESTAMP).html || true
 	@$(MAKE) monitor-stop
@@ -193,7 +193,7 @@ test-spike:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 20 \
-		--delay-request 200 \
+		--delay-request 50 \
 		-r cli,html \
 		--reporter-html-export $(RESULTS_DIR)/report_spike_baseline_$(TIMESTAMP).html || true
 	@$(MAKE) monitor-stop
@@ -202,7 +202,7 @@ test-spike:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 400 \
-		--delay-request 25 \
+		--delay-request 5 \
 		-r cli,html \
 		--reporter-html-export $(RESULTS_DIR)/report_spike_burst_$(TIMESTAMP).html || true
 	@$(MAKE) monitor-stop
@@ -211,7 +211,7 @@ test-spike:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 20 \
-		--delay-request 200 \
+		--delay-request 50 \
 		-r cli,html \
 		--reporter-html-export $(RESULTS_DIR)/report_spike_recovery_$(TIMESTAMP).html || true
 	@$(MAKE) monitor-stop
