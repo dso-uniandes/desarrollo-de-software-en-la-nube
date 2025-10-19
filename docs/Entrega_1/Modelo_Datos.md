@@ -27,4 +27,4 @@ Este modelo se implementa en **PostgreSQL** y refleja la estructura física de l
 
 El siguiente diagrama representa la estructura de datos principal del sistema, con las claves primarias (PK), foráneas (FK) y restricciones definidas.
 
-![Modelo_Datos.png](../../../../.. /Library/CloudStorage/OneDrive-Universidaddelosandes/Master%20of%20Software%20Engineering/Ciclo%204/8.%20Desarrollo%20de%20Software%20en%20la%20Nube/Week%202/Modelo_Datos.png)
+<img width="2764" height="912" alt="Modelo_Datos" src="https://github.com/user-attachments/assets/1e434042-70ad-4c48-bfd2-8684d7991d6b" />
