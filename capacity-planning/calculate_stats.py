@@ -8,6 +8,7 @@ Processes both container stats and worker timing data
 import sys
 import csv
 import statistics
+import json
 from pathlib import Path
 from collections import defaultdict
 from datetime import datetime
@@ -170,11 +171,99 @@ def parse_worker_timing(csv_file):
     
     return results
 
-def generate_summary_csv(container_stats, worker_stats, output_file):
+def parse_newman_json(json_file):
+    """Parse Newman JSON report and extract API metrics"""
+    
+    if not json_file.exists():
+        return None
+    
+    metrics = {
+        'test_name': json_file.stem,
+        'total_requests': 0,
+        'failed_requests': 0,
+        'success_rate': 0.0,
+        'avg_response_time': 0.0,
+        'min_response_time': 0.0,
+        'max_response_time': 0.0,
+        'p95_response_time': 0.0,
+        'total_test_duration': 0.0
+    }
+    
+    try:
+        with open(json_file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        # Extract run statistics
+        run = data.get('run', {})
+        stats = run.get('stats', {})
+        timings = run.get('timings', {})
+        
+        # Get request counts
+        requests_stats = stats.get('requests', {})
+        metrics['total_requests'] = requests_stats.get('total', 0)
+        metrics['failed_requests'] = requests_stats.get('failed', 0)
+        
+        # Calculate success rate
+        if metrics['total_requests'] > 0:
+            metrics['success_rate'] = ((metrics['total_requests'] - metrics['failed_requests']) / 
+                                       metrics['total_requests'] * 100)
+        
+        # Extract response times from executions
+        response_times = []
+        executions = run.get('executions', [])
+        
+        for execution in executions:
+            response = execution.get('response', {})
+            response_time = response.get('responseTime')
+            if response_time is not None:
+                response_times.append(response_time)
+        
+        # Calculate response time statistics
+        if response_times:
+            metrics['avg_response_time'] = statistics.mean(response_times)
+            metrics['min_response_time'] = min(response_times)
+            metrics['max_response_time'] = max(response_times)
+            
+            # Calculate P95
+            sorted_times = sorted(response_times)
+            p95_index = int(len(sorted_times) * 0.95)
+            metrics['p95_response_time'] = sorted_times[p95_index] if p95_index < len(sorted_times) else sorted_times[-1]
+        
+        # Extract total duration (difference between completed and started timestamps in milliseconds)
+        started = timings.get('started', 0)
+        completed = timings.get('completed', 0)
+        duration_ms = completed - started
+        metrics['total_test_duration'] = duration_ms / 1000.0  # Convert to seconds
+        
+        return metrics
+    except Exception as e:
+        print(f"⚠️  Error parsing Newman JSON report: {e}")
+        return None
+
+def generate_summary_csv(container_stats, worker_stats, newman_stats, output_file):
     """Generate a summary CSV with all statistics"""
     
     with open(output_file, 'w', newline='') as f:
         writer = csv.writer(f)
+        
+        # Write Newman API metrics first if available
+        if newman_stats:
+            writer.writerow(['=== API/NEWMAN METRICS ==='])
+            writer.writerow(['Metric', 'Value'])
+            writer.writerow(['Test Name', newman_stats['test_name']])
+            writer.writerow(['Total Requests', newman_stats['total_requests']])
+            writer.writerow(['Failed Requests', newman_stats['failed_requests']])
+            writer.writerow(['Success Rate', f"{newman_stats['success_rate']:.2f}%"])
+            writer.writerow(['Avg Response Time (ms)', f"{newman_stats['avg_response_time']:.2f}"])
+            writer.writerow(['Min Response Time (ms)', f"{newman_stats['min_response_time']:.2f}"])
+            writer.writerow(['Max Response Time (ms)', f"{newman_stats['max_response_time']:.2f}"])
+            writer.writerow(['P95 Response Time (ms)', f"{newman_stats['p95_response_time']:.2f}"])
+            writer.writerow(['Test Duration (s)', f"{newman_stats['total_test_duration']:.2f}"])
+            if newman_stats['total_test_duration'] > 0 and newman_stats['total_requests'] > 0:
+                rps = newman_stats['total_requests'] / newman_stats['total_test_duration']
+                writer.writerow(['Throughput (req/s)', f"{rps:.2f}"])
+            writer.writerow([])
+            writer.writerow([])
         
         # Write container stats
         writer.writerow(['=== CONTAINER RESOURCE STATISTICS ==='])
@@ -242,8 +331,26 @@ def generate_summary_csv(container_stats, worker_stats, output_file):
                     err['error']
                 ])
 
-def print_summary(container_stats, worker_stats):
+def print_summary(container_stats, worker_stats, newman_stats=None):
     """Print summary to console"""
+    
+    # Print Newman/API metrics first if available
+    if newman_stats:
+        print("\n" + "="*80)
+        print("🌐 API/NEWMAN METRICS")
+        print("="*80)
+        print(f"\n  Test: {newman_stats['test_name']}")
+        print(f"  Total Requests:     {newman_stats['total_requests']}")
+        print(f"  Failed Requests:    {newman_stats['failed_requests']}")
+        print(f"  Success Rate:       {newman_stats['success_rate']:.2f}%")
+        print(f"  Avg Response Time:  {newman_stats['avg_response_time']:.2f} ms")
+        print(f"  Min Response Time:  {newman_stats['min_response_time']:.2f} ms")
+        print(f"  Max Response Time:  {newman_stats['max_response_time']:.2f} ms")
+        print(f"  P95 Response Time:  {newman_stats['p95_response_time']:.2f} ms")
+        print(f"  Test Duration:      {newman_stats['total_test_duration']:.2f} s")
+        if newman_stats['total_test_duration'] > 0 and newman_stats['total_requests'] > 0:
+            rps = newman_stats['total_requests'] / newman_stats['total_test_duration']
+            print(f"  Throughput:         {rps:.2f} req/s")
     
     print("\n" + "="*80)
     print("📊 CONTAINER RESOURCE STATISTICS")
@@ -364,10 +471,25 @@ def main():
         if worker_csv:
             print(f"⚠️  Worker timing file not found: {worker_csv}")
     
+    # Parse Newman JSON report
+    newman_stats = None
+    if len(sys.argv) == 2:
+        # Look for any Newman JSON report with this timestamp
+        newman_json_pattern = results_dir.glob(f"report_*{test_name}.json")
+        newman_json_files = list(newman_json_pattern)
+        
+        if newman_json_files:
+            # Use the first matching file
+            newman_json = newman_json_files[0]
+            print(f"🌐 Processing Newman report: {newman_json}")
+            newman_stats = parse_newman_json(newman_json)
+        else:
+            print(f"⚠️  No Newman JSON report found for timestamp: {test_name}")
+    
     # Generate output
-    if container_stats or worker_stats:
+    if container_stats or worker_stats or newman_stats:
         # Print to console
-        print_summary(container_stats, worker_stats)
+        print_summary(container_stats, worker_stats, newman_stats)
         
         # Generate CSV summary
         if len(sys.argv) == 2:
@@ -375,7 +497,7 @@ def main():
         else:
             output_csv = container_csv.parent / f"summary_{container_csv.stem}.csv"
         
-        generate_summary_csv(container_stats, worker_stats, output_csv)
+        generate_summary_csv(container_stats, worker_stats, newman_stats, output_csv)
         print(f"✅ Summary saved to: {output_csv}")
     else:
         print("❌ No data to process")
