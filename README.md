@@ -2,6 +2,15 @@
 
 Este proyecto implementa una API REST con **FastAPI** que permite subir archivos a **AWS S3 Bucket**, autenticarse mediante JWT y manejar una base de datos PostgreSQL
 
+## 👥 Integrantes del Equipo
+
+| Nombre | Correo Uniandes |
+|--------|-----------------|
+| Jonatan Hernandez Rubio | je.hernandezr@uniandes.edu.co |
+| Fernando Parra Villarreal | f.parrav@uniandes.edu.co |
+| Daniel Serna Osorio | d.sernao@uniandes.edu.co |
+| Harold Virgüez Engativa | h.virgueze@uniandes.edu.co |
+
 ---
 
 ## 🚦 Inicio Rápido
@@ -54,6 +63,17 @@ Dentro del repositorio existe una carpeta `/docs/Entrega_1` que contiene toda la
         ├── data_model.md
         ├── deployment.md
         └── process_flow.md
+```
+
+### 🎥 Video de Sustentación
+
+El video de sustentación de la Entrega No. 1 se encuentra disponible en:
+- **Documento de sustentación:** `/sustentacion/Entrega_1/sustentacion.md`
+
+```
+📂 sustentacion/
+└── 📂 Entrega_1/
+    └── sustentacion.md
 ```
 
 ---
@@ -424,6 +444,10 @@ desarrollo-de-software-en-la-nube/
 │       ├── component_diagram.md         # Arquitectura
 │       ├── process_flow.md              # Flujo de procesamiento
 │       └── deployment.md                # Guía de despliegue
+│
+├── 📂 sustentacion/                     # Videos de sustentación
+│   └── 📂 Entrega_1/
+│       └── sustentacion.md              # Documento con enlace al video
 │
 ├── 📂 collections/                      # Colecciones Postman (UI)
 │   ├── Cloud-ANB.postman_collection.json
