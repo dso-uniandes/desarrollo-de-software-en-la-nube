@@ -70,6 +70,12 @@ Dentro del repositorio existe una carpeta `/docs/Entrega_1` que contiene toda la
 El video de sustentación de la Entrega No. 1 se encuentra disponible en:
 - **Documento de sustentación:** `/sustentacion/Entrega_1/sustentacion.md`
 
+```
+📂 sustentacion/
+└── 📂 Entrega_1/
+    └── sustentacion.md
+```
+
 ---
 
 ## 🚀 Características principales
