@@ -29,3 +29,4 @@ venv.bak/
 videos/
 /storeapi/uploads/
 capacity-planning/postman/results/*
+*.pid

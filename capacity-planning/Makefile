@@ -10,7 +10,27 @@ TIMESTAMP := $(shell date +%Y%m%d_%H%M%S)
 .PHONY: up down ps newman newman-with-monitor monitor-start monitor-stop \
         test-smoke test-capacity test-ramp test-sustained test-stress test-spike \
         test-all run-all-tests clean-results help view-stats calculate-stats \
-        monitor-interactive show-results open-latest-report kill-monitors
+        monitor-interactive show-results open-latest-report kill-monitors install-deps
+
+# =============================================================================
+# Setup
+# =============================================================================
+
+install-deps:
+	@echo "📦 Installing capacity planning dependencies..."
+	@if [ -z "$$VIRTUAL_ENV" ]; then \
+		echo "⚠️  Warning: No virtual environment detected!"; \
+		echo "   Consider activating a venv first:"; \
+		echo "   source ../.venv/bin/activate"; \
+		echo ""; \
+		read -p "Continue anyway? (y/n) " -n 1 -r; \
+		echo; \
+		if [[ ! $$REPLY =~ ^[Yy]$$ ]]; then \
+			exit 1; \
+		fi \
+	fi
+	pip install -r requirements.txt
+	@echo "✅ Dependencies installed successfully!"
 
 # =============================================================================
 # Infrastructure Management
@@ -49,9 +69,9 @@ monitor-start:
 
 monitor-stop:
 	@echo "🛑 Stopping monitors and calculating statistics..."
-	@# Wait for worker to finish processing tasks
+	@# Wait for worker to finish processing tasks (10 minutes timeout for large batches)
 	@chmod +x wait_for_worker.sh 2>/dev/null || true
-	@./wait_for_worker.sh 180 || true
+	@./wait_for_worker.sh 3600 || true
 	@echo ""
 	@# Stop monitoring processes
 	@if [ -f .monitor_resources.pid ]; then \
@@ -71,6 +91,8 @@ monitor-stop:
 	@if [ -f "$(RESULTS_DIR)/container_stats_$(TIMESTAMP).csv" ] && [ -f "calculate_stats.py" ]; then \
 		echo "📊 Calculating statistics..."; \
 		python3 calculate_stats.py $(TIMESTAMP) || echo "⚠️  Stats calculation skipped"; \
+		echo "📊 Generating graphs..."; \
+		python3 generate_graphs.py $(TIMESTAMP) || echo "⚠️  Graph generation skipped"; \
 	fi
 	@echo "✅ Monitoring stopped"
 
@@ -83,21 +105,23 @@ monitor-interactive:
 # Basic Newman Execution
 # =============================================================================
 
-newman:
-	@echo "🧪 Running Newman collection..."
+newman-basic:
+	@echo "🧪 Running basic Newman test..."
 	@mkdir -p $(RESULTS_DIR)
 	newman run postman/collection.json \
 		-e postman/environment.json \
-		-r cli,html \
-		--reporter-html-export $(RESULTS_DIR)/report_$(TIMESTAMP).html
+		-r cli,html,json \
+		--reporter-html-export $(RESULTS_DIR)/report_$(TIMESTAMP).html \
+		--reporter-json-export $(RESULTS_DIR)/report_$(TIMESTAMP).json
 
 newman-with-monitor:
 	@echo "🧪 Running Newman with monitoring..."
 	@$(MAKE) monitor-start
 	@newman run postman/collection.json \
 		-e postman/environment.json \
-		-r cli,html \
-		--reporter-html-export $(RESULTS_DIR)/report_basic_$(TIMESTAMP).html || true
+		-r cli,html,json \
+		--reporter-html-export $(RESULTS_DIR)/report_basic_$(TIMESTAMP).html \
+		--reporter-json-export $(RESULTS_DIR)/report_basic_$(TIMESTAMP).json || true
 	@$(MAKE) monitor-stop
 
 # =============================================================================
@@ -110,9 +134,10 @@ test-smoke:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 5 \
-		--delay-request 200 \
-		-r cli,html \
-		--reporter-html-export $(RESULTS_DIR)/report_smoke_$(TIMESTAMP).html || true
+		--delay-request 50 \
+		-r cli,html,json \
+		--reporter-html-export $(RESULTS_DIR)/report_smoke_$(TIMESTAMP).html \
+		--reporter-json-export $(RESULTS_DIR)/report_smoke_$(TIMESTAMP).json || true
 	@$(MAKE) monitor-stop
 	@echo "✅ Smoke test completed! Report: $(RESULTS_DIR)/report_smoke_$(TIMESTAMP).html"
 
@@ -129,9 +154,10 @@ test-capacity:
 		newman run postman/collection.json \
 			-e postman/environment.json \
 			-n $$users \
-			--delay-request 100 \
-			-r cli,html \
-			--reporter-html-export $(RESULTS_DIR)/report_capacity_$${users}users_$(TIMESTAMP).html || true; \
+			--delay-request 20 \
+			-r cli,html,json \
+			--reporter-html-export $(RESULTS_DIR)/report_capacity_$${users}users_$(TIMESTAMP).html \
+			--reporter-json-export $(RESULTS_DIR)/report_capacity_$${users}users_$(TIMESTAMP).json || true; \
 		$(MAKE) monitor-stop; \
 		echo "✅ Test with $$users users completed"; \
 		echo "⏳ Cooling down for 30 seconds..."; \
@@ -152,9 +178,10 @@ test-ramp:
 		newman run postman/collection.json \
 			-e postman/environment.json \
 			-n $$users \
-			--delay-request 50 \
-			-r cli,html \
-			--reporter-html-export $(RESULTS_DIR)/report_ramp_$${users}users_$(TIMESTAMP).html || true; \
+			--delay-request 20 \
+			-r cli,html,json \
+			--reporter-html-export $(RESULTS_DIR)/report_ramp_$${users}users_$(TIMESTAMP).html \
+			--reporter-json-export $(RESULTS_DIR)/report_ramp_$${users}users_$(TIMESTAMP).json || true; \
 		$(MAKE) monitor-stop; \
 		echo "✅ Ramp step $$users completed"; \
 		sleep 20; \
@@ -167,9 +194,10 @@ test-sustained:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 200 \
-		--delay-request 150 \
-		-r cli,html \
-		--reporter-html-export $(RESULTS_DIR)/report_sustained_$(TIMESTAMP).html || true
+		--delay-request 30 \
+		-r cli,html,json \
+		--reporter-html-export $(RESULTS_DIR)/report_sustained_$(TIMESTAMP).html \
+		--reporter-json-export $(RESULTS_DIR)/report_sustained_$(TIMESTAMP).json || true
 	@$(MAKE) monitor-stop
 	@echo "✅ Sustained test completed!"
 
@@ -179,9 +207,10 @@ test-stress:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 400 \
-		--delay-request 50 \
-		-r cli,html \
-		--reporter-html-export $(RESULTS_DIR)/report_stress_$(TIMESTAMP).html || true
+		--delay-request 10 \
+		-r cli,html,json \
+		--reporter-html-export $(RESULTS_DIR)/report_stress_$(TIMESTAMP).html \
+		--reporter-json-export $(RESULTS_DIR)/report_stress_$(TIMESTAMP).json || true
 	@$(MAKE) monitor-stop
 	@echo "✅ Stress test completed!"
 
@@ -193,27 +222,30 @@ test-spike:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 20 \
-		--delay-request 200 \
-		-r cli,html \
-		--reporter-html-export $(RESULTS_DIR)/report_spike_baseline_$(TIMESTAMP).html || true
+		--delay-request 50 \
+		-r cli,html,json \
+		--reporter-html-export $(RESULTS_DIR)/report_spike_baseline_$(TIMESTAMP).html \
+		--reporter-json-export $(RESULTS_DIR)/report_spike_baseline_$(TIMESTAMP).json || true
 	@$(MAKE) monitor-stop
 	@echo "Phase 2: SPIKE (400 users)"
 	@$(MAKE) monitor-start
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 400 \
-		--delay-request 25 \
-		-r cli,html \
-		--reporter-html-export $(RESULTS_DIR)/report_spike_burst_$(TIMESTAMP).html || true
+		--delay-request 5 \
+		-r cli,html,json \
+		--reporter-html-export $(RESULTS_DIR)/report_spike_burst_$(TIMESTAMP).html \
+		--reporter-json-export $(RESULTS_DIR)/report_spike_burst_$(TIMESTAMP).json || true
 	@$(MAKE) monitor-stop
 	@echo "Phase 3: Recovery (20 users)"
 	@$(MAKE) monitor-start
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 20 \
-		--delay-request 200 \
-		-r cli,html \
-		--reporter-html-export $(RESULTS_DIR)/report_spike_recovery_$(TIMESTAMP).html || true
+		--delay-request 50 \
+		-r cli,html,json \
+		--reporter-html-export $(RESULTS_DIR)/report_spike_recovery_$(TIMESTAMP).html \
+		--reporter-json-export $(RESULTS_DIR)/report_spike_recovery_$(TIMESTAMP).json || true
 	@$(MAKE) monitor-stop
 	@echo "✅ Spike test completed!"
 
@@ -277,7 +309,10 @@ show-results:
 		echo "📊 CSV Data Files:"; \
 		ls -lh $(RESULTS_DIR)/*.csv 2>/dev/null | awk '{print "  " $$9 " (" $$5 ")"}' || echo "  ⚠️  No CSV files found"; \
 		echo ""; \
-		echo "📋 Log Files:"; \
+		echo "� Graph Files:"; \
+		ls -lh $(RESULTS_DIR)/*.png 2>/dev/null | awk '{print "  " $$9 " (" $$5 ")"}' || echo "  ⚠️  No graph files found"; \
+		echo ""; \
+		echo "�📋 Log Files:"; \
 		ls -lh $(RESULTS_DIR)/*.log 2>/dev/null | awk '{print "  " $$9 " (" $$5 ")"}' || echo "  ⚠️  No log files found"; \
 	else \
 		echo "  ⚠️  Results directory not found"; \
@@ -310,6 +345,18 @@ open-latest-report:
 		echo "❌ No reports found"; \
 	fi
 
+open-graphs:
+	@echo "📈 Opening latest test graphs..."
+	@graphs=$$(ls -t $(RESULTS_DIR)/*.png 2>/dev/null | head -3); \
+	if [ -n "$$graphs" ]; then \
+		for graph in $$graphs; do \
+			echo "  Opening $$graph"; \
+			open "$$graph"; \
+		done; \
+	else \
+		echo "❌ No graphs found"; \
+	fi
+
 view-stats:
 	@echo "📊 Available test results:"
 	@echo ""
@@ -340,6 +387,8 @@ calculate-stats:
 	@read -p "Enter timestamp (e.g., 20251019_143025): " ts; \
 	if [ -n "$$ts" ]; then \
 		python3 calculate_stats.py "$$ts"; \
+		echo "📈 Generating graphs..."; \
+		python3 generate_graphs.py "$$ts" || echo "⚠️  Graph generation skipped"; \
 	else \
 		echo "❌ Timestamp required"; \
 	fi
@@ -353,7 +402,10 @@ help:
 	@echo "║  📚 Capacity Planning Test Suite - Help                   ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
-	@echo "🔧 Infrastructure:"
+	@echo "� Setup:"
+	@echo "  make install-deps       - Install Python dependencies (matplotlib, etc.)"
+	@echo ""
+	@echo "�🔧 Infrastructure:"
 	@echo "  make up                 - Start all services (API, Worker, DB, etc.)"
 	@echo "  make down               - Stop and remove all services"
 	@echo "  make ps                 - Show container status"
@@ -382,6 +434,7 @@ help:
 	@echo "  make calculate-stats    - Calculate stats for specific test"
 	@echo "  make clean-results      - Clean old test results"
 	@echo "  make open-latest-report - Open most recent HTML report"
+	@echo "  make open-graphs        - Open latest generated graphs"
 	@echo ""
 	@echo "💡 Quick Start:"
 	@echo "  1. make up              - Start infrastructure"

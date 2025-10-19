@@ -4,9 +4,9 @@
 # Usage: ./wait_for_worker.sh [timeout_seconds]
 
 WORKER_CONTAINER="worker"
-TIMEOUT=${1:-300}  # Default 5 minutes timeout
+TIMEOUT=${1:-3600}  # Default 10 minutes timeout
 CHECK_INTERVAL=5   # Check every 5 seconds
-IDLE_THRESHOLD=10  # Consider idle after 10 seconds without new tasks
+IDLE_THRESHOLD=30  # Consider idle after 30 seconds without new tasks (increased for large batches)
 
 echo "⏳ Waiting for worker to finish processing tasks..."
 echo "   Timeout: ${TIMEOUT}s | Check interval: ${CHECK_INTERVAL}s"

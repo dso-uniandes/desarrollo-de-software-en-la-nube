@@ -319,633 +319,115 @@ docker logs -f worker | grep "TOTAL TASK TIME"
 
 ---
 
-## 12. Ejecución de Pruebas con Makefile
+## 12. Ejecución de Pruebas
 
-El proyecto incluye un `Makefile` en la carpeta `capacity-planning/` con comandos automatizados para facilitar la ejecución de pruebas.
+### 📦 Requisitos
 
-**Importante**: Todos los comandos `make` deben ejecutarse desde la raíz del proyecto usando:
 ```bash
-make -C ./capacity-planning/ <comando>
+# 1. Activar el entorno virtual
+source ../.venv/bin/activate
+
+# 2. Instalar dependencias (matplotlib para gráficas)
+cd capacity-planning
+pip install -r requirements.txt
 ```
 
-### 12.1 Comandos Disponibles
+### 🧪 Tipos de Tests Disponibles
 
-#### Gestión de Infraestructura
+Todos los comandos se ejecutan desde la raíz del proyecto:
+
 ```bash
-# Levantar toda la infraestructura
-make -C ./capacity-planning/ up
-
-# Ver estado de los contenedores
-make -C ./capacity-planning/ ps
-
-# Ver logs en tiempo real
-make -C ./capacity-planning/ logs
-
-# Apagar todo y limpiar
-make -C ./capacity-planning/ down
-```
-
-#### Monitoreo de Recursos
-```bash
-# Iniciar monitoreo (containers + worker timing)
-make -C ./capacity-planning/ monitor-start
-
-# Detener monitoreo y calcular estadísticas
-make -C ./capacity-planning/ monitor-stop
-
-# Forzar detención de monitores (si quedan colgados)
-make -C ./capacity-planning/ kill-monitors
-
-# Ver estadísticas generadas
-make -C ./capacity-planning/ view-stats
-
-# Calcular estadísticas manualmente
-make -C ./capacity-planning/ calculate-stats
-
-# Ver resultados de última ejecución
-make -C ./capacity-planning/ show-results
-```
-
-#### Ejecución de Tests
-```bash
-# Test básico con Newman
-make -C ./capacity-planning/ newman
-
-# Smoke Test - 5 usuarios, 1 minuto (validación básica)
+# Smoke Test - Validación rápida (5 usuarios)
 make -C ./capacity-planning/ test-smoke
 
-# Capacity Test - Incremental (50, 100, 150, 200, 250, 300 usuarios)
+# Capacity Test - Encontrar límite (50→300 usuarios)
 make -C ./capacity-planning/ test-capacity
 
-# Ramp Test - Rampa gradual 0→300 usuarios
+# Ramp Test - Rampa gradual
 make -C ./capacity-planning/ test-ramp
 
-# Sustained Test - Carga sostenida por 10 minutos
+# Sustained Test - Carga sostenida (10 min)
 make -C ./capacity-planning/ test-sustained
 
 # Stress Test - Sobrecarga hasta fallo
 make -C ./capacity-planning/ test-stress
 
-# Spike Test - Picos repentinos de carga
+# Spike Test - Picos repentinos
 make -C ./capacity-planning/ test-spike
 ```
 
-#### Utilidades
-```bash
-# Limpiar archivos temporales
-make -C ./capacity-planning/ clean
+**Nota**: Cada test automáticamente:
+- Inicia monitores de recursos
+- Ejecuta Newman con la carga configurada
+- Espera a que el worker termine de procesar
+- Genera estadísticas y gráficas
+- Guarda reportes en `postman/results/`
 
-# Ver ayuda con todos los comandos
-make -C ./capacity-planning/ help
-```
+### 📊 Generar Estadísticas y Gráficas
 
-### 12.2 Flujo de Ejecución Completo
-
-#### Paso 1: Preparación del entorno
+Si necesitas regenerar estadísticas/gráficas de un test ya ejecutado:
 
 ```bash
-# 1. Levantar servicios
-make -C ./capacity-planning/ up
+# Opción 1: Interactivo (te pide el timestamp)
+make -C ./capacity-planning/ calculate-stats
 
-# 2. Verificar que todos los servicios estén corriendo
-make -C ./capacity-planning/ ps
-
-# Salida esperada:
-# NAME                 STATUS              PORTS
-# storeapi             Up 30 seconds       0.0.0.0:8000->8000/tcp
-# worker               Up 30 seconds       
-# nginx                Up 30 seconds       0.0.0.0:80->80/tcp
-# anb-database         Up 30 seconds       5432/tcp
-# kafka                Up 30 seconds       9092/tcp
-# anb-redis            Up 30 seconds       6379/tcp
-
-# 3. Verificar logs (opcional)
-make -C ./capacity-planning/ logs
+# Opción 2: Directo con timestamp
+cd capacity-planning
+source ../.venv/bin/activate
+python3 calculate_stats.py 20251019_170416
+python3 generate_graphs.py 20251019_170416
 ```
 
-#### Paso 2: Crear usuario de prueba
-
-```bash
-# Desde Postman o curl
-curl -X POST http://localhost/api/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "password": "pass123"
-  }'
-
-# Verificar creación (debe retornar 201)
-```
-
-#### Paso 3: Ejecutar pruebas según escenario
-
-##### Opción A: Smoke Test (validación rápida)
-
-```bash
-# Ejecutar smoke test (5 usuarios, 1 minuto)
-make -C ./capacity-planning/ test-smoke
-
-# Esto ejecuta automáticamente:
-# 1. Inicia monitores (containers + worker timing)
-# 2. Ejecuta newman con 5 iteraciones
-# 3. Espera a que worker termine de procesar
-# 4. Detiene monitores y calcula estadísticas
-# 5. Genera reportes HTML y CSV
-```
-
-##### Opción B: Capacity Test (encontrar límite)
-
-```bash
-# Ejecutar capacity test (50→300 usuarios incrementales)
-make -C ./capacity-planning/ test-capacity
-
-# Esto ejecuta:
-# - 6 iteraciones con 50, 100, 150, 200, 250, 300 usuarios
-# - Monitoreo continuo durante todas las iteraciones
-# - Pausa de 30s entre cada escalón
-# - Espera a que worker termine todos los videos
-# - Genera estadísticas consolidadas al final
-```
-
-##### Opción C: Sustained Test (estabilidad)
-
-```bash
-# Ejecutar sustained test (10 minutos de carga constante)
-make -C ./capacity-planning/ test-sustained
-
-# Evalúa:
-# - Estabilidad a largo plazo
-# - Posibles memory leaks
-# - Degradación progresiva de rendimiento
-```
-
-##### Opción D: Stress Test (hasta el fallo)
-
-```bash
-# Ejecutar stress test (carga progresiva hasta saturación)
-make -C ./capacity-planning/ test-stress
-
-# Identifica:
-# - Punto de quiebre del sistema
-# - Comportamiento ante sobrecarga
-# - Capacidad de recuperación
-```
-
-##### Opción E: Spike Test (picos repentinos)
-
-```bash
-# Ejecutar spike test (picos instantáneos)
-make -C ./capacity-planning/ test-spike
-
-# Evalúa:
-# - Respuesta ante tráfico súbito
-# - Auto-scaling (si aplica)
-# - Recuperación tras el pico
-```
-
-#### Paso 4: Análisis de resultados
-
-##### Ver estadísticas generadas
-
-```bash
-# Mostrar estadísticas en consola
-make -C ./capacity-planning/ view-stats
-
-# Salida esperada:
-# ============================================
-# Container Resource Statistics
-# ============================================
-# 
-# storeapi:
-#   CPU: min=25.5%, max=84.2%, avg=58.3%, p95=79.1%
-#   Memory: min=245MB, max=512MB, avg=385MB
-# 
-# worker:
-#   CPU: min=15.3%, max=92.1%, avg=67.8%, p95=88.5%
-#   Memory: min=180MB, max=420MB, avg=298MB
-# 
-# ============================================
-# Worker Timing Statistics
-# ============================================
-# 
-# Total tasks processed: 150
-# Total time: avg=12.5s, p95=18.2s
-# FFmpeg time: avg=10.8s, p95=16.1s
-# DB operations: avg=0.9s
-# S3 operations: avg=0.8s
-```
-
-##### Abrir reportes HTML
-
-```bash
-# Ver reportes generados
-make -C ./capacity-planning/ show-results
-
-# Los reportes se encuentran en:
-# capacity-planning/postman/results/
-# ├── report_smoke_20251019_154230.html
-# ├── report_capacity_20251019_154230.html
-# ├── container_stats_20251019_154230.csv
-# ├── worker_timing_20251019_154230.csv
-# └── summary_20251019_154230.csv
-
-# Abrir en navegador (macOS)
-open capacity-planning/postman/results/report_smoke_*.html
-
-# Abrir en navegador (Linux)
-xdg-open capacity-planning/postman/results/report_smoke_*.html
-```
-
-##### Archivos CSV generados
-
-1. **container_stats_TIMESTAMP.csv**: Métricas de recursos por contenedor
-   - Timestamp, Container, CPU%, Memory MB, Memory%, NetIO, BlockIO
-
-2. **worker_timing_TIMESTAMP.csv**: Tiempos de procesamiento por tarea
-   - Timestamp, task_id, video_id, total_time, db_fetch, s3_download, ffmpeg, db_update
-
-3. **summary_TIMESTAMP.csv**: Estadísticas consolidadas
-   - Min, Max, Avg, Median, StdDev, P95 para cada métrica
-
-#### Paso 5: Monitoreo manual (opcional)
-
-Si necesitas observar en tiempo real sin ejecutar tests:
-
-```bash
-# Iniciar monitores manualmente
-make -C ./capacity-planning/ monitor-start
-
-# ... ejecutar operaciones manualmente ...
-
-# Detener monitores y calcular estadísticas
-make -C ./capacity-planning/ monitor-stop
-```
-
-#### Paso 6: Limpieza
-
-```bash
-# Detener servicios
-make -C ./capacity-planning/ down
-
-# Limpiar archivos temporales (opcional)
-make -C ./capacity-planning/ clean
-```
-
-### 12.3 Resultados Esperados por Escenario
-
-#### Escenario 1: Smoke Test (5 usuarios, 1 minuto)
-
-**Propósito:** Validación básica del sistema
-
-```text
-Archivo: postman/results/report_smoke_TIMESTAMP.html
-
-Métricas esperadas:
-├─ Total requests: 5
-├─ Success rate: 100%
-├─ p95 latency: 300-600ms
-├─ Códigos HTTP:
-│  └─ 201 Created: 5 (100%)
-└─ Duration: ~1-2 minutos
-
-Recursos (container_stats_TIMESTAMP.csv):
-├─ storeapi CPU: 15-30% promedio
-├─ worker CPU: 10-20% (procesamiento ligero)
-├─ nginx CPU: 5-10%
-└─ Database CPU: 5-10%
-
-Worker timing (worker_timing_TIMESTAMP.csv):
-├─ Tasks procesados: 5
-├─ Total time avg: 8-12s
-├─ FFmpeg avg: 7-10s (mayor componente)
-└─ S3 operations: 0.5-1s
-```
-
-**Interpretación:** Si el smoke test falla, hay problemas básicos de configuración.
-
-#### Escenario 2: Capacity Test (50→300 usuarios incremental)
-
-**Propósito:** Encontrar el punto de quiebre del sistema
-
-```text
-Archivos: 
-- postman/results/report_capacity_TIMESTAMP.html
-- postman/results/summary_TIMESTAMP.csv
-
-Métricas esperadas por escalón:
-
-50 usuarios:
-├─ Success rate: 98-100%
-├─ p95 latency: 500-800ms
-└─ storeapi CPU: 40-55%
-
-100 usuarios:
-├─ Success rate: 95-98%
-├─ p95 latency: 700-1000ms
-└─ storeapi CPU: 55-70%
-
-150 usuarios:
-├─ Success rate: 90-95%
-├─ p95 latency: 900-1200ms
-└─ storeapi CPU: 65-80%
-
-200 usuarios (posible degradación):
-├─ Success rate: 85-90%
-├─ p95 latency: 1200-1800ms ⚠️
-└─ storeapi CPU: 75-90% ⚠️
-
-250-300 usuarios (saturación esperada):
-├─ Success rate: 70-85% ⚠️
-├─ p95 latency: >2000ms ⚠️
-├─ Posibles errores: 502/503/504
-└─ storeapi CPU: >90% ⚠️
-```
-
-**Capacidad máxima estimada:** 150-200 usuarios concurrentes manteniendo SLO (p95 ≤ 1s)
-
-**Cuellos de botella identificados:**
-- CPU de storeapi (procesamiento de multipart uploads)
-- Ancho de banda de red (subida de archivos grandes)
-- Latencia de escritura en almacenamiento
-
-#### Escenario 3: Sustained Test (10 minutos carga constante)
-
-**Propósito:** Detectar degradación progresiva y memory leaks
-
-```text
-Archivo: postman/results/report_sustained_TIMESTAMP.html
-
-Métricas esperadas:
-├─ Total requests: 600-1200 (depende de RPS)
-├─ Success rate: 95-100% (debe mantenerse estable)
-├─ p95 latency: Variación ≤ 10% durante toda la prueba
-└─ Duration: 10 minutos
-
-Recursos (análisis temporal):
-├─ CPU: Debe mantenerse estable (±5%)
-├─ Memory: Crecimiento ≤ 50 MB en 10 min (sin leaks)
-├─ Network I/O: Constante
-└─ No hay degradación progresiva de latencia
-
-Worker (worker_timing_TIMESTAMP.csv):
-├─ Tasks procesados: 100-200
-├─ Tiempo promedio estable durante toda la prueba
-├─ Cola de Kafka no crece indefinidamente
-└─ Worker mantiene throughput constante
-```
-
-**Señales de alerta:**
-- ⚠️ Latencia incrementa >20% en los últimos 5 minutos
-- ⚠️ Memory crece >100 MB (posible leak)
-- ⚠️ Error rate aumenta con el tiempo
-
-#### Escenario 4: Stress Test (sobrecarga progresiva)
-
-**Propósito:** Encontrar el punto de fallo y observar recuperación
-
-```text
-Archivo: postman/results/report_stress_TIMESTAMP.html
-
-Comportamiento esperado:
-
-Fase 1 (0-5 min, carga normal):
-├─ Success rate: 95-100%
-└─ Sistema estable
-
-Fase 2 (5-10 min, sobrecarga):
-├─ Success rate: 70-90% (degradación aceptable)
-├─ p95 latency: 2-5s ⚠️
-├─ Errores 502/503/504 comienzan a aparecer
-└─ CPU >95% sostenido
-
-Fase 3 (10+ min, saturación):
-├─ Success rate: 50-70% ⚠️
-├─ Sistema no acepta nuevas conexiones
-├─ Posible crash de contenedores
-└─ Punto de quiebre identificado
-
-Fase 4 (recuperación, post-carga):
-├─ Sistema debe recuperarse en <2 minutos
-├─ Sin errores persistentes
-└─ Métricas vuelven a baseline
-```
-
-**Objetivos:**
-- Identificar capacidad máxima absoluta
-- Validar que el sistema no colapsa permanentemente
-- Documentar comportamiento ante sobrecarga
-
-#### Escenario 5: Spike Test (picos repentinos)
-
-**Propósito:** Evaluar respuesta ante tráfico súbito
-
-```text
-Archivo: postman/results/report_spike_TIMESTAMP.html
-
-Patrón esperado:
-
-Baseline (1 min):
-├─ 10-20 usuarios
-└─ Sistema estable
-
-Spike (30s):
-├─ 200-500 usuarios instantáneos ⚠️
-├─ Success rate: 60-80% (algunos timeouts esperados)
-├─ p95 latency: 3-10s ⚠️
-└─ CPU spike: >90%
-
-Recuperación (2 min):
-├─ Sistema debe estabilizarse en <1 minuto
-├─ Success rate vuelve a >95%
-├─ Sin errores persistentes post-spike
-└─ CPU retorna a <50%
-```
-
-**Métricas clave:**
-- Tiempo de recuperación: ≤60 segundos
-- Porcentaje de requests exitosos durante spike: ≥60%
-- Sin crashes de contenedores
-
-#### Análisis Comparativo de Worker
-
-Para evaluar el rendimiento del worker con diferentes configuraciones:
-
-```text
-worker_timing_TIMESTAMP.csv consolidado:
-
-Configuración: 1 worker
-├─ Throughput: 3-5 videos/min
-├─ FFmpeg time avg: 10-14s (80% del tiempo total)
-├─ Cola de Kafka: Crece si RPS > 5/min
-└─ CPU: 70-90% sostenido
-
-Configuración: 2 workers (escalar con docker-compose)
-├─ Throughput: 6-10 videos/min (casi lineal)
-├─ FFmpeg time: Sin cambios (CPU-bound)
-├─ Cola de Kafka: Drena más rápido
-└─ CPU por worker: 65-85%
-
-Configuración: 4 workers
-├─ Throughput: 10-18 videos/min (no lineal si hay contención)
-├─ Posible contención: DB, S3, IO
-└─ CPU total: Puede saturar host local
-```
-
-**Recomendación:** 2 workers es el punto óptimo para entorno local sin saturar recursos del host.
-
----
-
-## 13. Riesgos y Limitaciones
-
-### 13.1 Limitaciones del Entorno Local
-
-- ⚠️ El hardware local puede diferir significativamente de un entorno productivo (CPU, IO, red)
-- ⚠️ Docker Desktop en macOS/Windows introduce sobrecarga adicional comparado con Linux nativo
-- ⚠️ Compartir recursos con otros procesos del sistema puede afectar resultados
-- ⚠️ Almacenamiento local es más rápido que S3 real (puede enmascarar latencias)
-
-### 13.2 Riesgos Identificados
-
-| Riesgo | Impacto | Mitigación |
-|--------|---------|------------|
-| Hardware insuficiente causa fallos prematuros | Alto | Documentar specs y ajustar expectativas |
-| Variabilidad entre ejecuciones por procesos background | Medio | Ejecutar 5+ iteraciones y promediar |
-| Agotamiento de disco por videos acumulados | Medio | Limpiar `videos/` entre pruebas |
-| Timeout de Kafka o DB por recursos | Alto | Monitorear logs y ajustar configuraciones |
-| Newman no genera suficiente concurrencia | Medio | Ejecutar múltiples instancias en paralelo |
-
----
-
-## 14. Referencia Rápida de Comandos
-
-### Setup Inicial
-
-```bash
-# 1. Levantar infraestructura
-make -C ./capacity-planning/ up
-
-# 2. Verificar estado
-make -C ./capacity-planning/ ps
-
-# 3. Ver logs
-make -C ./capacity-planning/ logs
-```
-
-### Ejecución de Tests
-
-```bash
-# Validación básica (5 usuarios, 1 min)
-make -C ./capacity-planning/ test-smoke
-
-# Encontrar capacidad máxima (50→300 usuarios)
-make -C ./capacity-planning/ test-capacity
-
-# Rampa gradual
-make -C ./capacity-planning/ test-ramp
-
-# Carga sostenida (10 min)
-make -C ./capacity-planning/ test-sustained
-
-# Prueba de estrés (hasta fallo)
-make -C ./capacity-planning/ test-stress
-
-# Picos repentinos
-make -C ./capacity-planning/ test-spike
-```
-
-### Monitoreo Manual
-
-```bash
-# Iniciar monitores
-make -C ./capacity-planning/ monitor-start
-
-# ... realizar operaciones manuales ...
-
-# Detener y calcular estadísticas
-make -C ./capacity-planning/ monitor-stop
-
-# Forzar detención si se cuelga
-make -C ./capacity-planning/ kill-monitors
-```
-
-### Análisis de Resultados
+### 📈 Ver Resultados
 
 ```bash
 # Ver estadísticas en consola
 make -C ./capacity-planning/ view-stats
 
-# Calcular estadísticas manualmente
-make -C ./capacity-planning/ calculate-stats
+# Abrir gráficas generadas
+make -C ./capacity-planning/ open-graphs
 
-# Abrir directorio de resultados
-make -C ./capacity-planning/ show-results
-
-# Abrir reporte en navegador (macOS)
-open capacity-planning/postman/results/report_*.html
+# Ver reportes HTML de Newman
+make -C ./capacity-planning/ open-latest-report
 ```
 
-### Limpieza
+### 📁 Archivos Generados
 
-```bash
-# Detener servicios
-make -C ./capacity-planning/ down
+Ubicación: `capacity-planning/postman/results/`
 
-# Limpiar archivos temporales
-make -C ./capacity-planning/ clean
+**Reportes de Newman:**
+- `report_[test]_[timestamp].html` - Reporte visual con métricas HTTP
+- `report_[test]_[timestamp].json` - Datos estructurados (usado por scripts)
 
-# Ayuda
-make -C ./capacity-planning/ help
-```
+**Datos de monitoreo (CSV):**
+- `container_stats_[timestamp].csv` - CPU, memoria, red, disco por contenedor
+- `worker_timing_[timestamp].csv` - Tiempos de procesamiento por tarea
+- `summary_[timestamp].csv` - Resumen consolidado (API + containers + worker)
 
-### Archivos Generados
-
-Todos los resultados se guardan en: `capacity-planning/postman/results/`
-
-- **report_[test]_[timestamp].html**: Reporte HTML de Newman con métricas HTTP
-- **container_stats_[timestamp].csv**: Métricas de CPU, memoria, red, disco por contenedor
-- **worker_timing_[timestamp].csv**: Tiempos de procesamiento por tarea (task_id, video_id, tiempos)
-- **summary_[timestamp].csv**: Estadísticas consolidadas (min, max, avg, median, p95)
-
-### Workflow Completo Recomendado
-
-```bash
-# 1. Setup
-make -C ./capacity-planning/ up
-make -C ./capacity-planning/ ps
-
-# 2. Smoke test (validación)
-make -C ./capacity-planning/ test-smoke
-
-# 3. Capacity test (encontrar límites)
-make -C ./capacity-planning/ test-capacity
-
-# 4. Sustained test (estabilidad)
-make -C ./capacity-planning/ test-sustained
-
-# 5. Ver resultados
-make -C ./capacity-planning/ view-stats
-make -C ./capacity-planning/ show-results
-
-# 6. Limpiar
-make -C ./capacity-planning/ down
-```
+**Gráficas (PNG):**
+- `container_resources.png` - Recursos por contenedor (series de tiempo)
+- `worker_timing.png` - Tiempos de procesamiento (área apilada)
+- `worker_breakdown_pie.png` - Desglose de tiempos (barra + pie chart)
+- `newman_api_metrics.png` - Dashboard de API (4 paneles: histograma, tendencia, success rate, estadísticas)
 
 ---
 
-# Analisis de Resultados Finales
+## 13. Interpretación de Resultados
 
-## Interpretación de Resultados
+### Criterios de Éxito
 
 - **p95 ≤ 1s** = Sistema cumple SLO ✅
 - **Error rate ≤ 5%** = Disponibilidad aceptable ✅
 - **CPU < 85%** = Margen para picos de tráfico ✅
 - **Worker queue estable** = Throughput suficiente ✅
 
-## Recomendaciones Post-Análisis
+### Acciones según Resultados
 
 1. **Si p95 > 1s con <100 usuarios**: Optimizar código de API (profiling, caching)
 2. **Si CPU de storeapi >90%**: Escalar horizontalmente (más instancias)
 3. **Si worker queue crece**: Aumentar paralelismo de workers
 4. **Si hay memory leaks**: Revisar gestión de recursos y conexiones
 5. **Si errores 5xx frecuentes**: Revisar logs de aplicación y dependencias
+
+---
 

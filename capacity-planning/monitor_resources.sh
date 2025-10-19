@@ -7,6 +7,9 @@ RESULTS_DIR=${1:-"postman/results"}
 TIMESTAMP=${2:-$(date +%Y%m%d_%H%M%S)}
 OUTPUT_FILE="${RESULTS_DIR}/container_stats_${TIMESTAMP}.csv"
 
+# Define compose containers to monitor (from docker-compose.yml)
+COMPOSE_CONTAINERS=("database" "storeapi" "proxy" "redis" "kafka" "worker")
+
 # Create results directory if it doesn't exist
 mkdir -p "$RESULTS_DIR"
 
@@ -15,9 +18,21 @@ echo "timestamp,container_name,cpu_percent,memory_usage_mb,memory_percent,networ
 
 echo "📊 Starting container resource monitoring..."
 echo "📁 Output: $OUTPUT_FILE"
+echo "🐳 Monitoring containers: ${COMPOSE_CONTAINERS[*]}"
 
 # Trap SIGTERM and SIGINT to exit gracefully
 trap 'echo "📊 Container monitoring stopped"; exit 0' SIGTERM SIGINT
+
+# Function to check if container is in compose list
+is_compose_container() {
+    local container_name=$1
+    for compose_container in "${COMPOSE_CONTAINERS[@]}"; do
+        if [[ "$container_name" == "$compose_container" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
 
 # Monitoring loop
 while true; do
@@ -25,6 +40,12 @@ while true; do
     
     # Get docker stats in parseable format
     docker stats --no-stream --format "{{.Name}},{{.CPUPerc}},{{.MemUsage}},{{.MemPerc}},{{.NetIO}},{{.BlockIO}}" | while IFS=',' read -r name cpu mem mempct netio blockio; do
+        
+        # Skip containers not in compose
+        if ! is_compose_container "$name"; then
+            continue
+        fi
+        
         # Clean CPU percentage (remove %)
         cpu_clean=$(echo "$cpu" | sed 's/%//')
         
@@ -85,5 +106,5 @@ while true; do
         echo "$CURRENT_TIME,$name,$cpu_clean,$mem_mb,$mempct_clean,$net_rx,$net_tx,$block_read,$block_write" >> "$OUTPUT_FILE"
     done
     
-    sleep 1
+    sleep 0.5  # Increased frequency: sample every 500ms instead of 1s
 done
