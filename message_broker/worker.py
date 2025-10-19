@@ -13,7 +13,8 @@ configure_logging()
 
 logger = logging.getLogger('worker')
 
-bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
+bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+
 group_id = os.getenv("KAFKA_GROUP_ID", "video_tasks_group")
 
 conf = {

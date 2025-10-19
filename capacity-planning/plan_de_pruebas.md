@@ -105,17 +105,14 @@ graph TD
 
 - **Servicios principales:** `web`, `worker`, `db`.  
 - **Herramientas de prueba:** `locust` o `jmeter` como contenedor adicional.  
-- **Base de datos:** PostgreSQL 15 con datos sintéticos.  
-- **Red interna:** `docker_network: test_env`.      
-- **Monitorización:** Prometheus + Grafana en contenedores auxiliares.
+- **Base de datos:** PostgreSQL 15.  
+- **Monitorización:** `monitor.sh` Permite usar las herramientas de docker para monitorizacion.
 
 ### Host local
 
 - CPU: 8 núcleos (mínimo 4 dedicados a Docker).  
 - RAM: 16 GB.  
 - Sistema operativo: macOS / Linux.  
-- Docker Engine: 27.0+  
-- Docker Compose: v2.26+  
 
 ---
 
@@ -123,11 +120,9 @@ graph TD
 
 | Herramienta | Uso | Versión |
 |--------------|-----|----------|
-| **Locust** | Generación de carga concurrente HTTP. | 2.31.0 |
-| **Apache JMeter** | Validación y comparación de resultados. | 5.6.3 |
-| **Prometheus + Grafana** | Recolección y visualización de métricas. | Prometheus 2.53.1 / Grafana 11.2 |
+| **Newman** | Validación y comparación de resultados. | 5.6.3 |
 | **OpenTelemetry** | Trazabilidad distribuida y correlación entre componentes. | 1.25 |
-| **Python script (Redis Producer)** | Inyección de mensajes en la cola. | Python 3.11 |
+| **Python** | Inyección de mensajes en la cola. | Python 3.11 |
 
 ---
 
@@ -149,6 +144,7 @@ graph TD
 - Los resultados pueden variar según el hardware del equipo host.  
 - Los datos simulados pueden no reflejar completamente la complejidad real.  
 - El uso de Docker Desktop puede introducir sobrecarga en macOS o Windows.
+- Solo se prueba una parte de la arquitectura 
 
 ---
 
