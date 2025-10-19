@@ -46,6 +46,11 @@ Dentro del repositorio existe una carpeta `/docs/Entrega_1` que contiene toda la
 - **Guía de despliegue e infraestructura:** `deployment.md`
 - **Colecciones de Postman:** `/collections/`
 
+### 🎥 Video de Sustentación
+
+El video de sustentación de la Entrega No. 1 se encuentra disponible en:
+- **Documento de sustentación:** `/sustentacion/Entrega_1/sustentacion.md`
+
 ```
 📂 ANB-back/
 ├── 📂 capacity-planning/
