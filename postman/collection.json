@@ -1,0 +1,49 @@
+{
+  "info": {
+    "name": "StoreAPI Upload Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+        ],
+        "url": { "raw": "{{HOST}}/api/auth/login", "host": ["{{HOST}}"], "path": ["api","auth","login"] },
+        "body": { "mode": "urlencoded", "urlencoded": [
+          {"key": "username", "value": "{{EMAIL}}"},
+          {"key": "password", "value": "{{PASSWORD}}"},
+          {"key": "grant_type", "value": "password"}
+        ] }
+      },
+      "event": [
+        { "listen": "test", "script": { "exec": [
+          "pm.test('status 200', function(){ pm.response.to.have.status(200); });",
+          "var json = pm.response.json();",
+          "pm.environment.set('TOKEN', json.access_token);"
+        ], "type": "text/javascript" } }
+      ]
+    },
+    {
+      "name": "Upload Video",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Authorization", "value": "Bearer {{TOKEN}}" } ],
+        "url": { "raw": "{{HOST}}/api/videos/upload", "host": ["{{HOST}}"], "path": ["api","videos","upload"] },
+        "body": { "mode": "formdata", "formdata": [
+          {"key": "file", "type": "file", "src": ["{{FILE_PATH}}"]},
+          {"key": "title", "value": "pm-upload"}
+        ] }
+      },
+      "event": [
+        { "listen": "test", "script": { "exec": [
+          "pm.test('status 201/400/413', function(){ pm.expect([201,400,413]).to.include(pm.response.code); });"
+        ], "type": "text/javascript" } }
+      ]
+    }
+  ]
+}
+
+
