@@ -12,3 +12,4 @@
 
 <img width="1920" height="2533" alt="bxtIaLcon4" src="https://github.com/user-attachments/assets/d6354544-296f-4b20-a3e9-e777ee7c1901" />
 
+https://github.com/dso-uniandes/desarrollo-de-software-en-la-nube/actions/runs/18637898766/job/53131681176?pr=37
