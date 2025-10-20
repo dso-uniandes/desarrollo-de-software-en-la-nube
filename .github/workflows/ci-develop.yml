@@ -374,77 +374,77 @@ jobs:
           echo "✅ === ANÁLISIS DE SONARLESS COMPLETADO ==="
           echo "   Los detalles de problemas se muestran arriba para revisión"
 
-  cpd-jscpd:
-    name: Reporte de duplicación (CPD) - jscpd
-    needs: verificar-pruebas
-    runs-on: ubuntu-latest
+  # cpd-jscpd:
+  #   name: Reporte de duplicación (CPD) - jscpd
+  #   needs: verificar-pruebas
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
 
-      - name: Instalar jscpd
-        run: npm install -g jscpd@3.5.1
+  #     - name: Instalar jscpd
+  #       run: npm install -g jscpd@3.5.1
 
-      - name: Ejecutar jscpd sobre Python
-        run: |
-          mkdir -p jscpd-report
-          jscpd "storeapi" \
-            --format "python" \
-            --ignore "**/tests/**" \
-            --ignore "**/test_**.py" \
-            --ignore "**_test.py" \
-            --ignore "**/__pycache__/**" \
-            --ignore "**/migrations/**" \
-            --ignore "**/venv/**" \
-            --ignore "**/.venv/**" \
-            --ignore "**/.git/**" \
-            --ignore "**/*.pyc" \
-            --reporters "html,json,console" \
-            --output "jscpd-report" \
-            --min-lines 10 \
-            --min-tokens 30 \
-            --gitignore
+  #     - name: Ejecutar jscpd sobre Python
+  #       run: |
+  #         mkdir -p jscpd-report
+  #         jscpd "storeapi" \
+  #           --format "python" \
+  #           --ignore "**/tests/**" \
+  #           --ignore "**/test_**.py" \
+  #           --ignore "**_test.py" \
+  #           --ignore "**/__pycache__/**" \
+  #           --ignore "**/migrations/**" \
+  #           --ignore "**/venv/**" \
+  #           --ignore "**/.venv/**" \
+  #           --ignore "**/.git/**" \
+  #           --ignore "**/*.pyc" \
+  #           --reporters "html,json,console" \
+  #           --output "jscpd-report" \
+  #           --min-lines 10 \
+  #           --min-tokens 30 \
+  #           --gitignore
 
-      - name: Instalar jq para procesar JSON
-        run: sudo apt-get update && sudo apt-get install -y jq bc
+  #     - name: Instalar jq para procesar JSON
+  #       run: sudo apt-get update && sudo apt-get install -y jq bc
 
-      - name: Resumen de duplicación
-        run: |
-          if [ -f "jscpd-report/jscpd-report.json" ]; then
-            echo "📊 ===== REPORTE DE DUPLICACIÓN ====="
-            TOTAL_LINES=$(jq -r '.statistics.total.lines // 0' jscpd-report/jscpd-report.json)
-            DUP_LINES=$(jq -r '.statistics.total.duplicatedLines // 0' jscpd-report/jscpd-report.json)
-            PERCENT=$(jq -r '.statistics.total.percentage // 0' jscpd-report/jscpd-report.json)
-            CLONES=$(jq -r '.duplicates | length // 0' jscpd-report/jscpd-report.json)
+  #     - name: Resumen de duplicación
+  #       run: |
+  #         if [ -f "jscpd-report/jscpd-report.json" ]; then
+  #           echo "📊 ===== REPORTE DE DUPLICACIÓN ====="
+  #           TOTAL_LINES=$(jq -r '.statistics.total.lines // 0' jscpd-report/jscpd-report.json)
+  #           DUP_LINES=$(jq -r '.statistics.total.duplicatedLines // 0' jscpd-report/jscpd-report.json)
+  #           PERCENT=$(jq -r '.statistics.total.percentage // 0' jscpd-report/jscpd-report.json)
+  #           CLONES=$(jq -r '.duplicates | length // 0' jscpd-report/jscpd-report.json)
             
-            echo "📈 Líneas totales analizadas: $TOTAL_LINES"
-            echo "🔁 Líneas duplicadas: $DUP_LINES"
-            echo "📈 Porcentaje de duplicación: ${PERCENT}%"
-            echo "🔄 Bloques duplicados encontrados: $CLONES"
+  #           echo "📈 Líneas totales analizadas: $TOTAL_LINES"
+  #           echo "🔁 Líneas duplicadas: $DUP_LINES"
+  #           echo "📈 Porcentaje de duplicación: ${PERCENT}%"
+  #           echo "🔄 Bloques duplicados encontrados: $CLONES"
             
-            # Mostrar archivos analizados
-            echo ""
-            echo "📁 Archivos analizados:"
-            jq -r '.statistics.formats[].files // 0' jscpd-report/jscpd-report.json
-          else
-            echo "⚠️ No se encontró el reporte JSON"
-            echo "📁 Contenido del directorio:"
-            ls -la jscpd-report/ 2>/dev/null || echo "Directorio no existe"
-            exit 0
-          fi
+  #           # Mostrar archivos analizados
+  #           echo ""
+  #           echo "📁 Archivos analizados:"
+  #           jq -r '.statistics.formats[].files // 0' jscpd-report/jscpd-report.json
+  #         else
+  #           echo "⚠️ No se encontró el reporte JSON"
+  #           echo "📁 Contenido del directorio:"
+  #           ls -la jscpd-report/ 2>/dev/null || echo "Directorio no existe"
+  #           exit 0
+  #         fi
 
-      - name: Subir reporte como artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jscpd-report
-          path: jscpd-report/
+  #     - name: Subir reporte como artifact
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: jscpd-report
+  #         path: jscpd-report/
 
       # - name: Quality Gate
       #   id: quality-gate
@@ -473,7 +473,7 @@ jobs:
   merge-develop:
     name: Merge develop
     runs-on: ubuntu-latest
-    needs: [verificar-pruebas, sonarless, cpd-jscpd]
+    needs: [verificar-pruebas, sonarless]
     if: ${{ needs.verificar-pruebas.outputs.respuesta-ok == 'OK' && contains(github.event.head_commit.message, 'END_HU') }}
 
     steps:
