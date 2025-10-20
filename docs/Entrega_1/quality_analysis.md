@@ -9,3 +9,6 @@
 ### Herramientas Adicionales
 
 - **Exclusiones**: Carpetas como tests, migrations, etc. están excluidas del análisis
+
+<img width="1920" height="2533" alt="bxtIaLcon4" src="https://github.com/user-attachments/assets/d6354544-296f-4b20-a3e9-e777ee7c1901" />
+
