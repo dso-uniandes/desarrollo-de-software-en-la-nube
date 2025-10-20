@@ -9,3 +9,5 @@ En nuestro proyecto montamos un pipeline bastante completo de pruebas automatiza
 - Confianza en el despliegue
 - Mantenimiento de la calidad del código
 - Automatización del proceso de validación
+
+<img width="1920" height="3276" alt="xBWnWtkDSc" src="https://github.com/user-attachments/assets/6b224328-7a37-4e2d-9634-f55304db0315" />
