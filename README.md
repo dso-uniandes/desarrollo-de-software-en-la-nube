@@ -11,6 +11,13 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 | Daniel Serna Osorio | d.sernao@uniandes.edu.co |
 | Harold Virgüez Engativa | h.virgueze@uniandes.edu.co |
 
+## Entregas
+
+- **Entrega 1:** 
+- [Documentación técnica](./docs/Entrega_1/) (.docs/Entrega_1)
+- [Video de sustentación](./sustentacion/Entrega_1/sustentacion.md)
+- [Plan de Capacidad](./capacity-planning/plan_de_pruebas.md) 
+
 ---
 
 ## 🚦 Inicio Rápido
