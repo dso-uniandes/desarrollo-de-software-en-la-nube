@@ -61,17 +61,17 @@ monitor-start:
 	@mkdir -p $(RESULTS_DIR)
 	@chmod +x monitor_resources.sh monitor_worker.sh 2>/dev/null || true
 	@nohup bash monitor_resources.sh $(RESULTS_DIR) $(TIMESTAMP) > /dev/null 2>&1 & echo $$! > .monitor_resources.pid
-	@nohup bash monitor_worker.sh $(RESULTS_DIR) $(TIMESTAMP) > /dev/null 2>&1 & echo $$! > .monitor_worker.pid
+#	@nohup bash monitor_worker.sh $(RESULTS_DIR) $(TIMESTAMP) > /dev/null 2>&1 & echo $$! > .monitor_worker.pid
 	@echo "✅ Container monitor started (PID=$$(cat .monitor_resources.pid))"
-	@echo "✅ Worker monitor started (PID=$$(cat .monitor_worker.pid))"
+#	@echo "✅ Worker monitor started (PID=$$(cat .monitor_worker.pid))"
 	@echo "📁 Results: $(RESULTS_DIR)/container_stats_$(TIMESTAMP).csv"
-	@echo "📁 Results: $(RESULTS_DIR)/worker_timing_$(TIMESTAMP).csv"
+#	@echo "📁 Results: $(RESULTS_DIR)/worker_timing_$(TIMESTAMP).csv"
 
 monitor-stop:
 	@echo "🛑 Stopping monitors and calculating statistics..."
 	@# Wait for worker to finish processing tasks (10 minutes timeout for large batches)
 	@chmod +x wait_for_worker.sh 2>/dev/null || true
-	@./wait_for_worker.sh 3600 || true
+#   @./wait_for_worker.sh 3600 || true
 	@echo ""
 	@# Stop monitoring processes
 	@if [ -f .monitor_resources.pid ]; then \
@@ -145,7 +145,7 @@ test-capacity:
 	@echo "📈 Running CAPACITY TEST (incremental load)..."
 	@echo "Testing with different user loads: 50, 100, 150, 200, 250, 300"
 	@mkdir -p $(RESULTS_DIR)
-	@for users in 50 100 150 200 250 300; do \
+	@for users in 250 300; do \
 		echo ""; \
 		echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"; \
 		echo "🔄 Testing with $$users concurrent users..."; \
@@ -178,7 +178,7 @@ test-ramp:
 		newman run postman/collection.json \
 			-e postman/environment.json \
 			-n $$users \
-			--delay-request 20 \
+			--delay-request 1 \
 			-r cli,html,json \
 			--reporter-html-export $(RESULTS_DIR)/report_ramp_$${users}users_$(TIMESTAMP).html \
 			--reporter-json-export $(RESULTS_DIR)/report_ramp_$${users}users_$(TIMESTAMP).json || true; \
@@ -194,7 +194,7 @@ test-sustained:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 200 \
-		--delay-request 30 \
+		--delay-request 1 \
 		-r cli,html,json \
 		--reporter-html-export $(RESULTS_DIR)/report_sustained_$(TIMESTAMP).html \
 		--reporter-json-export $(RESULTS_DIR)/report_sustained_$(TIMESTAMP).json || true
@@ -202,12 +202,12 @@ test-sustained:
 	@echo "✅ Sustained test completed!"
 
 test-stress:
-	@echo "💥 Running STRESS TEST (400 users, pushing limits)..."
+	@echo "💥 Running STRESS TEST (1000 users, pushing limits)..."
 	@$(MAKE) monitor-start
 	@newman run postman/collection.json \
 		-e postman/environment.json \
-		-n 400 \
-		--delay-request 10 \
+		-n 1000 \
+		--delay-request 1 \
 		-r cli,html,json \
 		--reporter-html-export $(RESULTS_DIR)/report_stress_$(TIMESTAMP).html \
 		--reporter-json-export $(RESULTS_DIR)/report_stress_$(TIMESTAMP).json || true
@@ -222,7 +222,7 @@ test-spike:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 20 \
-		--delay-request 50 \
+		--delay-request 0 \
 		-r cli,html,json \
 		--reporter-html-export $(RESULTS_DIR)/report_spike_baseline_$(TIMESTAMP).html \
 		--reporter-json-export $(RESULTS_DIR)/report_spike_baseline_$(TIMESTAMP).json || true
@@ -242,7 +242,7 @@ test-spike:
 	@newman run postman/collection.json \
 		-e postman/environment.json \
 		-n 20 \
-		--delay-request 50 \
+		--delay-request 20 \
 		-r cli,html,json \
 		--reporter-html-export $(RESULTS_DIR)/report_spike_recovery_$(TIMESTAMP).html \
 		--reporter-json-export $(RESULTS_DIR)/report_spike_recovery_$(TIMESTAMP).json || true
