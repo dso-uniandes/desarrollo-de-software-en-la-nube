@@ -513,11 +513,32 @@ Ubicación: `capacity-planning/postman/results/`
   make -C ./capacity-planning/ test-ramp
   ```
 
-- **Sustained Test - Carga sostenida (10 min)**
+  **50 Usuarios:**
   
-  ```bash
-  make -C ./capacity-planning/ test-sustained
-  ```
+  | API Metrics | Container Resources |
+  |-------------|---------------------|
+  | ![API 50](./resultados/Esceneario3/newman_api_metrics_50_users.png) | ![Resources 50](./resultados/Esceneario3/container_resources_50_users.png) |
+
+  **100 Usuarios:**
+  
+  | API Metrics | Container Resources |
+  |-------------|---------------------|
+  | ![API 100](./resultados/Esceneario3/newman_api_metrics_100_users.png) | ![Resources 100](./resultados/Esceneario3/container_resources_100_users.png) |
+
+  **200 Usuarios:**
+  
+  | API Metrics | Container Resources |
+  |-------------|---------------------|
+  | ![API 200](./resultados/Esceneario3/newman_api_metrics_200_users.png) | ![Resources 200](./resultados/Esceneario3/container_resources_200_users.png) |
+
+  **300 Usuarios:**
+  
+  | API Metrics | Container Resources |
+  |-------------|---------------------|
+  | ![API 300](./resultados/Esceneario3/newman_api_metrics_300_users.png) | ![Resources 300](./resultados/Esceneario3/container_resources_300_users.png) |
+
+  > **Nota:** En el Ramp Test solo se muestran métricas de API y recursos de contenedores, ya que el enfoque está en evaluar la capacidad de aceptación de solicitudes bajo carga gradual incremental.
+
 
 - **Stress Test - Sobrecarga hasta fallo**
   
@@ -525,21 +546,68 @@ Ubicación: `capacity-planning/postman/results/`
   make -C ./capacity-planning/ test-stress
   ```
 
-- **Spike Test - Picos repentinos**
+  **Métricas de API:**
   
-  ```bash
-  make -C ./capacity-planning/ test-spike
-  ```
+  ![Newman API Metrics](./resultados/Escenario4/newman_api_metrics.png)
 
+  **Recursos de Contenedores:**
+  
+  ![Container Resources](./resultados/Escenario4/container_resources.png)
 
+  > **Nota:** El Stress Test evalúa el comportamiento del sistema bajo sobrecarga extrema, buscando identificar el punto de ruptura y la capacidad de recuperación. Solo se muestran métricas de API y recursos de contenedores.
 
-### Acciones según Resultados
+- **Sustained Con Postman 100 Parallel Users**
+  
 
-1. **Si p95 > 1s con <100 usuarios**: Optimizar código de API (profiling, caching)
-2. **Si CPU de storeapi >90%**: Escalar horizontalmente (más instancias)
-3. **Si worker queue crece**: Aumentar paralelismo de workers
-4. **Si hay memory leaks**: Revisar gestión de recursos y conexiones
-5. **Si errores 5xx frecuentes**: Revisar logs de aplicación y dependencias
+  **Prueba de Carga Sostenida (Postman):**
+  
+  ![Sustained Test Postman](./resultados/EscenarioExtra/image.png)
+
+  > **Nota:** Esta prueba evalúa la estabilidad del sistema bajo carga sostenida de 100 usuarios concurrentes durante un período prolongado, utilizando Postman como herramienta de generación de carga.
+
+### Conclusiones del Análisis de Capacidad
+
+####  Desempeño Bajo Carga Ligera (Smoke Test)
+
+El **Escenario 1 (Smoke Test)** demostró que tanto el API como el worker funcionan correctamente bajo carga ligera. Los resultados muestran:
+
+- ✅ **API**: Tiempos de respuesta muy bajos y estables, con la mayoría de las peticiones completándose en menos de 500ms
+- ✅ **Worker**: Procesamiento eficiente de videos con tiempos razonables y desglose predecible entre las diferentes fases (DB Fetch, S3 Download, FFmpeg, DB Update)
+- ✅ **Recursos**: Uso moderado de CPU y memoria en todos los contenedores
+- ✅ **Sin degradación**: No se observaron errores ni timeouts durante la prueba
+
+Este escenario establece la **línea base de desempeño** del sistema y confirma que la arquitectura es sólida para cargas normales de operación.
+
+#### Limitaciones del Worker en Cargas Altas
+
+A partir del **Escenario 2 (Capacity Test)**, se identificó un cuello de botella crítico en la capa de procesamiento:
+
+- ⚠️ **Con >50 videos encolados**: Los mensajes en la cola de Kafka permanecían en espera por tiempos significativamente mayores a los esperados
+- ⚠️ **Con 200+ videos**: El tiempo de procesamiento completo superaba **30 minutos**, haciendo impráctico esperar la finalización del procesamiento
+- ⚠️ **Decisión metodológica**: Para pruebas de capacidad con 250+ usuarios, se **excluyeron las métricas del worker** del análisis, enfocándose únicamente en la capacidad del API para aceptar solicitudes
+
+**Implicaciones:**
+
+- El throughput del worker (con configuración actual de 1 worker) es insuficiente para procesar la carga generada por ~100 usuarios concurrentes
+- El procesamiento de video con FFmpeg es CPU-intensivo y secuencial, creando un backlog que crece más rápido de lo que puede ser procesado
+- Se requiere **escalamiento horizontal** (más workers) para manejar picos de carga sostenidos
+
+### 14.3 Limitaciones de la Herramienta de Pruebas (Newman)
+
+La elección de **Newman** como herramienta de generación de carga presentó limitaciones significativas:
+
+- ❌ **Sin concurrencia real**: Newman ejecuta iteraciones secuencialmente con delays configurados, pero no genera **usuarios verdaderamente paralelos** como lo hace JMeter
+- ❌ **No se alcanzó el punto de ruptura del API**: En ninguna de las pruebas (50, 100, 150, 200, 250, 300 "usuarios") se logró saturar o tumbar el API
+- ✅ **Validación con Postman**: La prueba del **EscenarioExtra** con Postman Collection Runner demostró que incluso con **100 usuarios concurrentes reales** y casi **6,000 peticiones**, el API mantuvo estabilidad sin errores críticos
+
+**Conclusión clave**: El API tiene una **capacidad mucho mayor** de la que pudimos medir con Newman. Las pruebas actuales validan la estabilidad bajo carga secuencial incremental, pero no determinan el límite real de concurrencia del sistema.
+
+**Posibles Mejoras para futuros tests:**
+
+- Migrar a **Apache JMeter** o **k6** para pruebas de carga con concurrencia real
+- Ejecutar pruebas con 500, 1000, 2000+ usuarios concurrentes simultáneos
+- Configurar múltiples workers (2, 4, 8) para validar escalamiento horizontal
+- Implementar monitoreo de métricas de Kafka (lag de consumidores, throughput de mensajes)
 
 ---
 
