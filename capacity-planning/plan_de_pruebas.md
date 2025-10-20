@@ -451,6 +451,62 @@ Ubicación: `capacity-planning/postman/results/`
   make -C ./capacity-planning/ test-capacity
   ```
 
+  **50 Usuarios:**
+  
+  | API Metrics | Container Resources |
+  |-------------|---------------------|
+  | ![API 50](./resultados/Escenario2/newman_api_metrics_50_users.png) | ![Resources 50](./resultados/Escenario2/container_resources_50_users.png) |
+  
+  | Worker Timing | Worker Breakdown |
+  |---------------|------------------|
+  | ![Timing 50](./resultados/Escenario2/worker_timing_50_users.png) | ![Breakdown 50](./resultados/Escenario2/worker_breakdown_pie_50_users.png) |
+
+  **100 Usuarios:**
+  
+  | API Metrics | Container Resources |
+  |-------------|---------------------|
+  | ![API 100](./resultados/Escenario2/newman_api_metrics_100_users.png) | ![Resources 100](./resultados/Escenario2/container_resources_100_users.png) |
+  
+  | Worker Timing | Worker Breakdown |
+  |---------------|------------------|
+  | ![Timing 100](./resultados/Escenario2/worker_timing_100_users.png) | ![Breakdown 100](./resultados/Escenario2/worker_breakdown_pie_100_users.png) |
+
+  **150 Usuarios:**
+  
+  | API Metrics | Container Resources |
+  |-------------|---------------------|
+  | ![API 150](./resultados/Escenario2/newman_api_metrics_150_users.png) | ![Resources 150](./resultados/Escenario2/container_resources_150_users.png) |
+  
+  | Worker Timing | Worker Breakdown |
+  |---------------|------------------|
+  | ![Timing 150](./resultados/Escenario2/worker_timing_150_users.png) | ![Breakdown 150](./resultados/Escenario2/worker_breakdown_pie_150_users.png) |
+
+  **200 Usuarios:**
+  
+  | API Metrics | Container Resources |
+  |-------------|---------------------|
+  | ![API 200](./resultados/Escenario2/newman_api_metrics_200_users.png) | ![Resources 200](./resultados/Escenario2/container_resources_200_users.png) |
+  
+  | Worker Timing | Worker Breakdown |
+  |---------------|------------------|
+  | ![Timing 200](./resultados/Escenario2/worker_timing_200_users.png) | ![Breakdown 200](./resultados/Escenario2/worker_breakdown_pie_200_users.png) |
+
+  **250 Usuarios:**
+  
+  | API Metrics | Container Resources |
+  |-------------|---------------------|
+  | ![API 250](./resultados/Escenario2/newman_api_metrics_250_users.png) | ![Resources 250](./resultados/Escenario2/container_resources_250_users.png) |
+  
+  > **Nota:** A partir de 250 usuarios, las métricas del worker no se incluyen ya que el tiempo de procesamiento se vuelve excesivamente largo, haciendo impráctico esperar a que termine el procesamiento de todos los videos encolados. El foco de estas pruebas de alta carga está en la capacidad de la API para aceptar solicitudes, no en el throughput del worker que ya no cumple con la metrica esperada.
+
+  **300 Usuarios:**
+  
+  | API Metrics | Container Resources |
+  |-------------|---------------------|
+  | ![API 300](./resultados/Escenario2/newman_api_metrics_300_users.png) | ![Resources 300](./resultados/Escenario2/container_resources_300_users.png) |
+  
+  > **Nota:** Las gráficas del worker no están disponibles para cargas de 250+ usuarios debido a los tiempos de procesamiento prolongados.
+
 - **Ramp Test - Rampa gradual**
   
   ```bash
