@@ -45,6 +45,7 @@ services:
       # Override .env values so the app connects to the postgres service by hostname
       - DEV_DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/dev_db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - VIDEO_STORAGE_PATH=/mnt/nfs/videos
     volumes:
       - ./:/app
     deploy:
