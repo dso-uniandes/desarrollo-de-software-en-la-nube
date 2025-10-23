@@ -1,12 +1,9 @@
 import os
 import logging
 
-from typing import ClassVar
 from typing import Optional
-
 from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +27,7 @@ class GlobalConfig(BaseConfig):
     REDIS_URL: Optional[str] = None
     RANKING_CACHE_TTL: int = 120
     KAFKA_BOOTSTRAP_SERVERS: Optional[str] = None
-    VIDEO_STORAGE_BASE: ClassVar[str] = os.getenv("VIDEO_STORAGE_PATH", "/mnt/nfs/videos")
+    VIDEO_STORAGE_BASE: str = os.getenv("VIDEO_STORAGE_PATH", "/mnt/nfs/videos")
     UPLOADED_FOLDER: str = f"{VIDEO_STORAGE_BASE}/uploaded"
     PROCESSED_FOLDER: str = f"{VIDEO_STORAGE_BASE}/processed"
     APP_HOST: Optional[str] = None
@@ -69,6 +66,11 @@ def get_config(envi_state: str):
 
 
 config = get_config(BaseConfig().ENV_STATE)
+
+if config.ENV_STATE == "test":
+    config.VIDEO_STORAGE_BASE = "./videos"
+    config.UPLOADED_FOLDER = f"{config.VIDEO_STORAGE_BASE}/uploaded"
+    config.PROCESSED_FOLDER = f"{config.VIDEO_STORAGE_BASE}/processed"
 
 for dir in [config.PROCESSED_FOLDER, config.UPLOADED_FOLDER]:
     os.makedirs(dir, exist_ok=True)
