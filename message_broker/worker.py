@@ -4,7 +4,7 @@ import os
 import time
 from confluent_kafka import Consumer, KafkaException
 import logging
-
+import asyncio
 from utils.ffmpeg import edit_video
 from utils.config import config
 from utils.logging_conf import configure_logging
@@ -16,7 +16,7 @@ logger = logging.getLogger('worker')
 
 bootstrap_servers = config.KAFKA_BOOTSTRAP_SERVERS
 
-group_id = os.getenv("KAFKA_GROUP_ID", "video_tasks_group")
+group_id = config.KAFKA_GROUP_ID
 
 conf = {
     'bootstrap.servers': bootstrap_servers,
@@ -24,7 +24,14 @@ conf = {
     'auto.offset.reset': 'earliest'
 }
 
-consumer = Consumer(conf)
+def getConsumer() -> Consumer:
+    try:
+        if config.ENV_STATE == 'test':
+            return None
+        return Consumer(conf)
+    except Exception as e:
+        logger.error(f"Error creating Kafka consumer: {e}")
+        return None
 
 async def process_video_processing(message: dict):
     """
@@ -101,7 +108,7 @@ async def process_video_processing(message: dict):
 
 
 
-async def consume_messages(topic: str):
+async def consume_messages(topic: str, consumer: Consumer):
     consumer.subscribe([topic])
     try:
         while True:
@@ -121,13 +128,14 @@ async def consume_messages(topic: str):
     finally:
         consumer.close()
         
-import asyncio
+
 
 async def wrapperWorker():
     try:
         await database.connect()
         logger.info("Database connection established.")
-        await consume_messages("video_tasks")
+        consumer = getConsumer()
+        await consume_messages("video_tasks", consumer)
     except Exception as e:
         logger.error(f"Error connecting to database: {e}")
     finally:
