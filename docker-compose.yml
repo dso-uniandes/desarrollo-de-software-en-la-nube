@@ -48,7 +48,6 @@ services:
       - VIDEO_STORAGE_PATH=/mnt/nfs/videos
     volumes:
       - ./:/app
-      - /mnt/nfs/videos:/mnt/nfs/videos
     deploy:
       resources:
         limits:

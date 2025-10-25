@@ -13,8 +13,8 @@ services:
       - ./.env
     volumes:
       - ./:/app
+      - /mnt/nfs/videos:/mnt/nfs/videos
 
-    
   nginx:
     image: nginx:latest
     container_name: proxy
