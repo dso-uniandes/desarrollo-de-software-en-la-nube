@@ -50,3 +50,4 @@ services:
       - ./.env
     volumes:
       - ./:/app
+      - /mnt/nfs/videos:/mnt/nfs/videos
