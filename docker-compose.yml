@@ -1,36 +1,34 @@
 name: anb
 services:
 
-  db:
-    image: postgres:15
-    container_name: database
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: dev_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 1G
-        reservations:
-          cpus: '0.5'
-          memory: 512M
+  # db:
+  #   image: postgres:15
+  #   container_name: database
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: dev_db
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 10
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: '2.0'
+  #         memory: 1G
+  #       reservations:
+  #         cpus: '0.5'
+  #         memory: 512M
 
   storeapi:
     depends_on:
       kafka:
-        condition: service_healthy
-      db:
         condition: service_healthy
     build: 
       context: ./
@@ -43,7 +41,7 @@ services:
       - ./.env
     environment:
       # Override .env values so the app connects to the postgres service by hostname
-      - DEV_DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/dev_db
+      - DEV_DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - VIDEO_STORAGE_PATH=/mnt/nfs/videos
     volumes:
@@ -141,13 +139,11 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
-      db:
-        condition: service_healthy
 
     env_file:
       - ./.env
     environment:
-      - DEV_DATABASE_URL=postgresql+asyncpg://postgres:password@db:5432/dev_db
+      - DEV_DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     volumes:
       - ./:/app
