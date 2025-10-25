@@ -6,6 +6,7 @@ from confluent_kafka import Consumer, KafkaException
 import logging
 
 from utils.ffmpeg import edit_video
+from utils.config import config
 from utils.logging_conf import configure_logging
 from utils.nfs.s3_local import get_object_key_from_url, get_shared_url, s3_get_object
 from storeapi.database import database, video_table
@@ -13,7 +14,7 @@ configure_logging()
 
 logger = logging.getLogger('worker')
 
-bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+bootstrap_servers = config.KAFKA_BOOTSTRAP_SERVERS
 
 group_id = os.getenv("KAFKA_GROUP_ID", "video_tasks_group")
 

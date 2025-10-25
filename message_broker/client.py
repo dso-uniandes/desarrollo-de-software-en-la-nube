@@ -2,7 +2,7 @@ import os
 from confluent_kafka import Producer
 from utils.config import config
 
-bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+bootstrap_servers = config.KAFKA_BOOTSTRAP_SERVERS
 
 conf = {'bootstrap.servers': bootstrap_servers}
 
