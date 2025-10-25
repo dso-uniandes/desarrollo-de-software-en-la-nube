@@ -1,0 +1,32 @@
+name: anb
+services:
+
+  storeapi:
+    build: 
+      context: ./
+      dockerfile: api.Dockerfile
+    container_name: storeapi
+    expose:
+      - 8000
+    command: uvicorn storeapi.main:app --host 0.0.0.0 --port 8000
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/app
+
+    
+  nginx:
+    image: nginx:latest
+    container_name: proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - storeapi
+
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
