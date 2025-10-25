@@ -1,7 +1,7 @@
 import os
-from storeapi.database import create_tables_async
-
 os.environ["ENV_STATE"] = "test"
+
+from storeapi.database import create_tables_async
 
 import pytest
 from typing import AsyncGenerator, Generator

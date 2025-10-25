@@ -7,7 +7,7 @@ import logging
 
 from utils.ffmpeg import edit_video
 from utils.logging_conf import configure_logging
-from utils.s3.s3_local import get_object_key_from_url, get_shared_url, s3_get_object
+from utils.nfs.s3_local import get_object_key_from_url, get_shared_url, s3_get_object
 from storeapi.database import database, video_table
 configure_logging()
 

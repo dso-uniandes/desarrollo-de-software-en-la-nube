@@ -18,9 +18,9 @@ def sample_image(fs) -> pathlib.Path:
 
 
 @pytest.fixture(autouse=True)
-def mock_s3_upload_video(mocker):
+def mock_upload_video(mocker):
     return mocker.patch(
-        "storeapi.routers.video.s3_upload_video", return_value="https://fakeurl.com")
+        "storeapi.routers.video.upload_video", return_value="https://fakeurl.com")
 
 
 @pytest.fixture(autouse=True)
