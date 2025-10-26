@@ -13,11 +13,11 @@ PROD_KAFKA_BOOTSTRAP_SERVERS = os.getenv("PROD_KAFKA_BOOTSTRAP_SERVERS", None)
 TOPIC = "video_tasks"
 
 # Fixed list of sample video IDs
-NORMAL_VIDEO_ID = [101]
-HEAVY_VIDEO_ID = 999  # example heavy video id
+NORMAL_VIDEO_ID = 21
+HEAVY_VIDEO_ID = 22  # example heavy video id
 
 # Example user
-DEFAULT_USER_ID = 9999
+DEFAULT_USER_ID = 1
 
 # ---------- LOGGING ----------
 logging.basicConfig(
