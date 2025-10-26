@@ -83,3 +83,4 @@ def create_tables():
 async def create_tables_async():
     async with engine.begin() as conn:
         await conn.run_sync(metadata.create_all)
+print("Loaded DB:", config.DATABASE_URL)
