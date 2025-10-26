@@ -1,5 +1,9 @@
 SHELL := /bin/bash
 
+# Detect docker compose command (v2 plugin or legacy binary)
+# Falls back to "docker-compose" if "docker compose" plugin is not available
+DOCKER_COMPOSE := $(shell docker compose version >/dev/null 2>&1 && echo "docker compose" || (command -v docker-compose >/dev/null 2>&1 && echo "docker-compose" || echo "docker compose"))
+
 HOST ?= http://localhost
 EMAIL ?= test@example.com
 PASSWORD ?= pass123
@@ -10,7 +14,8 @@ TIMESTAMP := $(shell date +%Y%m%d_%H%M%S)
 .PHONY: up down ps newman newman-with-monitor monitor-start monitor-stop \
         test-smoke test-capacity test-ramp test-sustained test-stress test-spike \
         test-all run-all-tests clean-results help view-stats calculate-stats \
-        monitor-interactive show-results open-latest-report kill-monitors install-deps
+        monitor-interactive show-results open-latest-report kill-monitors install-deps \
+        worker-seed worker-saturate worker-sustained worker-lag
 
 # =============================================================================
 # Setup
@@ -38,19 +43,19 @@ install-deps:
 
 up:
 	@echo "🚀 Starting all services..."
-	docker compose -f $(DOCKER_COMPOSE_FILE) up -d
+	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d
 	@echo "⏳ Waiting for services to be ready..."
 	@sleep 10
 	@echo "✅ Services are up!"
 
 down:
 	@echo "🛑 Stopping all services..."
-	docker compose -f $(DOCKER_COMPOSE_FILE) down -v
+	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down -v
 	@echo "✅ Services stopped!"
 
 ps:
 	@echo "📊 Container Status:"
-	docker compose -f $(DOCKER_COMPOSE_FILE) ps
+	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) ps
 
 # =============================================================================
 # Monitoring
@@ -60,18 +65,20 @@ monitor-start:
 	@echo "📊 Starting enhanced monitoring (containers + worker)..."
 	@mkdir -p $(RESULTS_DIR)
 	@chmod +x monitor_resources.sh monitor_worker.sh 2>/dev/null || true
-	@nohup bash monitor_resources.sh $(RESULTS_DIR) $(TIMESTAMP) > /dev/null 2>&1 & echo $$! > .monitor_resources.pid
-#	@nohup bash monitor_worker.sh $(RESULTS_DIR) $(TIMESTAMP) > /dev/null 2>&1 & echo $$! > .monitor_worker.pid
-	@echo "✅ Container monitor started (PID=$$(cat .monitor_resources.pid))"
-#	@echo "✅ Worker monitor started (PID=$$(cat .monitor_worker.pid))"
-	@echo "📁 Results: $(RESULTS_DIR)/container_stats_$(TIMESTAMP).csv"
-#	@echo "📁 Results: $(RESULTS_DIR)/worker_timing_$(TIMESTAMP).csv"
+	@TS=$$(date +%Y%m%d_%H%M%S); \
+	 echo $$TS > .current_test_ts; \
+	 nohup bash monitor_resources.sh $(RESULTS_DIR) $$TS > /dev/null 2>&1 & echo $$! > .monitor_resources.pid; \
+	 nohup bash monitor_worker.sh $(RESULTS_DIR) $$TS > /dev/null 2>&1 & echo $$! > .monitor_worker.pid; \
+	 echo "✅ Container monitor started (PID=$$(cat .monitor_resources.pid))"; \
+	 echo "✅ Worker monitor started (PID=$$(cat .monitor_worker.pid))"; \
+	 echo "📁 Results: $(RESULTS_DIR)/container_stats_$$TS.csv"; \
+	 echo "📁 Results: $(RESULTS_DIR)/worker_timing_$$TS.csv"
 
 monitor-stop:
 	@echo "🛑 Stopping monitors and calculating statistics..."
 	@# Wait for worker to finish processing tasks (10 minutes timeout for large batches)
 	@chmod +x wait_for_worker.sh 2>/dev/null || true
-#   @./wait_for_worker.sh 3600 || true
+	@./wait_for_worker.sh 3600 || true
 	@echo ""
 	@# Stop monitoring processes
 	@if [ -f .monitor_resources.pid ]; then \
@@ -88,12 +95,16 @@ monitor-stop:
 	@pkill -f "monitor_resources.sh" 2>/dev/null || true
 	@pkill -f "monitor_worker.sh" 2>/dev/null || true
 	@sleep 2
-	@if [ -f "$(RESULTS_DIR)/container_stats_$(TIMESTAMP).csv" ] && [ -f "calculate_stats.py" ]; then \
-		echo "📊 Calculating statistics..."; \
-		python3 calculate_stats.py $(TIMESTAMP) || echo "⚠️  Stats calculation skipped"; \
-		echo "📊 Generating graphs..."; \
-		python3 generate_graphs.py $(TIMESTAMP) || echo "⚠️  Graph generation skipped"; \
-	fi
+	@TS=$$(cat .current_test_ts 2>/dev/null || echo ""); \
+	 if [ -n "$$TS" ] && [ -f "$(RESULTS_DIR)/container_stats_$$TS.csv" ] && [ -f "calculate_stats.py" ]; then \
+		echo "📊 Calculating statistics for $$TS ..."; \
+		python3 calculate_stats.py $$TS || echo "⚠️  Stats calculation skipped"; \
+		echo "📊 Generating graphs for $$TS ..."; \
+		python3 generate_graphs.py $$TS || echo "⚠️  Graph generation skipped"; \
+	 else \
+		echo "⚠️  Missing timestamp or container stats; skipping stats/graphs"; \
+	 fi; \
+	 rm -f .current_test_ts 2>/dev/null || true
 	@echo "✅ Monitoring stopped"
 
 monitor-interactive:
@@ -444,5 +455,47 @@ help:
 	@echo ""
 	@echo "📖 All results saved to: $(RESULTS_DIR)/"
 	@echo ""
+
+# =============================================================================
+# Worker Capacity Tests (Plan B)
+# =============================================================================
+
+worker-seed:
+	@echo "🌱 Seeding test videos (50MB, 100MB)..."
+	@mkdir -p $(RESULTS_DIR)
+	@python3 seed_videos.py --user-id 1 --sizes 50,100 --count-per-size 1 --base-name captest > $(RESULTS_DIR)/seed_output_$(TIMESTAMP).json
+	@echo "✅ Seed complete. Output: $(RESULTS_DIR)/seed_output_$(TIMESTAMP).json"
+
+worker-saturate:
+	@echo "🔥 Worker Saturation Test: enqueue many tasks quickly"
+	@$(MAKE) monitor-start
+	@seed_file=$$(ls -t $(RESULTS_DIR)/seed_output_*.json 2>/dev/null | head -1); \
+	if [ -z "$$seed_file" ]; then \
+		echo "❌ No seed output found. Run 'make -C ./capacity-planning/ worker-seed' first."; \
+		exit 1; \
+	fi; \
+	jq -r '.video_ids | join(",")' "$$seed_file" | xargs -I{} sh -c \
+	"python3 worker_load_producer.py --bootstrap localhost:9092 --video-ids {} --count 200 --rate 0" || true
+	@$(MAKE) monitor-stop
+	@echo "✅ Worker saturation test completed"
+
+worker-sustained:
+	@echo "⏱️  Worker Sustained Test: steady rate, check queue stability"
+	@$(MAKE) monitor-start
+	@seed_file=$$(ls -t $(RESULTS_DIR)/seed_output_*.json 2>/dev/null | head -1); \
+	if [ -z "$$seed_file" ]; then \
+		echo "❌ No seed output found. Run 'make -C ./capacity-planning/ worker-seed' first."; \
+		exit 1; \
+	fi; \
+	jq -r '.video_ids | join(",")' "$$seed_file" | xargs -I{} sh -c \
+	"python3 worker_load_producer.py --bootstrap localhost:9092 --video-ids {} --count 300 --rate 5" || true
+	@$(MAKE) monitor-stop
+	@echo "✅ Worker sustained test completed"
+
+worker-lag:
+	@echo "📉 Sampling Kafka consumer lag (group: video_tasks_group)"
+	@chmod +x check_kafka_lag.sh 2>/dev/null || true
+	@./check_kafka_lag.sh $(RESULTS_DIR) $(TIMESTAMP) video_tasks_group 120 5
+	@echo "✅ Lag CSV saved to $(RESULTS_DIR)/consumer_lag_$(TIMESTAMP).csv"
 
 

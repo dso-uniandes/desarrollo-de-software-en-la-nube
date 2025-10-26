@@ -556,6 +556,19 @@ Ubicación: `capacity-planning/postman/results/`
 
   > **Nota:** El Stress Test evalúa el comportamiento del sistema bajo sobrecarga extrema, buscando identificar el punto de ruptura y la capacidad de recuperación. Solo se muestran métricas de API y recursos de contenedores.
 
+- **Sustained Test - Carga sostenida (200 usuarios, ~5 min)**
+  
+  ```bash
+  make -C ./capacity-planning/ test-sustained
+  ```
+  
+  - **API (Newman):** p95 = 310 ms, promedio = 148 ms, error rate = 0.00%, throughput ≈ 6.19 req/s
+  - **storeapi:** CPU promedio ≈ 58.7% (pico ≈ 92.6%), memoria ≈ 175.8 MB
+  - **kafka:** CPU promedio ≈ 29.7% (pico alto por actividad interna), memoria ≈ 488.6 MB
+  - **db (PostgreSQL):** CPU promedio ≈ 1.7% (picos transitorios), memoria ≈ 74.8 MB
+  - **Observaciones:** Cumple SLO (p95 ≤ 1s, errores ≤ 5%) con margen. Primer KPI en riesgo: picos de CPU del API; se recomienda monitoreo continuo y considerar optimizaciones/escala horizontal si se incrementa X.
+  - **Artefactos:** `postman/results/report_sustained_YYYYMMDD_HHMMSS.html` y `summary_YYYYMMDD_HHMMSS.csv` (corrida de referencia: 20251025_203557)
+
 - **Sustained Con Postman 100 Parallel Users**
   
 
