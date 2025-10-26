@@ -275,3 +275,53 @@ async def test_stream_video_not_found(async_client: AsyncClient):
     response = await async_client.get("/api/videos/stream/nonexistent.mp4")
     assert response.status_code == 404
     assert response.json()["detail"] == "Video file not found"
+
+
+@pytest.mark.anyio
+async def test_get_videos_database_error(async_client: AsyncClient, logged_in_token: str, mocker):
+    mocker.patch("storeapi.routers.video.database.fetch_all", side_effect=Exception("DB error"))
+
+    response = await async_client.get(
+        "/api/videos",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+
+    assert response.status_code == 500
+    body = response.json()
+    assert body["detail"] == "Error retrieving videos"
+
+
+@pytest.mark.anyio
+async def test_get_video_detail_database_error(async_client: AsyncClient, logged_in_token: str, mocker):
+    mocker.patch(
+        "storeapi.security.get_user",
+        return_value=mocker.Mock(id=1, first_name="John", last_name="Doe")
+    )
+
+    mocker.patch("storeapi.routers.video.database.fetch_one", side_effect=Exception("DB failure"))
+    response = await async_client.get(
+        "/api/videos/1",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+
+    assert response.status_code == 500
+    data = response.json()
+    assert data["detail"] == "Error retrieving video detail"
+
+
+@pytest.mark.anyio
+async def test_stream_video_success(async_client: AsyncClient):
+    """Debe retornar el video correctamente si el archivo existe."""
+    import tempfile
+    import os
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+        tmp.write(b"fakevideocontent123")
+        tmp_path = tmp.name
+
+    response = await async_client.get(f"/api/videos/stream/{tmp_path}")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "video/mp4"
+    content = b"".join(response.iter_bytes())
+    assert content == b"fakevideocontent123"
