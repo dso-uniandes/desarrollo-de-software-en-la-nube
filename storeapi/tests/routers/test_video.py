@@ -10,6 +10,7 @@ from httpx import AsyncClient
 from ..conftest import registered_user
 from storeapi.database import database, video_table
 
+
 @pytest.fixture
 def sample_image(fs) -> pathlib.Path:
     path = (pathlib.Path(__file__).parent / "assets" / "myfile.png").resolve()
@@ -187,6 +188,7 @@ async def test_get_video_detail_success(
     assert data["processed_at"] == "2025-03-10T14:35:00Z"
     assert "video_id" in data
 
+
 @pytest.mark.anyio
 async def test_delete_video_success(
         async_client: AsyncClient, logged_in_token: str, registered_user
@@ -200,7 +202,8 @@ async def test_delete_video_success(
         uploaded_at=datetime.now(),
     )
     await database.execute(query)
-    mock_uploaded_video = await database.fetch_one(video_table.select().where(video_table.c.user_id == registered_user["id"]))
+    mock_uploaded_video = await database.fetch_one(
+        video_table.select().where(video_table.c.user_id == registered_user["id"]))
 
     response = await async_client.delete(
         f"/api/videos/{mock_uploaded_video.id}",
@@ -209,6 +212,7 @@ async def test_delete_video_success(
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "El video ha sido eliminado exitosamente."
+
 
 @pytest.mark.anyio
 async def test_delete_video_cannot_delete_processed(
@@ -224,7 +228,8 @@ async def test_delete_video_cannot_delete_processed(
         processed_at=datetime.now(),
     )
     await database.execute(query)
-    mock_processed_video = await database.fetch_one(video_table.select().where(video_table.c.user_id == registered_user["id"]))
+    mock_processed_video = await database.fetch_one(
+        video_table.select().where(video_table.c.user_id == registered_user["id"]))
 
     response = await async_client.delete(
         f"/api/videos/{mock_processed_video.id}",
@@ -233,6 +238,7 @@ async def test_delete_video_cannot_delete_processed(
     assert response.status_code == 400
     data = response.json()
     assert data["detail"] == "Cannot delete a published video"
+
 
 @pytest.mark.anyio
 async def test_delete_video_not_found(
@@ -245,3 +251,84 @@ async def test_delete_video_not_found(
     assert response.status_code == 404
     data = response.json()
     assert data["detail"] == "Video not found"
+
+
+@pytest.mark.anyio
+async def test_upload_video_invalid_file_type(async_client: AsyncClient, logged_in_token: str):
+    # Archivo no mp4
+    invalid_file = tempfile.NamedTemporaryFile(suffix=".txt", delete=False)
+    invalid_file.write(b"not a video")
+    invalid_file.close()
+
+    with open(invalid_file.name, "rb") as f:
+        response = await async_client.post(
+            "/api/videos/upload",
+            files={"file": ("invalid.txt", f, "text/plain")},
+            headers={"Authorization": f"Bearer {logged_in_token}"},
+        )
+    assert response.status_code == 400
+    assert "Invalid file" in response.json()["detail"]
+
+
+@pytest.mark.anyio
+async def test_stream_video_not_found(async_client: AsyncClient):
+    response = await async_client.get("/api/videos/stream/nonexistent.mp4")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Video file not found"
+
+
+@pytest.mark.anyio
+async def test_get_videos_database_error(async_client: AsyncClient, logged_in_token: str, mocker):
+    mocker.patch("storeapi.routers.video.database.fetch_all", side_effect=Exception("DB error"))
+
+    response = await async_client.get(
+        "/api/videos",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+
+    assert response.status_code == 500
+    body = response.json()
+    assert body["detail"] == "Error retrieving videos"
+
+
+@pytest.mark.anyio
+async def test_get_video_detail_database_error(async_client: AsyncClient, logged_in_token: str, mocker):
+    mocker.patch(
+        "storeapi.security.get_user",
+        return_value=mocker.Mock(id=1, first_name="John", last_name="Doe")
+    )
+
+    mocker.patch("storeapi.routers.video.database.fetch_one", side_effect=Exception("DB failure"))
+    response = await async_client.get(
+        "/api/videos/1",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+
+    assert response.status_code == 500
+    data = response.json()
+    assert data["detail"] == "Error retrieving video detail"
+
+
+@pytest.mark.anyio
+async def test_stream_video_success(async_client: AsyncClient):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+        tmp.write(b"fakevideocontent123")
+        tmp_path = tmp.name
+
+    response = await async_client.get(f"/api/videos/stream/{tmp_path}")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "video/mp4"
+    content = b"".join(response.iter_bytes())
+    assert content == b"fakevideocontent123"
+
+
+@pytest.mark.anyio
+async def test_stream_video_internal_error(async_client: AsyncClient, mocker):
+    mocker.patch("storeapi.routers.video.os.path.exists", side_effect=Exception("Unexpected error"))
+
+    response = await async_client.get("/api/videos/stream/fakefile.mp4")
+
+    assert response.status_code == 500
+    body = response.json()
+    assert body["detail"] == "Error streaming video"
