@@ -130,6 +130,36 @@ jobs:
           name: test-reports
           path: .
 
+      - name: Verificar ubicación de coverage.xml y test-results.xml
+        run: |
+          echo "📄 Contenido actual del workspace:"
+          ls -lh
+          echo ""
+          if [ ! -f "coverage.xml" ]; then
+            echo "⚠️ coverage.xml no encontrado, buscando en subcarpetas..."
+            FOUND=$(find . -name "coverage.xml" | head -n 1)
+            if [ -n "$FOUND" ]; then
+              mv "$FOUND" ./coverage.xml
+              echo "✅ coverage.xml movido a la raíz"
+            else
+              echo "❌ coverage.xml no encontrado en ninguna carpeta"
+            fi
+          fi
+
+          if [ ! -f "test-results.xml" ]; then
+            echo "⚠️ test-results.xml no encontrado, buscando en subcarpetas..."
+            FOUND=$(find . -name "test-results.xml" | head -n 1)
+            if [ -n "$FOUND" ]; then
+              mv "$FOUND" ./test-results.xml
+              echo "✅ test-results.xml movido a la raíz"
+            else
+              echo "❌ test-results.xml no encontrado en ninguna carpeta"
+            fi
+          fi
+
+          echo ""
+          echo "📊 Archivos listos para Sonarless:"
+          ls -lh coverage.xml test-results.xml || true
 
       - name: Sonarless Scan
         uses: gitricko/sonarless@v1.3

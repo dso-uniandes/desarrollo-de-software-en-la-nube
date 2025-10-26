@@ -1,13 +1,4 @@
 from utils import cache
-import types
-
-
-def _pick(api, names):
-    for n in names:
-        fn = getattr(api, n, None)
-        if isinstance(fn, types.FunctionType):
-            return fn
-    return None
 
 
 def test_cache_import_and_basic_call(monkeypatch):
