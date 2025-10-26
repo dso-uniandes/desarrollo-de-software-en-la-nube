@@ -311,10 +311,6 @@ async def test_get_video_detail_database_error(async_client: AsyncClient, logged
 
 @pytest.mark.anyio
 async def test_stream_video_success(async_client: AsyncClient):
-    """Debe retornar el video correctamente si el archivo existe."""
-    import tempfile
-    import os
-
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
         tmp.write(b"fakevideocontent123")
         tmp_path = tmp.name
@@ -325,3 +321,14 @@ async def test_stream_video_success(async_client: AsyncClient):
     assert response.headers["content-type"] == "video/mp4"
     content = b"".join(response.iter_bytes())
     assert content == b"fakevideocontent123"
+
+
+@pytest.mark.anyio
+async def test_stream_video_internal_error(async_client: AsyncClient, mocker):
+    mocker.patch("storeapi.routers.video.os.path.exists", side_effect=Exception("Unexpected error"))
+
+    response = await async_client.get("/api/videos/stream/fakefile.mp4")
+
+    assert response.status_code == 500
+    body = response.json()
+    assert body["detail"] == "Error streaming video"
