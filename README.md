@@ -468,6 +468,7 @@ desarrollo-de-software-en-la-nube/
 │   └── 📂 Entrega_2/
 │       ├── component_diagram.md         # Arquitectura AWS
 │       ├── data_model.md                # Modelo de datos actualizado
+│       ├── validate_endpoints.md        # Validación de endpoints
 │       └── 📂 SonarQube_analysis/        # Análisis de calidad de código
 │           ├── sonar_analysis.md        # Reporte de análisis
 │           └── sonar_issues_fixed.md    # Issues corregidos
