@@ -18,6 +18,11 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 - [Video de sustentación](./sustentacion/Entrega_1/sustentacion.md)
 - [Plan de Capacidad](./capacity-planning/plan_de_pruebas.md) 
 
+
+- **Entrega 2:** 
+- [Documentación técnica](./docs/Entrega_1/)
+- [Video de sustentación](./sustentacion/Entrega_1/sustentacion.md)
+- [Plan de Capacidad](./capacity-planning/pruebas_de_carga_entrega2.md) 
 ---
 
 ## 🚦 Inicio Rápido
