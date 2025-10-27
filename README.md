@@ -13,10 +13,15 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 
 ## Entregas
 
-- **Entrega 1:** 
-- [Documentación técnica](./docs/Entrega_1/) (.docs/Entrega_1)
+### 📋 Entrega 1 - Desarrollo Local
+- [Documentación técnica](./docs/Entrega_1/) - Arquitectura, modelo de datos y despliegue
 - [Video de sustentación](./sustentacion/Entrega_1/sustentacion.md)
 - [Plan de Capacidad](./capacity-planning/plan_de_pruebas.md) 
+
+### ☁️ Entrega 2 - Migración AWS
+- [Documentación técnica](./docs/Entrega_2/) - Arquitectura AWS
+- [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega2.md) - Pruebas de estrés
+- [Reporte SonarQube](./docs/Entrega_2/SonarQube_analysis/) - Análisis de calidad
 
 ---
 
@@ -438,19 +443,33 @@ desarrollo-de-software-en-la-nube/
 │
 ├── 📂 capacity-planning/                # Plan de análisis de capacidad
 │   ├── Makefile                         # Comandos para pruebas
-│   ├── plan_de_capacidad.md             # Documento del plan
+│   ├── plan_de_pruebas.md               # Plan de pruebas Entrega 1
+│   ├── pruebas_de_carga_entrega2.md     # Análisis de capacidad Entrega 2
 │   ├── 📂 postman/                      # Tests de integración (Newman)
 │   │   ├── collection.json              # Colección para Newman CLI
 │   │   ├── environment.json             # Variables de entorno
-│   │   └── report.html                  # Reporte HTML generado
-│   └── 📂 results/                      # Resultados de pruebas (crear)
+│   │   └── 📂 results/                   # Resultados de pruebas
+│   ├── 📂 resultados/                    # Resultados Entrega 1
+│   │   ├── Escenario1/                  # Resultados escenario 1
+│   │   ├── Escenario2/                  # Resultados escenario 2
+│   │   ├── Esceneario3/                 # Resultados escenario 3
+│   │   ├── Escenario4/                  # Resultados escenario 4
+│   │   └── EscenarioExtra/              # Resultados escenario extra
+│   └── 📂 resultados_entrega_2/         # Resultados Entrega 2
+│       └── worker/                       # Análisis de worker
 │
 ├── 📂 docs/                             # Documentación técnica
-│   └── 📂 Entrega_1/
-│       ├── data_model.md                # Modelo de datos (ERD)
-│       ├── component_diagram.md         # Arquitectura
-│       ├── process_flow.md              # Flujo de procesamiento
-│       └── deployment.md                # Guía de despliegue
+│   ├── 📂 Entrega_1/
+│   │   ├── data_model.md                # Modelo de datos (ERD)
+│   │   ├── component_diagram.md         # Arquitectura
+│   │   ├── process_flow.md              # Flujo de procesamiento
+│   │   └── deployment.md                # Guía de despliegue
+│   └── 📂 Entrega_2/
+│       ├── component_diagram.md         # Arquitectura AWS
+│       ├── data_model.md                # Modelo de datos actualizado
+│       └── 📂 SonarQube_analysis/        # Análisis de calidad de código
+│           ├── sonar_analysis.md        # Reporte de análisis
+│           └── sonar_issues_fixed.md    # Issues corregidos
 │
 ├── 📂 sustentacion/                     # Videos de sustentación
 │   └── 📂 Entrega_1/
