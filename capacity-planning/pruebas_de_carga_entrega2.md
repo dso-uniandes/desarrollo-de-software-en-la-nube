@@ -1,3 +1,55 @@
+## Ambiente 
+* Maquina EC2 web Server 1 - 2vCPU
+* Maquina EC2 Worker 1 - 2vCPU
+* BD - RDS 
+* Maquina EC2 NFS Sercer - 2vCPU
+
+### Arquitectura
+
+```mermaid
+graph TD
+    A[JMeter<br/>Generador de carga] --> EC2_WEB
+    
+    subgraph EC2_WEB[🖥️ EC2 Web Server 2 vCPU]
+        B[Nginx<br/>Reverse Proxy]
+        C[StoreAPI<br/>FastAPI]
+        E[(Redis<br/>Caché)]
+        B --> C
+        C --> E
+    end
+    
+    subgraph EC2_WORKER[EC2_Worker_2_vCPU]
+        G[Kafka<br/>Message Broker]
+        H[Worker<br/>FFmpeg Processor]
+        G --> H
+    end
+    
+    subgraph RDS[☁️ RDS PostgreSQL]
+        D[(PostgreSQL<br/>Base de datos)]
+    end
+    
+    subgraph EC2_NFS[🖥️ EC2 NFS Server 2 vCPU]
+        F[S3/Local<br/>Almacenamiento]
+    end
+    
+    C --> D
+    C --> G
+    H --> F
+    H --> D
+    
+    I[Monitor<br/>Docker Stats] -.-> C
+    I -.-> H
+    I -.-> G
+    
+    style C fill:#4A90E2
+    style H fill:#E27B4A
+    style A fill:#50C878
+    style EC2_WEB fill:#E8F4FD,stroke:#4A90E2,stroke-width:2px
+    style EC2_WORKER fill:#FDF4E8,stroke:#E27B4A,stroke-width:2px
+    style RDS fill:#F0F8FF,stroke:#5D9CEC,stroke-width:2px
+    style EC2_NFS fill:#F5F5F5,stroke:#888888,stroke-width:2px
+```
+
 ## Escenario 1 - Sanidad (Smoke):
 
 Para este escenario inicial de sanidad, configuramos JMeter con 5 hilos (usuarios concurrentes), un periodo de ramp-up de 5 segundos y una duración total de 60 segundos. Esta configuración nos permite validar que todo el sistema responde correctamente y que la telemetría está funcionando antes de proceder con pruebas más intensivas.
@@ -282,5 +334,49 @@ Basándonos en los resultados de las pruebas, podemos concluir que:
   ![Worker Breakdown](./resultados_entrega_2/worker/worker_breakdown_pie_100mb_5mjs_1w.png)
 
 
+## Escenario 2 50Mb-3 Worker - 5 Tasks
+
+  **Recursos de Contenedores:**
+  
+  ![Container Resources](./resultados_entrega_2/worker/container_resources_50mb_5mjs_3w.png)
+
+  **Tiempos de Worker:**
+  
+  ![Worker Timing](./resultados_entrega_2/worker/worker_timing_50mb_5mjs_3w.png)
+
+  **Desglose de Procesamiento:**
+  
+  ![Worker Breakdown](./resultados_entrega_2/worker/worker_breakdown_pie_50mb_5mjs_3w.png)
 
 
+## Escenario 2 100Mb-3 Worker - 5 Tasks
+
+  **Recursos de Contenedores:**
+  
+  ![Container Resources](./resultados_entrega_2/worker/container_resources_100mb_5mjs_3w.png)
+
+  **Tiempos de Worker:**
+  
+  ![Worker Timing](./resultados_entrega_2/worker/worker_timing_100mb_5mjs_3w.png)
+
+  **Desglose de Procesamiento:**
+  
+  ![Worker Breakdown](./resultados_entrega_2/worker/worker_breakdown_pie_100mb_5mjs_3w.png)
+
+
+## Conclusiones del Escenario 2 - Capacidad de la Capa Worker:
+
+### Capacidad Máxima Identificada:
+Basándonos en los resultados de las pruebas, podemos concluir que:
+
+- **Capacidad máxima sin errores:** 5 Tasks 3 Workers 50MB File
+- **Punto de degradación:** Desde el inicio no cumple con los requirimientos ya que se demora mas de 60s por video
+- **Punto de fallo:** Tasks 3 Workers 100MB File Se perdio un video en su procesamiento
+- *Procesamiento*: 1 vid/min - 50MB File y 0.5 vid/min - 100MB File
+
+### Comentarios:
+El worker se comporto desde el inicio con un solo video de forma demorada se demoro mas de 60s procesando un solo video. En la prueba anterior En pruebas locales con mejores maquinas se procesaban varios videos por minuto.
+
+Al paralerizar workers por procesos si lo vemos de esa forma al uso de mas de un container en la misma maquina vemos que pelean por recursos ya que el procesamiento de video es una tarea de alto consumo de CPU y que se hace de forma sincrona.
+
+Adicionalmente entre mas pesado el video mas demora tomaba su edicion visto en las graficas para videos de 100MB las cuales triplican la demora de un video de 50MB.
