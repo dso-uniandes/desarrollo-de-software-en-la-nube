@@ -22,6 +22,7 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 - [Documentación técnica](./docs/Entrega_2/) - Arquitectura AWS
 - [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega2.md) - Pruebas de estrés
 - [Reporte SonarQube](./docs/Entrega_2/SonarQube_analysis/) - Análisis de calidad
+- [Video de sustentación](./sustentacion/Entrega_1/sustentacion.md)
 
 ---
 
