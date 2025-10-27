@@ -1,4 +1,4 @@
-# Diagrama de Componentes – Entrega 2
+# Diagrama de Componentes
 
 Este diagrama representa la arquitectura ajustada de la aplicación **ANB Rising Stars Showcase** desplegada en la nube pública de AWS.  
 La solución distribuye los componentes en tres instancias EC2 y un servicio RDS, interconectados mediante NFS para compartir los archivos de video.
@@ -28,4 +28,6 @@ La solución distribuye los componentes en tres instancias EC2 y un servicio RDS
 
 ---
 
-## Diagrama de Componentes (PlantUML)
+## Diagrama de Componentes
+
+<img width="3204" height="3740" alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/dd242582-a9c8-49c7-a81e-2123481ecba4" />
