@@ -48,6 +48,7 @@ services:
       - VIDEO_STORAGE_PATH=/mnt/nfs/videos
     volumes:
       - ./:/app
+      - /tmp/mnt/nfs/videos:/mnt/nfs/videos
     deploy:
       resources:
         limits:
@@ -136,7 +137,6 @@ services:
     build:
       context: ./
       dockerfile: worker.Dockerfile
-    container_name: worker
     command: ["python", "-m", "message_broker.worker"]
     depends_on:
       kafka:
@@ -151,6 +151,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     volumes:
       - ./:/app
+      - /tmp/mnt/nfs/videos:/mnt/nfs/videos
     deploy:
       resources:
         limits:
