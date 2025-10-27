@@ -6,6 +6,7 @@ PASSWORD ?= pass123
 DOCKER_COMPOSE_FILE := ../docker-compose.yml
 RESULTS_DIR := postman/results
 TIMESTAMP := $(shell date +%Y%m%d_%H%M%S)
+WORKER_PATTERN ?= worker
 
 .PHONY: up down ps newman newman-with-monitor monitor-start monitor-stop \
         test-smoke test-capacity test-ramp test-sustained test-stress test-spike \
@@ -61,17 +62,17 @@ monitor-start:
 	@mkdir -p $(RESULTS_DIR)
 	@chmod +x monitor_resources.sh monitor_worker.sh 2>/dev/null || true
 	@nohup bash monitor_resources.sh $(RESULTS_DIR) $(TIMESTAMP) > /dev/null 2>&1 & echo $$! > .monitor_resources.pid
-#	@nohup bash monitor_worker.sh $(RESULTS_DIR) $(TIMESTAMP) > /dev/null 2>&1 & echo $$! > .monitor_worker.pid
+	@nohup bash monitor_worker.sh $(RESULTS_DIR) $(TIMESTAMP) $(WORKER_PATTERN) > /dev/null 2>&1 & echo $$! > .monitor_worker.pid
 	@echo "✅ Container monitor started (PID=$$(cat .monitor_resources.pid))"
-#	@echo "✅ Worker monitor started (PID=$$(cat .monitor_worker.pid))"
+	@echo "✅ Worker monitor started (PID=$$(cat .monitor_worker.pid))"
 	@echo "📁 Results: $(RESULTS_DIR)/container_stats_$(TIMESTAMP).csv"
-#	@echo "📁 Results: $(RESULTS_DIR)/worker_timing_$(TIMESTAMP).csv"
+	@echo "📁 Results: $(RESULTS_DIR)/worker_timing_$(TIMESTAMP).csv"
 
 monitor-stop:
 	@echo "🛑 Stopping monitors and calculating statistics..."
 	@# Wait for worker to finish processing tasks (10 minutes timeout for large batches)
 	@chmod +x wait_for_worker.sh 2>/dev/null || true
-#   @./wait_for_worker.sh 3600 || true
+	@./wait_for_worker.sh 3600 $(WORKER_PATTERN) || true
 	@echo ""
 	@# Stop monitoring processes
 	@if [ -f .monitor_resources.pid ]; then \
