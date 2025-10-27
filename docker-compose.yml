@@ -137,7 +137,6 @@ services:
     build:
       context: ./
       dockerfile: worker.Dockerfile
-    container_name: worker
     command: ["python", "-m", "message_broker.worker"]
     depends_on:
       kafka:

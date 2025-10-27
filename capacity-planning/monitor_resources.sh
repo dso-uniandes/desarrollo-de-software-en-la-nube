@@ -23,14 +23,22 @@ echo "🐳 Monitoring containers: ${COMPOSE_CONTAINERS[*]}"
 # Trap SIGTERM and SIGINT to exit gracefully
 trap 'echo "📊 Container monitoring stopped"; exit 0' SIGTERM SIGINT
 
-# Function to check if container is in compose list
+# Function to check if container is in compose list or matches worker pattern
 is_compose_container() {
     local container_name=$1
+    
+    # Check exact matches for non-worker containers
     for compose_container in "${COMPOSE_CONTAINERS[@]}"; do
-        if [[ "$container_name" == "$compose_container" ]]; then
+        if [[ "$compose_container" != "worker" && "$container_name" == "$compose_container" ]]; then
             return 0
         fi
     done
+    
+    # Check worker pattern for any container with "worker" in the name
+    if [[ "$container_name" == *"worker"* ]]; then
+        return 0
+    fi
+    
     return 1
 }
 
@@ -102,8 +110,11 @@ while true; do
             block_write=$(echo "$block_write" | awk '{printf "%.2f", $1*1024}')
         fi
         
+        # Normalize container name - group all worker containers as "worker"
+        normalized_name="$name"
+        
         # Write to CSV
-        echo "$CURRENT_TIME,$name,$cpu_clean,$mem_mb,$mempct_clean,$net_rx,$net_tx,$block_read,$block_write" >> "$OUTPUT_FILE"
+        echo "$CURRENT_TIME,$normalized_name,$cpu_clean,$mem_mb,$mempct_clean,$net_rx,$net_tx,$block_read,$block_write" >> "$OUTPUT_FILE"
     done
     
     sleep 0.5  # Increased frequency: sample every 500ms instead of 1s
