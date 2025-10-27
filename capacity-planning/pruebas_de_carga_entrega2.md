@@ -252,12 +252,34 @@ Basándonos en los resultados de las pruebas, podemos concluir que:
 4. **Capacidad recomendada:** Para producción (con esta configuración), no exceder 240 usuarios concurrentes (80% de la capacidad máxima sin errores)
 
 
+## Escenario 2 50Mb-1 Worker - 5 Tasks
+
+  **Recursos de Contenedores:**
+  
+  ![Container Resources](./resultados_entrega_2/worker/container_resources_50mb_5mjs_1w.png)
+
+  **Tiempos de Worker:**
+  
+  ![Worker Timing](./resultados_entrega_2/worker/worker_timing_50mb_5mjs_1w.png)
+
+  **Desglose de Procesamiento:**
+  
+  ![Worker Breakdown](./resultados_entrega_2/worker/worker_breakdown_pie_50mb_5mjs_1w.png)
 
 
+## Escenario 2 100Mb-1 Worker - 5 Tasks
 
+  **Recursos de Contenedores:**
+  
+  ![Container Resources](./resultados_entrega_2/worker/container_resources_100mb_5mjs_1w.png)
 
+  **Tiempos de Worker:**
+  
+  ![Worker Timing](./resultados_entrega_2/worker/worker_timing_100mb_5mjs_1w.png)
 
-
+  **Desglose de Procesamiento:**
+  
+  ![Worker Breakdown](./resultados_entrega_2/worker/worker_breakdown_pie_100mb_5mjs_1w.png)
 
 
 
