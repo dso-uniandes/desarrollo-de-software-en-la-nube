@@ -2,7 +2,7 @@
 
 Este proyecto implementa una API REST con **FastAPI** que permite subir archivos a **AWS S3 Bucket**, autenticarse mediante JWT y manejar una base de datos PostgreSQL
 
-## 👥 Integrantes del Equipo
+## 👥 Integrantes del Equipo 8
 
 | Nombre | Correo Uniandes |
 |--------|-----------------|
