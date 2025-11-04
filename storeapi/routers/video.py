@@ -12,7 +12,6 @@ from fastapi.responses import StreamingResponse
 from message_broker.tasks_dispatcher import dispatch_task
 from storeapi.database import database, video_table
 from utils.storage.s3 import s3_upload_video
-from utils.config import config
 from storeapi.models.user import UserOut
 from storeapi.models.video import VideoOut
 from storeapi.security import get_current_user
@@ -52,7 +51,7 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
 
             title_file = title or file.filename
             filename_ext = (file.filename.split('.')[-1] if file.filename and '.' in file.filename else 'mp4')
-            final_name = os.path.join(config.UPLOADED_FOLDER, f"user_{current_user.id}", f"{uuid.uuid4()}.{filename_ext}")
+            final_name = f"uploaded/user_{current_user.id}/{uuid.uuid4()}.{filename_ext}"
             logger.debug(f"Uploading {filename} to S3 as {final_name}")
             original_url = s3_upload_video(filename, final_name)
 
@@ -176,6 +175,7 @@ async def delete_video(
             detail="Error deleting video",
         )
 
+
 @router.get("/api/videos/stream/{file_path:path}", status_code=200)
 async def stream_video(file_path: str):
     try:
@@ -201,4 +201,3 @@ async def stream_video(file_path: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error streaming video",
         )
-

@@ -145,6 +145,9 @@ async def wrapper_worker():
         await database.connect()
         logger.info("Database connection established.")
         consumer = get_consumer()
+        if not consumer:
+            logger.error("Kafka consumer not initialized. Check ENV_STATE or Kafka config.")
+            return
         await consume_messages("video_tasks", consumer)
     except Exception as e:
         logger.error(f"Error connecting to database: {e}")
