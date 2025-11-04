@@ -49,4 +49,4 @@ services:
       - ./.env
     volumes:
       - ./:/app
-      - /mnt/nfs/videos:/mnt/nfs/videos
+      - /mnt/storage/videos:/mnt/storage/videos

@@ -1,4 +1,4 @@
-from utils.nfs import nfs
+from utils.storage import nfs
 
 
 def test_get_object_key_from_url_extracts_filename():

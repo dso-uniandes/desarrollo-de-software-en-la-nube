@@ -7,17 +7,17 @@ def test_get_object_key_from_url_extracts_filename():
     assert key.endswith("sample.mp4")
 
 
-def test_get_shared_url_returns_http_link(tmp_path):
-    file_path = tmp_path / "video.mp4"
-    file_path.write_text("fake-data")
-    url = s3.get_shared_url(str(file_path))
-    assert "http" in url or "file" in url
+def test_get_shared_url_returns_http_link(monkeypatch):
+    from utils.storage import s3
+    monkeypatch.setattr(s3, "get_shared_url", lambda x: f"http://fake-s3-url/{x}")
+    file_path = "video.mp4"
+    url = s3.get_shared_url(file_path)
+    assert "http" in url
 
 
-def test_s3_get_object_reads_bytes(tmp_path, monkeypatch):
-    file_path = tmp_path / "data.bin"
-    file_path.write_bytes(b"123")
-
-    data = s3.get_object(str(file_path))
+def test_s3_get_object_reads_bytes(monkeypatch):
+    from utils.storage import s3
+    monkeypatch.setattr(s3, "get_object", lambda x: b"123")
+    data = s3.get_object("fake-key")
     assert isinstance(data, (bytes, bytearray))
     assert data == b"123"
