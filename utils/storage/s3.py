@@ -44,7 +44,7 @@ def get_object(object_name: str) -> Optional[bytes]:
     logger.debug("Accessing S3 bucket (local stub)")
     try:
         response = s3.get_object(
-            Bucket="anb-s3-storage",
+            Bucket=config.S3_BUCKET_NAME,
             Key=object_name,
             ExpectedBucketOwner=config.S3_ACCOUNT_ID)
         content = response['Body'].read()
@@ -62,7 +62,7 @@ def get_shared_url(object_name: str) -> str:
 
     url = s3.generate_presigned_url(
         'get_object',
-        Params={'Bucket': 'anb-s3-storage', 'Key': object_name},
+        Params={'Bucket': config.S3_BUCKET_NAME, 'Key': object_name},
         ExpiresIn=3600
     )
     logger.debug("Generated pre-signed URL for %s: %s", object_name, url)
