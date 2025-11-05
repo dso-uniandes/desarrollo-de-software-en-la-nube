@@ -59,7 +59,7 @@ async def process_video_processing(message: dict):
     video_id = message.get('video_id', 'unknown')
     task_id = message.get('task_id', 'unknown')
 
-    logger.info(f"Processing video: {message}")
+    logger.info(f"✅ Processing video: {message}")
 
     try:
         # Fetch video from database
@@ -85,14 +85,18 @@ async def process_video_processing(message: dict):
 
         # Process video with FFmpeg, save to temp file
         video_processing_start = time.time()
-        temp_output_path = "/tmp/output.mp4"
         edit_video(file_bytes, object_key, video)
         video_processing_duration = time.time() - video_processing_start
 
         # Upload processed video to S3
-        output_key = f"videos/processed/{object_key.split('/')[-1]}"
-        s3_upload_video(temp_output_path, output_key)
-        os.remove(temp_output_path)
+        video_name = object_key.split('/')[-1]
+        user_id = video.user_id if hasattr(video, "user_id") else "unknown"
+
+        final_video_path = f"videos/processed/user_{user_id}/{video_name}"
+        output_key = f"videos/processed/user_{user_id}/{video_name}"
+
+        s3_upload_video(final_video_path, output_key)
+        os.remove(final_video_path)
 
         # Update database
         db_update_start = time.time()
@@ -119,6 +123,7 @@ async def process_video_processing(message: dict):
 
 
 async def consume_messages(topic: str, consumer: Consumer):
+    logger.info(f"🎧 Worker listening for Kafka messages on topic '{topic}'...")
     consumer.subscribe([topic])
     try:
         while True:
@@ -128,7 +133,7 @@ async def consume_messages(topic: str, consumer: Consumer):
             if msg.error():
                 raise KafkaException(msg.error())
             decoded_message = msg.value().decode('utf-8')
-            logger.info(f"Received message: {decoded_message}")
+            logger.info(f"📩 Received message: {decoded_message}")
 
             if topic == "video_tasks":
                 await process_video_processing(json.loads(decoded_message))

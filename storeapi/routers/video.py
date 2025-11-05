@@ -51,7 +51,7 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
 
             title_file = title or file.filename
             filename_ext = (file.filename.split('.')[-1] if file.filename and '.' in file.filename else 'mp4')
-            final_name = f"uploaded/user_{current_user.id}/{uuid.uuid4()}.{filename_ext}"
+            final_name = f"videos/uploaded/user_{current_user.id}/{uuid.uuid4()}.{filename_ext}"
             logger.debug(f"Uploading {filename} to S3 as {final_name}")
             original_url = s3_upload_video(filename, final_name)
 

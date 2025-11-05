@@ -71,6 +71,5 @@ def get_shared_url(object_name: str) -> str:
 
 def get_object_key_from_url(url: str) -> str:
     """Extract the object key (path inside the bucket) from an S3 URL."""
-    # Example input:
-    # https://anb-s3-storage.s3.us-east-2.amazonaws.com/videos/uploaded/user_2/abc123.mp4
-    return url.split(".amazonaws.com/")[-1]
+    key = url.split(".amazonaws.com/")[-1]
+    return key.split("?")[0]
