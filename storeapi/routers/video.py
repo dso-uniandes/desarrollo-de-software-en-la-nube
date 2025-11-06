@@ -11,8 +11,7 @@ from fastapi.responses import StreamingResponse
 
 from message_broker.tasks_dispatcher import dispatch_task
 from storeapi.database import database, video_table
-from utils.nfs.nfs import nfs_upload_video
-from utils.config import config
+from utils.storage.s3 import s3_upload_video
 from storeapi.models.user import UserOut
 from storeapi.models.video import VideoOut
 from storeapi.security import get_current_user
@@ -52,10 +51,10 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
 
             title_file = title or file.filename
             filename_ext = (file.filename.split('.')[-1] if file.filename and '.' in file.filename else 'mp4')
-            final_name = os.path.join(config.UPLOADED_FOLDER, f"user_{current_user.id}", f"{uuid.uuid4()}.{filename_ext}")
-            logger.debug(f"Uploading {filename} to NFS as {final_name}")
-            original_url = nfs_upload_video(filename, final_name)
-        
+            final_name = f"videos/uploaded/user_{current_user.id}/{uuid.uuid4()}.{filename_ext}"
+            logger.debug(f"Uploading {filename} to S3 as {final_name}")
+            original_url = s3_upload_video(filename, final_name)
+
         try:
             os.remove(filename)
         except Exception:
@@ -69,7 +68,7 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
             status="uploaded",
             uploaded_at=datetime.now()
         ).returning(video_table.c.id)
-        
+
         video_id = await database.execute(query)
         task_id = str(uuid.uuid4())
         task_info = {"video_id": video_id, "user_id": current_user.id, "task_id": task_id}
@@ -161,7 +160,7 @@ async def delete_video(
 
         if video.status == "processed":
             raise HTTPException(status_code=400, detail="Cannot delete a published video")
-        
+
         delete_query = video_table.delete().where(video_table.c.id == video_id)
         await database.execute(delete_query)
 
@@ -175,6 +174,7 @@ async def delete_video(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error deleting video",
         )
+
 
 @router.get("/api/videos/stream/{file_path:path}", status_code=200)
 async def stream_video(file_path: str):
@@ -201,4 +201,3 @@ async def stream_video(file_path: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error streaming video",
         )
-

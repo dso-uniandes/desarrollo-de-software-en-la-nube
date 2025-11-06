@@ -84,3 +84,11 @@ async def logged_in_token(async_client: AsyncClient, registered_user: dict) -> s
         },
     )
     return response.json()["access_token"]
+
+@pytest.fixture(autouse=True)
+def mock_upload_video(mocker):
+    return mocker.patch("storeapi.routers.video.upload_video", return_value="https://fakeurl.com")
+
+@pytest.fixture(autouse=True)
+def mock_dispatch_task(mocker):
+    return mocker.patch("storeapi.routers.video.dispatch_task", return_value=None)

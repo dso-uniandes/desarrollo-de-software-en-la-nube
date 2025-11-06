@@ -1,4 +1,4 @@
-name: anb
+name: anb-worker
 services:
   kafka:
     image: bitnamilegacy/kafka:4.0.0-debian-12-r10
@@ -49,4 +49,4 @@ services:
       - ./.env
     volumes:
       - ./:/app
-      - /mnt/nfs/videos:/mnt/nfs/videos
+      #- /mnt/storage/videos:/mnt/storage/videos
