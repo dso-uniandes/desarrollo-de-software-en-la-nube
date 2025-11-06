@@ -12,6 +12,7 @@ from storeapi.routers.video import router as upload_router
 from storeapi.routers.ranking import router as ranking_router
 from storeapi.routers.user import router as user_router
 from storeapi.routers.vote import router as vote_router
+from storeapi.routers.health import router as health_router
 
 logger = None
 
@@ -30,6 +31,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 #app.add_middleware(CorrelationIdMiddleware)
 
+app.include_router(health_router)
 app.include_router(upload_router)
 app.include_router(user_router)
 app.include_router(ranking_router)
