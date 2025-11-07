@@ -25,6 +25,7 @@ class GlobalConfig(BaseConfig):
     S3_SECRET_ACCESS_KEY: Optional[str] = None
     S3_BUCKET_NAME: Optional[str] = None
     S3_REGION: Optional[str] = None
+    S3_ACCOUNT_ID: Optional[str] = None
 
     REDIS_URL: Optional[str] = None
     RANKING_CACHE_TTL: int = 120
