@@ -41,7 +41,7 @@ En esta entrega se incorporaron mejoras importantes enfocadas en **escalabilidad
 | **Monitoreo con CloudWatch** | Se integró **Amazon CloudWatch** para registrar métricas de rendimiento y activar automáticamente el escalado de las instancias. |
 | **Simplificación del WebServer** | Ahora las instancias del Auto Scaling Group ejecutan únicamente **FastAPI con Uvicorn**, ya que el ALB actúa como proxy inverso. |
 
-En resumen, la arquitectura pasó de un despliegue estático a uno totalmente **escalable y desacoplado**, soportado en servicios gestionados de AWS.  
+En resumen, la arquitectura pasó de un despliegue estático a uno **escalable y desacoplado**, soportado en servicios gestionados de AWS.  
 Con el uso de **S3, ALB y Auto Scaling**, el sistema ahora puede manejar más usuarios concurrentes, mantener buen rendimiento y reducir los puntos únicos de falla.
 
 ---
