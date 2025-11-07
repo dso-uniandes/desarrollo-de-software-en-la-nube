@@ -5,7 +5,7 @@ En esta entrega se incorporaron mejoras importantes enfocadas en **escalabilidad
 
 ---
 
-## Descripción general de los componentes
+## ⚙️ Descripción general de los componentes
 
 | Componente | Tipo | Descripción |
 |-------------|------|-------------|
@@ -20,7 +20,7 @@ En esta entrega se incorporaron mejoras importantes enfocadas en **escalabilidad
 
 ---
 
-## Flujo de comunicación
+## 🔄 Flujo de comunicación
 
 1. El **Jugador o Jurado** accede a la aplicación desde el navegador y sus peticiones llegan al **Application Load Balancer (ALB)**.  
 2. El **ALB** distribuye las solicitudes entre las instancias del **Auto Scaling Group**, donde corre la API FastAPI (`storeapi`).  
@@ -31,7 +31,7 @@ En esta entrega se incorporaron mejoras importantes enfocadas en **escalabilidad
 
 ---
 
-## Cambios frente a la entrega anterior
+## ⚡ Cambios frente a la entrega anterior
 
 | Cambio | Descripción |
 |--------|--------------|
@@ -46,7 +46,6 @@ Con el uso de **S3, ALB y Auto Scaling**, el sistema ahora puede manejar más us
 
 ---
 
-## Diagrama de Componentes
+## 🖼️ Diagrama de Componentes
 
 <img alt="diagrama-componentes" src="https://github.com/user-attachments/assets/e792b527-e5f6-4a9f-b23a-f15709849fa0" />
-
