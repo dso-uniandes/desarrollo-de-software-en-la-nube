@@ -1,4 +1,4 @@
-# Flujo de Procesos
+ # Flujo de Procesos
 
 El siguiente diagrama representa el flujo general de la aplicación **ANB Rising Stars Showcase** en la arquitectura actual desplegada en AWS.  
 En esta versión se reemplazó el servidor NFS por **Amazon S3**, y la carga de trabajo de la API se distribuye a través del **Application Load Balancer (ALB)** y un **Auto Scaling Group** con instancias EC2.  
@@ -25,3 +25,4 @@ Este nuevo flujo elimina la dependencia del FileServer, reduce los puntos de fal
 
 ## 📈 Diagrama del flujo de procesos
 
+<img alt="flujo de procesos" src="https://github.com/user-attachments/assets/b4d18100-ce82-476a-83c2-7cf5a3b54e94" />
