@@ -21,4 +21,4 @@ La aplicación sigue un enfoque **basado en microservicios y tareas distribuidas
 
 ## Diagrama de Componentes
 
-<img width="3084" height="4340" alt="component_diagrama" src="https://github.com/user-attachments/assets/290675c4-7293-4c5a-9459-5928e2a79314" />
+<img alt="component_diagrama" src="https://github.com/user-attachments/assets/290675c4-7293-4c5a-9459-5928e2a79314" />

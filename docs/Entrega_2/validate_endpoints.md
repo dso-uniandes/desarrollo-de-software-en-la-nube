@@ -44,7 +44,7 @@ newman run collections/Cloud-ANB.postman_collection.json --environment collectio
 
 ## 📊 Evidencia de Cumplimiento
 
-<img width="1288" height="756" alt="image" src="https://github.com/user-attachments/assets/440817f6-3455-4616-9ad8-c29938a5eda9" />
+<img alt="image" src="https://github.com/user-attachments/assets/440817f6-3455-4616-9ad8-c29938a5eda9" />
 
 ---
 

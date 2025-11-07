@@ -30,4 +30,4 @@ La solución distribuye los componentes en tres instancias EC2 y un servicio RDS
 
 ## Diagrama de Componentes
 
-<img width="3204" height="3740" alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/dd242582-a9c8-49c7-a81e-2123481ecba4" />
+<img alt="Untitled Diagram drawio" src="https://github.com/user-attachments/assets/dd242582-a9c8-49c7-a81e-2123481ecba4" />
