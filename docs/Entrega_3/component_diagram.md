@@ -48,3 +48,5 @@ Con el uso de **S3, ALB y Auto Scaling**, el sistema ahora puede manejar más us
 
 ## Diagrama de Componentes
 
+<img alt="diagrama-componentes" src="https://github.com/user-attachments/assets/e792b527-e5f6-4a9f-b23a-f15709849fa0" />
+
