@@ -28,5 +28,5 @@ pero la base de datos ahora se encuentra **desplegada en Amazon RDS (PostgreSQL)
 
 El siguiente diagrama muestra las entidades principales y sus relaciones, reflejando las claves primarias (PK), foráneas (FK) y restricciones.
 
-<img width="2764" height="912" alt="data_model" src="https://github.com/user-attachments/assets/3247f93b-d83a-4996-a85b-59145b31cb6a" />
+<img alt="data_model" src="https://github.com/user-attachments/assets/3247f93b-d83a-4996-a85b-59145b31cb6a" />
 

@@ -20,4 +20,4 @@ Este flujo garantiza un procesamiento eficiente mediante **tareas asíncronas**,
 
 ## Diagrama de Flujo de Procesos
 
-<img width="1574" height="501" alt="process_flow" src="https://github.com/user-attachments/assets/b04e194d-2945-4ae2-8f92-474a814b750c" />
+<img alt="process_flow" src="https://github.com/user-attachments/assets/b04e194d-2945-4ae2-8f92-474a814b750c" />

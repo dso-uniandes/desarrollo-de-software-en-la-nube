@@ -6,7 +6,7 @@ Usamos Newman, que es la herramienta de línea de comandos de Postman. Nos sirve
 
 ## Colección Cloud-ANB
 
-<img width="645" height="463" alt="image" src="https://github.com/user-attachments/assets/93d2ff9a-b439-40c9-8d58-95084f623544" />
+<img alt="image" src="https://github.com/user-attachments/assets/93d2ff9a-b439-40c9-8d58-95084f623544" />
 
 ### Configuración
 - **25 requests** cubriendo todos los endpoints
