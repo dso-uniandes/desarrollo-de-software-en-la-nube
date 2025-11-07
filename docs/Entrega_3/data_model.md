@@ -4,9 +4,6 @@ El modelo de datos de **ANB Rising Stars Showcase** se mantiene estable respecto
 En esta fase, las entidades siguen representando la gestión de **usuarios**, **videos** y **votos**,  
 pero la base de datos ahora se encuentra **desplegada en Amazon RDS (PostgreSQL)**, garantizando disponibilidad y persistencia en la nube.
 
-Aunque el modelo de datos no cambió en esta entrega, su despliegue en **Amazon RDS** fortalece la capa de persistencia al ofrecer un entorno gestionado con **mayor rendimiento, seguridad y disponibilidad**.  
-Esto permite mantener la misma estructura lógica de las tablas, pero con una base más robusta para soportar el aumento de usuarios y operaciones derivado del autoescalado de la capa web.
-
 ---
 
 ## 📘 Entidades principales
