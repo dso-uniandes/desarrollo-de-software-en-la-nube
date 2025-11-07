@@ -1,0 +1,290 @@
+Run gitricko/sonarless@v1.3
+Run /home/runner/work/_actions/gitricko/sonarless/v1.3/makefile.sh docker-deps-get
+Downloading SonarQube...
+Downloading Sonar CLI...
+Downloading SonarQube Extensions...
+Run /home/runner/work/_actions/gitricko/sonarless/v1.3/makefile.sh scan
+Booting SonarQube docker instance ...........
+Waiting for SonarQube service availability ...............................
+SonarQube is running
+Local sonarqube URI: http://localhost:9234
+Credentials: admin/Son@rless123
+{
+  "project": {
+    "key": "MISW4204-202515-anb-Grupo03-local",
+    "name": "MISW4204-202515-anb-Grupo03-local",
+    "qualifier": "TRK",
+    "visibility": "public"
+  }
+}
+SONAR_GITROOT: /home/runner/work/desarrollo-de-software-en-la-nube/desarrollo-de-software-en-la-nube
+SONAR_SOURCE_PATH: .
+21:49:05.105 INFO  Scanner configuration file: /opt/sonar-scanner/conf/sonar-scanner.properties
+21:49:05.108 INFO  Project root configuration file: /usr/src/sonar-project.properties
+21:49:05.121 INFO  SonarScanner CLI 7.1.0.4889
+21:49:05.122 INFO  Java 17.0.14 Amazon.com Inc. (64-bit)
+21:49:05.123 INFO  Linux 6.11.0-1018-azure amd64
+21:49:05.124 INFO  SONAR_SCANNER_OPTS=-Dsonar.projectKey=MISW4204-202515-anb-Grupo03-local -Dsonar.sources=.
+21:49:05.147 INFO  User cache: /opt/sonar-scanner/.sonar/cache
+21:49:06.111 INFO  Communicating with SonarQube Community Build 25.5.0.107428
+21:49:06.112 INFO  JRE provisioning: os[linux], arch[x86_64]
+21:49:08.078 INFO  Starting SonarScanner Engine...
+21:49:08.079 INFO  Java 17.0.13 Eclipse Adoptium (64-bit)
+21:49:09.255 INFO  Load global settings
+21:49:09.367 INFO  Load global settings (done) | time=112ms
+21:49:09.369 INFO  Server id: 147B411E-AZoifoS4puMJUHov_tep
+21:49:09.379 INFO  Loading required plugins
+21:49:09.380 INFO  Load plugins index
+21:49:09.415 INFO  Load plugins index (done) | time=35ms
+21:49:09.417 INFO  Load/download plugins
+21:49:09.748 INFO  Load/download plugins (done) | time=333ms
+21:49:10.081 INFO  Process project properties
+21:49:10.090 INFO  Process project properties (done) | time=10ms
+21:49:10.098 INFO  Project key: MISW4204-202515-anb-Grupo03-local
+21:49:10.099 INFO  Base dir: /usr/src
+21:49:10.099 INFO  Working dir: /tmp/.scannerwork
+21:49:10.109 INFO  Load project settings for component key: 'MISW4204-202515-anb-Grupo03-local'
+21:49:10.151 INFO  Load project settings for component key: 'MISW4204-202515-anb-Grupo03-local' (done) | time=40ms
+21:49:10.177 INFO  Load quality profiles
+21:49:10.313 INFO  Load quality profiles (done) | time=139ms
+21:49:10.348 INFO  Load active rules
+21:49:10.880 INFO  Load active rules (done) | time=531ms
+21:49:10.886 INFO  Load analysis cache
+21:49:10.906 INFO  Load analysis cache (404) | time=19ms
+21:49:10.969 INFO  Preprocessing files...
+21:49:11.117 INFO  1 language detected in 42 preprocessed files
+21:49:11.118 INFO  86 files ignored because of inclusion/exclusion patterns
+21:49:11.119 INFO  2 files ignored because of scm ignore settings
+21:49:11.121 INFO  Loading plugins for detected languages
+21:49:11.121 INFO  Load/download plugins
+21:49:11.257 INFO  Load/download plugins (done) | time=136ms
+21:49:11.339 INFO  Load project repositories
+21:49:11.458 INFO  Load project repositories (done) | time=119ms
+21:49:11.476 INFO  Indexing files...
+21:49:11.478 INFO  Project configuration:
+21:49:11.481 INFO    Excluded sources: **/__pycache__/**, **/migrations/**, **/venv/**, **/env/**, **/.venv/**, **/node_modules/**, **/capacity-planning/**, **/collections/**, **/docs/**, **/img/**, **/sustentacion/**, **/videos/**, **/*.md, **/*.pdf, **/*.mp4, **/*.sh, **/*.yml, **/*.Dockerfile, README.md, storeapi/tests/**/*.py
+21:49:11.482 INFO    Included tests: storeapi/tests/**/*.py
+21:49:11.482 INFO    Excluded sources for coverage: **/migrations/**
+21:49:11.503 INFO  42 files indexed
+21:49:11.507 INFO  Quality profile for py: Sonar way
+21:49:11.508 INFO  ------------- Run sensors on module MISW4204-202515-anb-Grupo03-local
+21:49:11.568 INFO  Load metrics repository
+21:49:11.616 INFO  Load metrics repository (done) | time=46ms
+21:49:12.182 INFO  Sensor JaCoCo XML Report Importer [jacoco]
+21:49:12.186 INFO  'sonar.coverage.jacoco.xmlReportPaths' is not defined. Using default locations: target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml,build/reports/jacoco/test/jacocoTestReport.xml
+21:49:12.189 INFO  No report imported, no coverage information will be imported by JaCoCo XML Report Importer
+21:49:12.190 INFO  Sensor JaCoCo XML Report Importer [jacoco] (done) | time=2ms
+21:49:12.191 INFO  Sensor Java Config Sensor [iac]
+21:49:12.209 INFO  0 source files to be analyzed
+21:49:12.215 INFO  0/0 source files have been analyzed
+21:49:12.216 INFO  Sensor Java Config Sensor [iac] (done) | time=30ms
+21:49:12.217 INFO  Sensor Python Sensor [python]
+21:49:12.237 INFO  Starting global symbols computation
+21:49:12.245 INFO  39 source files to be analyzed
+21:49:13.510 INFO  39/39 source files have been analyzed
+21:49:13.552 INFO  Starting rules execution
+21:49:13.554 INFO  39 source files to be analyzed
+21:49:15.261 INFO  39/39 source files have been analyzed
+21:49:15.264 INFO  The Python analyzer was able to leverage cached data from previous analyses for 0 out of 39 files. These files were not parsed.
+21:49:15.264 INFO  Sensor Python Sensor [python] (done) | time=3046ms
+21:49:15.265 INFO  Sensor Cobertura Sensor for Python coverage [python]
+21:49:15.270 INFO  Python test coverage
+21:49:15.271 INFO  Parsing report '/usr/src/coverage.xml'
+21:49:15.347 INFO  Sensor Cobertura Sensor for Python coverage [python] (done) | time=85ms
+21:49:15.350 INFO  Sensor PythonXUnitSensor [python]
+21:49:15.361 INFO  Processing report '/usr/src/test-results.xml'
+21:49:15.370 INFO  Sensor PythonXUnitSensor [python] (done) | time=24ms
+21:49:15.371 INFO  Sensor Python Dependency Sensor [python]
+21:49:15.375 INFO  Sensor Python Dependency Sensor [python] (done) | time=5ms
+21:49:15.376 INFO  Sensor IaC Docker Sensor [iac]
+21:49:15.451 INFO  0 source files to be analyzed
+21:49:15.452 INFO  0/0 source files have been analyzed
+21:49:15.454 INFO  Sensor IaC Docker Sensor [iac] (done) | time=75ms
+21:49:15.455 INFO  Sensor TextAndSecretsSensor [text]
+21:49:15.456 INFO  Available processors: 4
+21:49:15.457 INFO  Using 4 threads for analysis.
+21:49:15.862 INFO  Using git CLI to retrieve untracked files
+21:49:15.866 WARN  Analyzing only language associated files, make sure to run the analysis inside a git repository to make use of inclusions specified via "sonar.text.inclusions"
+21:49:15.881 INFO  39 source files to be analyzed
+21:49:15.965 INFO  39/39 source files have been analyzed
+21:49:15.966 INFO  Sensor TextAndSecretsSensor [text] (done) | time=516ms
+21:49:15.970 INFO  ------------- Run sensors on project
+21:49:16.081 INFO  Sensor Zero Coverage Sensor
+21:49:16.087 INFO  Sensor Zero Coverage Sensor (done) | time=6ms
+21:49:16.091 INFO  ------------- Gather SCA dependencies on project
+21:49:16.092 INFO  Dependency analysis skipped
+21:49:16.092 INFO  SCM Publisher SCM provider for this project is: git
+21:49:16.093 INFO  SCM Publisher 33 source files to be analyzed
+21:49:16.096 WARN  Shallow clone detected, no blame information will be provided. You can convert to non-shallow with 'git fetch --unshallow'.
+21:49:16.099 INFO  SCM Publisher 0/33 source files have been analyzed (done) | time=4ms
+21:49:16.101 WARN  Missing blame information for the following files:
+21:49:16.102 WARN    * storeapi/tests/routers/test_vote.py
+21:49:16.105 WARN    * storeapi/tests/utils/test_logging_conf.py
+21:49:16.106 WARN    * utils/logging_conf.py
+21:49:16.106 WARN    * storeapi/tests/workers/test_kafka_consumer.py
+21:49:16.106 WARN    * storeapi/security.py
+21:49:16.108 WARN    * storeapi/routers/vote.py
+21:49:16.109 WARN    * storeapi/models/user.py
+21:49:16.109 WARN    * message_broker/worker.py
+21:49:16.109 WARN    * storeapi/models/ranking.py
+21:49:16.109 WARN    * storeapi/tests/utils/test_nfs.py
+21:49:16.110 WARN    * storeapi/tests/utils/test_ffmpeg.py
+21:49:16.110 WARN    * storeapi/models/video.py
+21:49:16.110 WARN    * storeapi/tests/routers/test_ranking.py
+21:49:16.110 WARN    * storeapi/routers/video.py
+21:49:16.116 WARN    * utils/nfs/s3_local.py
+21:49:16.116 WARN    * utils/cache.py
+21:49:16.117 WARN    * storeapi/tests/routers/test_video.py
+21:49:16.117 WARN    * storeapi/tests/routers/test_user.py
+21:49:16.118 WARN    * storeapi/models/vote.py
+21:49:16.118 WARN    * storeapi/routers/user.py
+21:49:16.119 WARN    * storeapi/routers/ranking.py
+21:49:16.120 WARN    * storeapi/tests/utils/test_cache.py
+21:49:16.120 WARN    * storeapi/tests/test_security.py
+21:49:16.121 WARN    * utils/nfs/nfs.py
+21:49:16.122 WARN    * storeapi/database.py
+21:49:16.122 WARN    * utils/config.py
+21:49:16.122 WARN    * message_broker/client.py
+21:49:16.123 WARN    * storeapi/main.py
+21:49:16.124 WARN    * storeapi/tests/utils/test_s3_local.py
+21:49:16.124 WARN    * message_broker/tasks_dispatcher.py
+21:49:16.125 WARN    * storeapi/tests/conftest.py
+21:49:16.126 WARN    * utils/ffmpeg.py
+21:49:16.126 WARN    * storeapi/tests/workers/test_workers.py
+21:49:16.126 WARN  This may lead to missing/broken features in SonarQube
+21:49:16.127 INFO  CPD Executor 5 files had no CPD blocks
+21:49:16.129 INFO  CPD Executor Calculating CPD for 19 files
+21:49:16.142 INFO  CPD Executor CPD calculation finished (done) | time=23ms
+21:49:16.149 INFO  SCM revision ID '727e87584e16b9cb89013cba0566cf5fb0f5b7ea'
+21:49:16.270 INFO  Analysis report generated in 117ms, dir size=509.6 kB
+21:49:16.343 INFO  Analysis report compressed in 73ms, zip size=178.4 kB
+21:49:16.379 INFO  Analysis report uploaded in 33ms
+21:49:16.379 INFO  ANALYSIS SUCCESSFUL, you can find the results at: http://sonar-server:9000/dashboard?id=MISW4204-202515-anb-Grupo03-local
+21:49:16.379 INFO  Note that you will be able to access the updated dashboard once the server has processed the submitted analysis report
+21:49:16.379 INFO  More about the report processing at http://sonar-server:9000/api/ce/task?id=87db8cf4-b897-4b81-bb84-5564c961b1f3
+21:49:16.402 INFO  Analysis total time: 6.581 s
+21:49:16.405 INFO  SonarScanner Engine completed successfully
+21:49:16.437 INFO  EXECUTION SUCCESS
+21:49:16.438 INFO  Total time: 11.335s
+
+Waiting for analysis.....
+SonarQube scanning done
+Use webui http://localhost:9234 (admin/sonarless) or 'sonarless results' to get scan outputs
+Run /home/runner/work/_actions/gitricko/sonarless/v1.3/makefile.sh results
+{
+  "component": {
+    "key": "MISW4204-202515-anb-Grupo03-local",
+    "name": "MISW4204-202515-anb-Grupo03-local",
+    "qualifier": "TRK",
+    "measures": [
+      {
+        "metric": "coverage",
+        "value": "54.1",
+        "bestValue": false
+      },
+      {
+        "metric": "reliability_rating",
+        "value": "1.0",
+        "bestValue": true
+      },
+      {
+        "metric": "code_smells",
+        "value": "6",
+        "bestValue": false
+      },
+      {
+        "metric": "duplicated_lines_density",
+        "value": "0.0",
+        "bestValue": true
+      },
+      {
+        "metric": "security_rating",
+        "value": "1.0",
+        "bestValue": true
+      },
+      {
+        "metric": "violations",
+        "value": "6",
+        "bestValue": false
+      },
+      {
+        "metric": "quality_gate_details",
+        "value": "{\"level\":\"OK\",\"conditions\":[],\"ignoredConditions\":false}"
+      },
+      {
+        "metric": "security_hotspots",
+        "value": "4",
+        "bestValue": false
+      },
+      {
+        "metric": "security_review_rating",
+        "value": "5.0",
+        "bestValue": false
+      },
+      {
+        "metric": "sqale_rating",
+        "value": "1.0",
+        "bestValue": true
+      },
+      {
+        "metric": "bugs",
+        "value": "0",
+        "bestValue": true
+      },
+      {
+        "metric": "ncloc",
+        "value": "1135"
+      },
+      {
+        "metric": "vulnerabilities",
+        "value": "0",
+        "bestValue": true
+      },
+      {
+        "metric": "open_issues",
+        "value": "6",
+        "bestValue": false
+      }
+    ]
+  }
+}
+
+🔍 === INTENTANDO OBTENER DETALLES DE PROBLEMAS ===
+Intentando conectar a SonarQube local...
+Probando puerto 9000...
+Probando puerto 9234...
+✅ SonarQube encontrado en puerto 9234
+🔍 Obteniendo issues desde SonarQube...
+Probando diferentes endpoints de la API...
+1. Probando /api/issues/search...
+⚠️  Endpoint /api/issues/search no funcionó, probando alternativas...
+2. Probando /api/measures/component...
+⚠️  Endpoint /api/measures/component tampoco funcionó
+3. Probando con credenciales alternativas...
+✅ Issues obtenidos con credenciales alternativas
+📊 Total de problemas encontrados: 6
+
+🔍 === DETALLES DE PROBLEMAS ===
+📁 MISW4204-202515-anb-Grupo03-local:message_broker/tasks_dispatcher.py - Línea 26
+  • Remove this commented out code.
+  🏷️  Tipo: CODE_SMELL | Severidad: MAJOR | Regla: python:S125
+
+📁 MISW4204-202515-anb-Grupo03-local:message_broker/worker.py - Línea 27
+  • Rename function "getConsumer" to match the regular expression ^[a-z_][a-z0-9_]*$.
+  🏷️  Tipo: CODE_SMELL | Severidad: MAJOR | Regla: python:S1542
+
+📁 MISW4204-202515-anb-Grupo03-local:message_broker/worker.py - Línea 133
+  • Rename function "wrapperWorker" to match the regular expression ^[a-z_][a-z0-9_]*$.
+  🏷️  Tipo: CODE_SMELL | Severidad: MAJOR | Regla: python:S1542
+
+📁 MISW4204-202515-anb-Grupo03-local:storeapi/database.py - Línea 15
+  • Define a constant instead of duplicating this literal "users.id" 4 times.
+  🏷️  Tipo: CODE_SMELL | Severidad: CRITICAL | Regla: python:S1192
+
+📁 MISW4204-202515-anb-Grupo03-local:utils/ffmpeg.py - Línea 152
+  • Add replacement fields or use a normal string instead of an f-string.
+  🏷️  Tipo: CODE_SMELL | Severidad: MAJOR | Regla: python:S3457
+
+📁 MISW4204-202515-anb-Grupo03-local:utils/ffmpeg.py - Línea 152
+  • Replace this generic exception class with a more specific one.
+  🏷️  Tipo: CODE_SMELL | Severidad: MAJOR | Regla: python:S112
