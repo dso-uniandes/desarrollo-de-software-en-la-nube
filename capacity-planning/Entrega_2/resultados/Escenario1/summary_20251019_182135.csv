@@ -1,0 +1,76 @@
+=== API/NEWMAN METRICS ===
+Metric,Value
+Test Name,report_smoke_20251019_182135
+Total Requests,10
+Failed Requests,0
+Success Rate,100.00%
+Avg Response Time (ms),123.60
+Min Response Time (ms),22.00
+Max Response Time (ms),234.00
+P95 Response Time (ms),234.00
+Test Duration (s),1.89
+Throughput (req/s),5.31
+
+
+=== CONTAINER RESOURCE STATISTICS ===
+Container,Metric,Min,Max,Avg,Median,StdDev,Samples
+proxy,cpu,0.00,0.59,0.02,0.00,0.11,27
+proxy,memory_mb,12.58,12.58,12.58,12.58,0.00,27
+proxy,memory_pct,2.46,2.46,2.46,2.46,0.00,27
+proxy,net_rx,45.50,50.30,50.12,50.30,0.92,27
+proxy,net_tx,45.70,50.50,50.32,50.50,0.92,27
+proxy,block_read,0.01,0.01,0.01,0.01,0.00,27
+proxy,block_write,0.01,0.01,0.01,0.01,0.00,27
+
+worker,cpu,0.05,307.53,184.63,296.55,146.08,27
+worker,memory_mb,141.70,462.00,336.18,446.50,152.43,27
+worker,memory_pct,6.92,22.56,16.42,21.80,7.44,27
+worker,net_rx,1.27,1.31,1.29,1.29,0.01,27
+worker,net_tx,1.16,1.20,1.18,1.18,0.01,27
+worker,block_read,113.00,113.00,113.00,113.00,0.00,27
+worker,block_write,8.27,14.80,12.82,13.50,2.27,27
+
+storeapi,cpu,0.09,65.94,2.61,0.12,12.66,27
+storeapi,memory_mb,93.82,93.82,93.82,93.82,0.00,27
+storeapi,memory_pct,9.16,9.16,9.16,9.16,0.00,27
+storeapi,net_rx,0.04,0.05,0.05,0.05,0.00,27
+storeapi,net_tx,175.00,218.00,216.41,218.00,8.28,27
+storeapi,block_read,45.20,45.20,45.20,45.20,0.00,27
+storeapi,block_write,46.20,50.90,50.73,50.90,0.90,27
+
+database,cpu,0.00,3.32,0.63,0.01,1.10,27
+database,memory_mb,58.88,59.00,58.90,58.90,0.02,27
+database,memory_pct,5.75,5.76,5.75,5.75,0.00,27
+database,net_rx,0.05,0.05,0.05,0.05,0.00,27
+database,net_tx,43.80,50.60,49.28,50.30,1.72,27
+database,block_read,0.04,39.90,38.42,39.90,7.67,27
+database,block_write,0.97,1.09,1.06,1.07,0.03,27
+
+redis,cpu,0.17,0.72,0.34,0.21,0.20,27
+redis,memory_mb,28.53,29.03,28.59,28.53,0.13,27
+redis,memory_pct,5.57,5.67,5.58,5.57,0.03,27
+redis,net_rx,0.00,0.00,0.00,0.00,0.00,27
+redis,net_tx,0.00,0.00,0.00,0.00,0.00,27
+redis,block_read,25.20,25.20,25.20,25.20,0.00,27
+redis,block_write,0.00,0.00,0.00,0.00,0.00,27
+
+kafka,cpu,0.86,120.48,24.14,2.60,39.21,27
+kafka,memory_mb,458.60,564.30,473.16,458.60,31.09,27
+kafka,memory_pct,44.79,55.11,46.21,44.79,3.04,27
+kafka,net_rx,1.15,1.18,1.17,1.17,0.01,27
+kafka,net_tx,1.26,1.30,1.28,1.28,0.01,27
+kafka,block_read,69.80,69.80,69.80,69.80,0.00,27
+kafka,block_write,28.10,28.90,28.51,28.50,0.25,27
+
+
+=== WORKER TIMING STATISTICS ===
+Total Tasks,11
+Successful Tasks,11,100.00%
+Failed Tasks,0,0.00%
+
+Metric,Min (s),Max (s),Avg (s),Median (s),P95 (s),StdDev,Samples
+total_time,9.24,10.85,10.19,10.20,10.85,0.39,11
+db_fetch,0.00,0.01,0.00,0.00,0.01,0.00,11
+s3_download,0.00,0.02,0.00,0.00,0.02,0.01,11
+ffmpeg,9.21,10.84,10.18,10.19,10.84,0.39,11
+db_update,0.00,0.01,0.00,0.00,0.01,0.00,11
