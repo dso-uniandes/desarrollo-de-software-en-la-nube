@@ -143,6 +143,50 @@ scp -i "ANB.pem" ubuntu@{{ip}}:/home/ubuntu/anb/capacity-planning/postman/result
 
 <img width="4170" height="2955" alt="container_resources" src="https://github.com/user-attachments/assets/48ee57d7-02b2-45e2-b8d0-e231e0ade0fe" />
 
+## Escenario 1 - Escalamiento rápido (Ramp) X = 300:
+
+Continuamos con el escalamiento, aumentando la carga a 300 usuarios concurrentes para identificar más claramente los límites del sistema.
+
+### Resultados del Test con 300 Usuarios Concurrentes:
+
+**Summary Report:**
+- **1,901 samples** procesados
+- **Tiempo promedio de respuesta:** 68,657 ms (aproximadamente 69 segundos)
+- **Tiempo mínimo:** 535 ms
+- **Tiempo máximo:** 93,516 ms
+- **0% de errores** - todas las peticiones fueron exitosas
+- **Throughput:** 3.3 requests/segundo
+- **Mediana:** 87,646 ms
+
+<img width="1467" height="801" alt="java_8XfTceekM3" src="https://github.com/user-attachments/assets/e1c88317-c01b-4df6-89ae-77fd2d57fd2f" />
+
+**Análisis de Percentiles:**
+- **90% de las respuestas:** ≤ 90,761 ms
+- **95% de las respuestas:** ≤ 92,577 ms
+- **99% de las respuestas:** ≤ 93,230 ms
+
+<img width="1467" height="801" alt="java_Yt914qjvWT" src="https://github.com/user-attachments/assets/37257a2f-ce58-4dfd-bb00-235ddf5c93bf" />
+
+**Análisis de Tiempo de Respuesta:**
+El gráfico de tiempo de respuesta muestra que efectivamente los tiempos suben a aproximadamente 90,000 milisegundos (90 segundos) después de los 3 minutos de rampa. Esta degradación significativa indica que el sistema está operando muy cerca de sus límites máximos.
+
+<img width="1467" height="801" alt="java_QbncFsrJQo" src="https://github.com/user-attachments/assets/7f5ba010-41d9-4529-9ec7-880b0b37c13b" />
+
+<img width="1467" height="801" alt="java_0bwM9nL3gJ" src="https://github.com/user-attachments/assets/00859e86-703a-47bf-b8d3-3003c0e4dc2a" />
+
+**Monitoreo de Recursos del Sistema:**
+El análisis de recursos muestra un uso promedio de CPU del 100.71% en el contenedor storeapi, lo cual indica que el sistema está operando al límite de su capacidad. El gráfico de recursos del contenedor muestra el mismo comportamiento que el escenario anterior, con el CPU manteniéndose al 100% y picos ocasionales que llegan hasta el 160%.
+
+<img width="1920" height="1704" alt="image" src="https://github.com/user-attachments/assets/cbeb5e60-b284-4a0c-8799-7eb52d4ed8c6" />
+
+Descargamos la imagen generada con secure copy:
+
+```bash
+scp -i "ANB.pem" ubuntu@{{ip}}:/home/ubuntu/anb/capacity-planning/postman/results/container_resources.png ./container_resources.png
+```
+
+<img width="4170" height="2955" alt="container_resources" src="https://github.com/user-attachments/assets/9c36a0a9-1dfe-4bba-a9f3-832d85bcddb9" />
+
 ## Escenario 1 - Escalamiento rápido (Ramp) X = 500:
 
 En este escenario crítico, aumentamos la carga a 500 usuarios concurrentes para identificar el punto de fallo del sistema.
