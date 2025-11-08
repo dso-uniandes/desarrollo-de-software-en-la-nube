@@ -54,7 +54,7 @@ graph TD
 
 Para este escenario inicial de sanidad, configuramos JMeter con 5 hilos (usuarios concurrentes), un periodo de ramp-up de 5 segundos y una duración total de 60 segundos. Esta configuración nos permite validar que todo el sistema responde correctamente y que la telemetría está funcionando antes de proceder con pruebas más intensivas.
 
-La configuración de la petición incluye el endpoint de login con parámetros URL encoded para username y password, haciendo una petición POST a la IP pública de la EC2 donde está desplegado nuestro proyecto FastAPI.
+La configuración de la petición incluye el endpoint de login con parámetros URL encoded para username y password, realizando una petición POST al DNS público del Application Load Balancer (ALB) que distribuye el tráfico entre las instancias EC2 del grupo de Auto Scaling donde se encuentra desplegada la aplicación.
 
 <img width="1519" height="856" alt="java_GLTQw7kwge" src="https://github.com/user-attachments/assets/5bdb580a-83ad-4bff-a666-e49b65cb069e" />
 
@@ -67,10 +67,10 @@ Configuración de la petición:
 Los resultados muestran que todas las peticiones fueron exitosas, lo cual es un excelente indicador de que el sistema está funcionando correctamente bajo carga básica.
 
 **Summary Report:**
-- **206 samples** procesados exitosamente
-- **Tiempo promedio de respuesta:** 1,431 ms
-- **Tiempo mínimo:** 471 ms
-- **Tiempo máximo:** 3,255 ms
+- **208 samples** procesados exitosamente
+- **Tiempo promedio de respuesta:** 1,413 ms
+- **Tiempo mínimo:** 433 ms
+- **Tiempo máximo:** 4,380 ms
 - **0% de errores** - todas las peticiones fueron exitosas
 - **Throughput:** 3.4 requests/segundo
 
@@ -79,33 +79,24 @@ Los resultados muestran que todas las peticiones fueron exitosas, lo cual es un 
 <img width="1519" height="856" alt="java_luNTl2Op3k" src="https://github.com/user-attachments/assets/4adc34c1-761a-4aef-9088-f6c5af82edb2" />
 
 **Análisis de Percentiles:**
-- **90% de las respuestas:** ≤ 1,805 ms
-- **95% de las respuestas:** ≤ 1,910 ms  
-- **99% de las respuestas:** ≤ 2,549 ms
+- **90% de las respuestas:** ≤ 1,617 ms
+- **95% de las respuestas:** ≤ 1,711 ms  
+- **99% de las respuestas:** ≤ 2,468 ms
 
 <img width="1519" height="856" alt="java_Lf3vsRDZGB" src="https://github.com/user-attachments/assets/151da9c8-743e-47fb-b153-d54f044e0aaa" />
 
 **Análisis de Tiempo de Respuesta:**
-El gráfico de tiempo de respuesta muestra un comportamiento bastante estable, con un pequeño pico que supera los 1,600 milisegundos, pero la mayoría de las respuestas se mantienen por debajo de este umbral. Esto indica que el sistema maneja bien la carga básica de 5 usuarios concurrentes.
+El gráfico de tiempo de respuesta muestra un comportamiento bastante estable, con un pequeño pico que supera los 1,700 milisegundos, pero la mayoría de las respuestas se mantienen por debajo de este umbral. Esto indica que el sistema maneja bien la carga básica de 5 usuarios concurrentes.
 
 <img width="1519" height="856" alt="java_kEMqX6ccL5" src="https://github.com/user-attachments/assets/9ab25a2d-69f1-4e7e-8e6a-e66166997485" />
 
 <img width="1519" height="856" alt="java_g3NwY18DQ9" src="https://github.com/user-attachments/assets/b55cb49d-7aec-4eb1-9cd3-6984efd9b02a" />
 
 **Monitoreo de Recursos del Sistema:**
-Utilizando calculate-stats en la EC2, generamos métricas de uso de recursos durante la prueba. Los resultados muestran un uso de CPU del 40% en el contenedor storeapi, lo cual es un nivel saludable y indica que el sistema tiene capacidad adicional para manejar más carga.
+El monitoreo se realizó a través de Amazon CloudWatch, el servicio nativo de observabilidad de AWS. En esta ocasión, en lugar de usar el script local calculate-stats dentro del contenedor, se aprovecharon las métricas agregadas de las instancias EC2 pertenecientes al grupo de Auto Scaling donde se encuentra desplegada la capa web.
 
-<img width="1920" height="1726" alt="image" src="https://github.com/user-attachments/assets/ae472958-d251-49f7-975b-91d50c363e94" />
+Los resultados muestran un uso máximo de CPU del 35 %, lo cual representa un comportamiento saludable y evidencia que el sistema tiene amplio margen de capacidad disponible bajo la carga básica de cinco usuarios concurrentes.
 
-Luego descargamos la imagen generada con secure copy:
-
-```bash
-scp -i "ANB.pem" ubuntu@{{ip}}:/home/ubuntu/anb/capacity-planning/postman/results/container_resources.png ./container_resources.png
-```
-
-El gráfico de recursos del contenedor muestra que el uso de CPU se mantiene estable alrededor del 100% durante la mayor parte de la prueba, con caídas solo al inicio y final de la ejecución. Esto confirma que el sistema está operando dentro de sus límites normales bajo esta carga básica.
-
-<img width="4170" height="2955" alt="container_resources" src="https://github.com/user-attachments/assets/31f3c92d-6b42-4e65-8c28-31a0e16f7016" />
 
 ## Escenario 1 - Escalamiento rápido (Ramp) X = 100:
 
