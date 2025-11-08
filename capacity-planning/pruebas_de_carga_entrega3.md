@@ -60,7 +60,7 @@ La configuración de la petición incluye el endpoint de login con parámetros U
 
 Configuración de la petición:
 
-<img width="1519" height="856" alt="java_TE3ziuAjav" src="https://github.com/user-attachments/assets/531da995-64b9-4b56-9687-71351d85add3" />
+<img width="1519" height="856" alt="java_9TiwWWu65a" src="https://github.com/user-attachments/assets/de358d32-885f-40ff-b6bf-f92720e53929" />
 
 ### Resultados del Test de Sanidad:
 
@@ -74,23 +74,23 @@ Los resultados muestran que todas las peticiones fueron exitosas, lo cual es un 
 - **0% de errores** - todas las peticiones fueron exitosas
 - **Throughput:** 3.4 requests/segundo
 
-<img width="1519" height="856" alt="java_0WpDjov8j2" src="https://github.com/user-attachments/assets/a07d8133-4dda-468f-ac19-894ed22fa159" />
+<img width="1519" height="856" alt="java_QME7Z4XvN6" src="https://github.com/user-attachments/assets/824edb86-e7e6-4408-b4b1-3f1b6a5a920d" />
 
-<img width="1519" height="856" alt="java_5JfaZ5r1M8" src="https://github.com/user-attachments/assets/496397c9-1ce6-4001-9cb2-19bc680547a9" />
+<img width="1519" height="856" alt="java_luNTl2Op3k" src="https://github.com/user-attachments/assets/4adc34c1-761a-4aef-9088-f6c5af82edb2" />
 
 **Análisis de Percentiles:**
 - **90% de las respuestas:** ≤ 1,805 ms
 - **95% de las respuestas:** ≤ 1,910 ms  
 - **99% de las respuestas:** ≤ 2,549 ms
 
-<img width="1519" height="856" alt="java_ErSibnIBm4" src="https://github.com/user-attachments/assets/4772e192-21bb-4c70-9dc4-ec4e69321ff2" />
+<img width="1519" height="856" alt="java_Lf3vsRDZGB" src="https://github.com/user-attachments/assets/151da9c8-743e-47fb-b153-d54f044e0aaa" />
 
 **Análisis de Tiempo de Respuesta:**
 El gráfico de tiempo de respuesta muestra un comportamiento bastante estable, con un pequeño pico que supera los 1,600 milisegundos, pero la mayoría de las respuestas se mantienen por debajo de este umbral. Esto indica que el sistema maneja bien la carga básica de 5 usuarios concurrentes.
 
-<img width="1519" height="856" alt="java_rOpBp4TdaX" src="https://github.com/user-attachments/assets/b84f74d7-9766-4619-9f1c-872515e23a18" />
+<img width="1519" height="856" alt="java_kEMqX6ccL5" src="https://github.com/user-attachments/assets/9ab25a2d-69f1-4e7e-8e6a-e66166997485" />
 
-<img width="1519" height="856" alt="java_XCSEdQx20G" src="https://github.com/user-attachments/assets/c4f3d6ff-efef-406c-b2fd-abc2f86fe3bf" />
+<img width="1519" height="856" alt="java_g3NwY18DQ9" src="https://github.com/user-attachments/assets/b55cb49d-7aec-4eb1-9cd3-6984efd9b02a" />
 
 **Monitoreo de Recursos del Sistema:**
 Utilizando calculate-stats en la EC2, generamos métricas de uso de recursos durante la prueba. Los resultados muestran un uso de CPU del 40% en el contenedor storeapi, lo cual es un nivel saludable y indica que el sistema tiene capacidad adicional para manejar más carga.
