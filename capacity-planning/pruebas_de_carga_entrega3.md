@@ -106,42 +106,38 @@ Para este escenario de escalamiento rápido, aumentamos significativamente la ca
 ### Resultados del Test con 100 Usuarios Concurrentes:
 
 **Summary Report:**
-- **1,708 samples** procesados
-- **Tiempo promedio de respuesta:** 23,713 ms (aproximadamente 24 segundos)
-- **Tiempo mínimo:** 450 ms
-- **Tiempo máximo:** 37,108 ms
+- **1,787 samples** procesados
+- **Tiempo promedio de respuesta:** 22,657 ms
+- **Tiempo mínimo:** 426 ms
+- **Tiempo máximo:** 33,340 ms
 - **0% de errores** - todas las peticiones fueron exitosas
 - **Throughput:** se mantiene estable
-- **Mediana:** 28,606 ms
+- **Mediana:** 27,824 ms
 
-<img width="1467" height="801" alt="java_TOYLZpBFWs" src="https://github.com/user-attachments/assets/06d49d2c-028d-402f-9480-cfaaae7c9221" />
+<img width="1519" height="856" alt="java_zh5W8gvrAN" src="https://github.com/user-attachments/assets/79cd7fbc-bf88-4943-8b21-6661333e3fe5" />
 
 **Análisis de Percentiles:**
-- **90% de las respuestas:** ≤ 31,058 ms
-- **95% de las respuestas:** ≤ 31,558 ms
-- **99% de las respuestas:** ≤ 32,004 ms
+- **90% de las respuestas:** ≤ 28,583 ms
+- **95% de las respuestas:** ≤ 29,801 ms
+- **99% de las respuestas:** ≤ 30,439 ms
 
-<img width="1467" height="801" alt="java_1YL9a5qtSc" src="https://github.com/user-attachments/assets/5ef849cf-24b1-4dee-920f-5ba0d2d6c929" />
+<img width="1519" height="856" alt="java_ibsQTXP2QU" src="https://github.com/user-attachments/assets/00780ba4-fd30-4c4a-99da-c13ada9535f5" />
 
 **Análisis de Tiempo de Respuesta:**
 El gráfico muestra que los tiempos de respuesta aumentan significativamente a aproximadamente 30,000 milisegundos (30 segundos), lo cual indica que el sistema está comenzando a experimentar estrés bajo esta carga. Aunque no hay errores, la degradación en el rendimiento es evidente.
 
-<img width="1467" height="801" alt="java_CMYt9fWng5" src="https://github.com/user-attachments/assets/5d060f5b-fecb-4709-a340-61347725fe8b" />
+<img width="1519" height="856" alt="java_JPoXx9Ma2Q" src="https://github.com/user-attachments/assets/c4a01b21-d788-452a-a3e2-8d85f8611d6a" />
 
-<img width="1467" height="801" alt="java_T1g88d5sYG" src="https://github.com/user-attachments/assets/c67dad2d-f371-4dd0-bb7f-4af67e33e7ff" />
+<img width="1519" height="856" alt="java_9kpCgcjNvy" src="https://github.com/user-attachments/assets/453f09d4-0c52-437d-8a04-37f821f9d3fa" />
 
 **Monitoreo de Recursos del Sistema:**
-El análisis de recursos muestra un uso promedio de CPU del 94.82% en el contenedor storeapi, lo cual indica que el sistema está operando cerca de su capacidad máxima. El gráfico de recursos del contenedor confirma que el CPU se mantiene constantemente al 100%, con picos ocasionales que lo llevan hasta el 140% o 120%. El uso de memoria se mantiene estable en aproximadamente 70MB.
+El análisis de recursos, monitoreado a través de Amazon CloudWatch, muestra un uso máximo de CPU del 49.8 % en la instancia que ejecuta la capa web. Este valor es particularmente interesante, ya que el umbral de autoescalado se configuró precisamente en el 50 % de utilización, por lo que el sistema no alcanzó a disparar la creación de una nueva instancia.
 
-<img width="1920" height="1704" alt="image" src="https://github.com/user-attachments/assets/a9b82748-d342-495c-a728-3e6e2b56a0c2" />
+El gráfico de métricas confirma que el CPU se mantuvo estable justo por debajo del umbral durante toda la ejecución, sin superar el 50 %. Este comportamiento sugiere que la capacidad actual del sistema fue suficiente para manejar la carga del escenario sin requerir escalado adicional, demostrando una distribución eficiente del tráfico a través del ALB.
 
-Descargamos la imagen generada con secure copy:
+Además, el uso de memoria y red se mantuvo dentro de rangos normales, sin signos de saturación. En conjunto, las métricas reflejan que la infraestructura está correctamente dimensionada para este nivel de demanda, aunque cualquier incremento leve en la carga habría activado el mecanismo de Auto Scaling, añadiendo una nueva instancia para mantener el rendimiento estable.
 
-```bash
-scp -i "ANB.pem" ubuntu@{{ip}}:/home/ubuntu/anb/capacity-planning/postman/results/container_resources.png ./container_resources.png
-```
-
-<img width="4170" height="2955" alt="container_resources" src="https://github.com/user-attachments/assets/48ee57d7-02b2-45e2-b8d0-e231e0ade0fe" />
+<img width="1920" height="912" alt="RhhZzbE1kB" src="https://github.com/user-attachments/assets/8f2fa49c-0de3-4dd6-aea0-e2f08abc2645" />
 
 ## Escenario 1 - Escalamiento rápido (Ramp) X = 300:
 
