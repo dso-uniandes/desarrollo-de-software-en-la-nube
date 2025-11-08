@@ -97,6 +97,7 @@ El monitoreo se realizó a través de Amazon CloudWatch, el servicio nativo de o
 
 Los resultados muestran un uso máximo de CPU del 35 %, lo cual representa un comportamiento saludable y evidencia que el sistema tiene amplio margen de capacidad disponible bajo la carga básica de cinco usuarios concurrentes.
 
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/98e0aef0-5949-4e39-8022-ca50efcaa2a8" />
 
 ## Escenario 1 - Escalamiento rápido (Ramp) X = 100:
 
