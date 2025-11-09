@@ -234,60 +234,60 @@ Basándonos en los resultados de las pruebas, podemos concluir que:
 
   **Recursos de Contenedores:**
   
-  ![Container Resources](./resultados_entrega_2/worker/container_resources_50mb_5mjs_1w.png)
+  ![Container Resources](./resultados_entrega_3/worker/container_resources_50mb_5mjs_1w.png)
 
   **Tiempos de Worker:**
   
-  ![Worker Timing](./resultados_entrega_2/worker/worker_timing_50mb_5mjs_1w.png)
+  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_50mb_5mjs_1w.png)
 
   **Desglose de Procesamiento:**
   
-  ![Worker Breakdown](./resultados_entrega_2/worker/worker_breakdown_pie_50mb_5mjs_1w.png)
+  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_50mb_5mjs_1w.png)
 
 
 ## Escenario 2 100Mb-1 Worker - 5 Tasks
 
   **Recursos de Contenedores:**
   
-  ![Container Resources](./resultados_entrega_2/worker/container_resources_100mb_5mjs_1w.png)
+  ![Container Resources](./resultados_entrega_3/worker/container_resources_100mb_5mjs_1w.png)
 
   **Tiempos de Worker:**
   
-  ![Worker Timing](./resultados_entrega_2/worker/worker_timing_100mb_5mjs_1w.png)
+  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_100mb_5mjs_1w.png)
 
   **Desglose de Procesamiento:**
   
-  ![Worker Breakdown](./resultados_entrega_2/worker/worker_breakdown_pie_100mb_5mjs_1w.png)
+  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_100mb_5mjs_1w.png)
 
 
 ## Escenario 2 50Mb-3 Worker - 5 Tasks
 
   **Recursos de Contenedores:**
   
-  ![Container Resources](./resultados_entrega_2/worker/container_resources_50mb_5mjs_3w.png)
+  ![Container Resources](./resultados_entrega_3/worker/container_resources_50mb_5mjs_3w.png)
 
   **Tiempos de Worker:**
   
-  ![Worker Timing](./resultados_entrega_2/worker/worker_timing_50mb_5mjs_3w.png)
+  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_50mb_5mjs_3w.png)
 
   **Desglose de Procesamiento:**
   
-  ![Worker Breakdown](./resultados_entrega_2/worker/worker_breakdown_pie_50mb_5mjs_3w.png)
+  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_50mb_5mjs_3w.png)
 
 
 ## Escenario 2 100Mb-3 Worker - 5 Tasks
 
   **Recursos de Contenedores:**
   
-  ![Container Resources](./resultados_entrega_2/worker/container_resources_100mb_5mjs_3w.png)
+  ![Container Resources](./resultados_entrega_3/worker/container_resources_100mb_5mjs_3w.png)
 
   **Tiempos de Worker:**
   
-  ![Worker Timing](./resultados_entrega_2/worker/worker_timing_100mb_5mjs_3w.png)
+  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_100mb_5mjs_3w.png)
 
   **Desglose de Procesamiento:**
   
-  ![Worker Breakdown](./resultados_entrega_2/worker/worker_breakdown_pie_100mb_5mjs_3w.png)
+  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_100mb_5mjs_3w.png)
 
 
 ## Conclusiones del Escenario 2 - Capacidad de la Capa Worker:
