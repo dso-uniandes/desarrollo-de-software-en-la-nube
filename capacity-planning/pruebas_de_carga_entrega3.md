@@ -1,55 +1,3 @@
-## Ambiente 
-* Maquina EC2 web Server 1 - 2vCPU
-* Maquina EC2 Worker 1 - 2vCPU
-* BD - RDS 
-* Maquina EC2 NFS Sercer - 2vCPU
-
-### Arquitectura
-
-```mermaid
-graph TD
-    A[JMeter<br/>Generador de carga] --> EC2_WEB
-    
-    subgraph EC2_WEB[🖥️ EC2 Web Server 2 vCPU]
-        B[Nginx<br/>Reverse Proxy]
-        C[StoreAPI<br/>FastAPI]
-        E[(Redis<br/>Caché)]
-        B --> C
-        C --> E
-    end
-    
-    subgraph EC2_WORKER[EC2_Worker_2_vCPU]
-        G[Kafka<br/>Message Broker]
-        H[Worker<br/>FFmpeg Processor]
-        G --> H
-    end
-    
-    subgraph RDS[☁️ RDS PostgreSQL]
-        D[(PostgreSQL<br/>Base de datos)]
-    end
-    
-    subgraph EC2_NFS[🖥️ EC2 NFS Server 2 vCPU]
-        F[S3/Local<br/>Almacenamiento]
-    end
-    
-    C --> D
-    C --> G
-    H --> F
-    H --> D
-    
-    I[Monitor<br/>Docker Stats] -.-> C
-    I -.-> H
-    I -.-> G
-    
-    style C fill:#4A90E2
-    style H fill:#E27B4A
-    style A fill:#50C878
-    style EC2_WEB fill:#E8F4FD,stroke:#4A90E2,stroke-width:2px
-    style EC2_WORKER fill:#FDF4E8,stroke:#E27B4A,stroke-width:2px
-    style RDS fill:#F0F8FF,stroke:#5D9CEC,stroke-width:2px
-    style EC2_NFS fill:#F5F5F5,stroke:#888888,stroke-width:2px
-```
-
 ## Escenario 1 - Sanidad (Smoke):
 
 Para este escenario inicial de sanidad, configuramos JMeter con 5 hilos (usuarios concurrentes), un periodo de ramp-up de 5 segundos y una duración total de 60 segundos. Esta configuración nos permite validar que todo el sistema responde correctamente y que la telemetría está funcionando antes de proceder con pruebas más intensivas.
@@ -90,8 +38,6 @@ El gráfico de tiempo de respuesta muestra un comportamiento bastante estable, c
 
 <img width="1519" height="856" alt="java_kEMqX6ccL5" src="https://github.com/user-attachments/assets/9ab25a2d-69f1-4e7e-8e6a-e66166997485" />
 
-<img width="1519" height="856" alt="java_g3NwY18DQ9" src="https://github.com/user-attachments/assets/b55cb49d-7aec-4eb1-9cd3-6984efd9b02a" />
-
 **Monitoreo de Recursos del Sistema:**
 El monitoreo se realizó a través de Amazon CloudWatch, el servicio nativo de observabilidad de AWS. En esta ocasión, en lugar de usar el script local calculate-stats dentro del contenedor, se aprovecharon las métricas agregadas de las instancias EC2 pertenecientes al grupo de Auto Scaling donde se encuentra desplegada la capa web.
 
@@ -127,8 +73,6 @@ Para este escenario de escalamiento rápido, aumentamos significativamente la ca
 El gráfico muestra que los tiempos de respuesta aumentan significativamente a aproximadamente 30,000 milisegundos (30 segundos), lo cual indica que el sistema está comenzando a experimentar estrés bajo esta carga. Aunque no hay errores, la degradación en el rendimiento es evidente.
 
 <img width="1519" height="856" alt="java_JPoXx9Ma2Q" src="https://github.com/user-attachments/assets/c4a01b21-d788-452a-a3e2-8d85f8611d6a" />
-
-<img width="1519" height="856" alt="java_9kpCgcjNvy" src="https://github.com/user-attachments/assets/453f09d4-0c52-437d-8a04-37f821f9d3fa" />
 
 **Monitoreo de Recursos del Sistema:**
 El análisis de recursos, monitoreado a través de Amazon CloudWatch, muestra un uso máximo de CPU del 49.8 % en la instancia que ejecuta la capa web. Este valor es particularmente interesante, ya que el umbral de autoescalado se configuró precisamente en el 50 % de utilización, por lo que el sistema no alcanzó a disparar la creación de una nueva instancia.
@@ -171,8 +115,6 @@ Continuamos con el escalamiento, aumentando la carga a 300 usuarios concurrentes
 El gráfico de tiempo de respuesta muestra que efectivamente los tiempos suben a aproximadamente 90,000 milisegundos (90 segundos) después de los 3 minutos de rampa. Esta degradación significativa indica que el sistema está operando muy cerca de sus límites máximos.
 
 <img width="1467" height="801" alt="java_QbncFsrJQo" src="https://github.com/user-attachments/assets/7f5ba010-41d9-4529-9ec7-880b0b37c13b" />
-
-<img width="1467" height="801" alt="java_0bwM9nL3gJ" src="https://github.com/user-attachments/assets/00859e86-703a-47bf-b8d3-3003c0e4dc2a" />
 
 **Monitoreo de Recursos del Sistema:**
 El análisis de recursos muestra un uso promedio de CPU del 100.71% en el contenedor storeapi, lo cual indica que el sistema está operando al límite de su capacidad. El gráfico de recursos del contenedor muestra el mismo comportamiento que el escenario anterior, con el CPU manteniéndose al 100% y picos ocasionales que llegan hasta el 160%.
