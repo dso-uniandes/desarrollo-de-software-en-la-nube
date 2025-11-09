@@ -98,32 +98,24 @@ Continuamos con el escalamiento, aumentando la carga a 300 usuarios concurrentes
 - **Throughput:** 3.3 requests/segundo
 - **Mediana:** 87,646 ms
 
-<img width="1467" height="801" alt="java_8XfTceekM3" src="https://github.com/user-attachments/assets/e1c88317-c01b-4df6-89ae-77fd2d57fd2f" />
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/8d8763b3-c7f2-4c47-9d7c-2ab9fa3d63c9" />
 
 **Análisis de Percentiles:**
 - **90% de las respuestas:** ≤ 90,761 ms
 - **95% de las respuestas:** ≤ 92,577 ms
 - **99% de las respuestas:** ≤ 93,230 ms
 
-<img width="1467" height="801" alt="java_Yt914qjvWT" src="https://github.com/user-attachments/assets/37257a2f-ce58-4dfd-bb00-235ddf5c93bf" />
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/72e46faa-ec49-4275-999a-59475b81b6cf" />
 
 **Análisis de Tiempo de Respuesta:**
 El gráfico de tiempo de respuesta muestra que efectivamente los tiempos suben a aproximadamente 90,000 milisegundos (90 segundos) después de los 3 minutos de rampa. Esta degradación significativa indica que el sistema está operando muy cerca de sus límites máximos.
 
-<img width="1467" height="801" alt="java_QbncFsrJQo" src="https://github.com/user-attachments/assets/7f5ba010-41d9-4529-9ec7-880b0b37c13b" />
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/dd279e42-aa56-4ec6-814f-3505befb11ca" />
 
 **Monitoreo de Recursos del Sistema:**
 El análisis de recursos muestra un uso promedio de CPU del 100.71% en el contenedor storeapi, lo cual indica que el sistema está operando al límite de su capacidad. El gráfico de recursos del contenedor muestra el mismo comportamiento que el escenario anterior, con el CPU manteniéndose al 100% y picos ocasionales que llegan hasta el 160%.
 
-<img width="1920" height="1704" alt="image" src="https://github.com/user-attachments/assets/cbeb5e60-b284-4a0c-8799-7eb52d4ed8c6" />
-
-Descargamos la imagen generada con secure copy:
-
-```bash
-scp -i "ANB.pem" ubuntu@{{ip}}:/home/ubuntu/anb/capacity-planning/postman/results/container_resources.png ./container_resources.png
-```
-
-<img width="4170" height="2955" alt="container_resources" src="https://github.com/user-attachments/assets/9c36a0a9-1dfe-4bba-a9f3-832d85bcddb9" />
+<img width="1918" height="887" alt="image" src="https://github.com/user-attachments/assets/4f7e59ee-0028-4087-bd94-8f46263087b9" />
 
 ## Escenario 1 - Escalamiento rápido (Ramp) X = 500:
 
@@ -140,34 +132,24 @@ En este escenario crítico, aumentamos la carga a 500 usuarios concurrentes para
 - **Throughput:** se mantiene en 3.4 requests/segundo
 - **Mediana:** 139,466 ms
 
-<img width="1467" height="801" alt="java_SeVT6L9y5S" src="https://github.com/user-attachments/assets/fc7f0d46-5ae7-4786-a252-f2244c65366e" />
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/2aebf1ce-62e1-4405-a968-3f2d3aac5eea" />
 
 **Análisis de Percentiles:**
 - **90% de las respuestas:** ≤ 146,951 ms
 - **95% de las respuestas:** ≤ 147,586 ms
 - **99% de las respuestas:** ≤ 147,863 ms
 
-<img width="1467" height="801" alt="java_xvUmw0GM0T" src="https://github.com/user-attachments/assets/d168cbe3-fbe5-44ae-ad81-e21dabd35a65" />
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/fde28c55-e9fa-4887-a118-1a01a28c1e76" />
 
 **Análisis de Tiempo de Respuesta:**
 El gráfico muestra tiempos de respuesta promedio de aproximadamente 140,000 milisegundos (140 segundos). Es interesante observar un pico descendente después de los 2 minutos y medio (después de la rampa de 3 minutos), lo cual probablemente se debe a la degradación de los servicios que comienzan a fallar y por tanto responden más rápido con errores.
 
-<img width="1467" height="801" alt="java_sEj6Om40Nr" src="https://github.com/user-attachments/assets/07cade6e-ddf0-47b1-9966-19c18896f793" />
-
-<img width="1754" height="801" alt="java_boAxAlMMBP" src="https://github.com/user-attachments/assets/0faf9013-5d34-419f-b883-3b5cf3b9dc53" />
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/aae13d8d-9038-410a-b26b-d5b57f570ba9" />
 
 **Monitoreo de Recursos del Sistema:**
 El análisis de recursos muestra un uso promedio de CPU del 99.76% en el contenedor storeapi. Es curioso notar que aunque este escenario presenta degradación con errores, el uso de CPU es ligeramente menor que en el escenario de 300 usuarios (que no tuvo errores pero sí alcanzó el 160% en algunos picos). El gráfico de recursos del contenedor muestra el mismo comportamiento, con picos que llegan hasta el 140%.
 
-<img width="903" height="216" alt="image" src="https://github.com/user-attachments/assets/28edeb81-f280-4ed0-b5b3-913ef76f2142" />
-
-Descargamos la imagen generada con secure copy:
-
-```bash
-scp -i "ANB.pem" ubuntu@{{ip}}:/home/ubuntu/anb/capacity-planning/postman/results/container_resources.png ./container_resources.png
-```
-
-<img width="4170" height="2955" alt="container_resources" src="https://github.com/user-attachments/assets/656dd095-32cb-4180-9077-f6a126e1b7f2" />
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/571fed7e-ef0a-4dfe-8c4a-89ad06601764" />
 
 ## Escenario 1 - Sostenida corta (300 * 0.8 = 240):
 
@@ -184,34 +166,24 @@ Para el escenario de sostenida corta, utilizamos el 80% de la carga máxima que 
 - **Throughput:** 3.8 requests/segundo
 - **Mediana:** 69,539 ms
 
-<img width="1480" height="814" alt="java_quhkRDFM0y" src="https://github.com/user-attachments/assets/74ced228-becc-4f3e-896d-93298a615818" />
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/162b44d0-0304-4b09-a2cf-1366d2eea39a" />
 
 **Análisis de Percentiles:**
 - **90% de las respuestas:** ≤ 71,299 ms
 - **95% de las respuestas:** ≤ 72,284 ms
 - **99% de las respuestas:** ≤ 72,911 ms
 
-<img width="1480" height="814" alt="java_ZMvmCPWbfW" src="https://github.com/user-attachments/assets/2ea1fd22-6882-41c1-a25b-f137e453267e" />
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/132a6b10-24b9-4583-9842-a8bef9dd843d" />
 
 **Análisis de Tiempo de Respuesta:**
 El gráfico muestra tiempos de respuesta promedio de aproximadamente 72,000 milisegundos (72 segundos), pero con un comportamiento estable. Aunque el tiempo de respuesta promedio es considerablemente alto, el sistema mantiene la estabilidad sin errores bajo esta carga sostenida.
 
-<img width="1226" height="814" alt="java_4ohOTcarIn" src="https://github.com/user-attachments/assets/857a06b3-847d-43bf-ab69-5031af3fdc7c" />
-
-<img width="1226" height="814" alt="java_VWpGT4aaBJ" src="https://github.com/user-attachments/assets/d16b3857-b43e-475d-bafc-370fa3b9ea9f" />
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/e90e07e2-078a-4769-aa7c-a43d7fdb4e12" />
 
 **Monitoreo de Recursos del Sistema:**
 El análisis de recursos muestra un uso promedio de CPU del 90% en el contenedor storeapi. El gráfico de recursos del contenedor muestra el mismo comportamiento observado en los escenarios anteriores: el CPU se mantiene al 100% con picos ocasionales que llegan hasta el 140%.
 
-<img width="1536" height="1257" alt="image" src="https://github.com/user-attachments/assets/89452f9c-e917-4850-ad1e-3b7104af75ed" />
-
-Descargamos la imagen generada con secure copy:
-
-```bash
-scp -i "ANB.pem" ubuntu@{{ip}}:/home/ubuntu/anb/capacity-planning/postman/results/container_resources.png ./container_resources.png
-```
-
-<img width="4170" height="2955" alt="container_resources" src="https://github.com/user-attachments/assets/1ca56b6c-6d84-4b00-b2ca-2f74fe4f6f27" />
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/0e002e04-821f-48cf-83d1-0c5bf4fe0af7" />
 
 ## Conclusiones del Escenario 1 - Capacidad de la Capa Web:
 
