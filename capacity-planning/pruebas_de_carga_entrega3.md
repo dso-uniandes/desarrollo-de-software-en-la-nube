@@ -90,98 +90,95 @@ Continuamos con el escalamiento, aumentando la carga a 300 usuarios concurrentes
 ### Resultados del Test con 300 Usuarios Concurrentes:
 
 **Summary Report:**
-- **1,901 samples** procesados
-- **Tiempo promedio de respuesta:** 68,657 ms (aproximadamente 69 segundos)
-- **Tiempo mínimo:** 535 ms
-- **Tiempo máximo:** 93,516 ms
+- **4,535 samples** procesados
+- **Tiempo promedio de respuesta:** 27,031 (vs 68,657 ms Entrega 2)
+- **Tiempo mínimo:** 408 ms
+- **Tiempo máximo:** 51,539 ms (vs 93,516 ms Entrega 2)
 - **0% de errores** - todas las peticiones fueron exitosas
-- **Throughput:** 3.3 requests/segundo
-- **Mediana:** 87,646 ms
+- **Throughput:** 8.6 requests/segundo (vs 3.3 requests/segundo Entrega 2)
+- **Mediana:** 22,901 ms (vs 87,646 ms Entrega 2)
 
 <img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/8d8763b3-c7f2-4c47-9d7c-2ab9fa3d63c9" />
 
 **Análisis de Percentiles:**
-- **90% de las respuestas:** ≤ 90,761 ms
-- **95% de las respuestas:** ≤ 92,577 ms
-- **99% de las respuestas:** ≤ 93,230 ms
+- **90% de las respuestas:** ≤ 48,357 (vs 90,761 ms Entrega 2)
+- **95% de las respuestas:** ≤ 49,197 (vs 92,577 ms Entrega 2)
+- **99% de las respuestas:** ≤ 50,952 ms (vs 93,230 ms Entrega 2)
 
 <img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/72e46faa-ec49-4275-999a-59475b81b6cf" />
 
 **Análisis de Tiempo de Respuesta:**
-El gráfico de tiempo de respuesta muestra que efectivamente los tiempos suben a aproximadamente 90,000 milisegundos (90 segundos) después de los 3 minutos de rampa. Esta degradación significativa indica que el sistema está operando muy cerca de sus límites máximos.
+El gráfico de tiempo de respuesta muestra que efectivamente los tiempos suben a aproximadamente 42,000 milisegundos (42 segundos) después de los 3 minutos de rampa. Esta degradación significativa indica que el sistema está operando muy cerca de sus límites máximos. 
 
 <img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/dd279e42-aa56-4ec6-814f-3505befb11ca" />
 
 **Monitoreo de Recursos del Sistema:**
-El análisis de recursos muestra un uso promedio de CPU del 100.71% en el contenedor storeapi, lo cual indica que el sistema está operando al límite de su capacidad. El gráfico de recursos del contenedor muestra el mismo comportamiento que el escenario anterior, con el CPU manteniéndose al 100% y picos ocasionales que llegan hasta el 160%.
 
 <img width="1918" height="887" alt="image" src="https://github.com/user-attachments/assets/4f7e59ee-0028-4087-bd94-8f46263087b9" />
 
 ## Escenario 1 - Escalamiento rápido (Ramp) X = 500:
 
-En este escenario crítico, aumentamos la carga a 500 usuarios concurrentes para identificar el punto de fallo del sistema.
+En este escenario crítico, aumentamos la carga a 500 usuarios concurrentes.
 
 ### Resultados del Test con 500 Usuarios Concurrentes:
 
 **Summary Report:**
-- **2,157 samples** procesados
-- **Tiempo promedio de respuesta:** 107,183 ms (aproximadamente 107 segundos)
-- **Tiempo mínimo:** 254 ms
-- **Tiempo máximo:** 344,100 ms
-- **1.25% de errores** - aquí comenzamos a ver fallos en el sistema
-- **Throughput:** se mantiene en 3.4 requests/segundo
-- **Mediana:** 139,466 ms
+- **4,687 samples** procesados
+- **Tiempo promedio de respuesta:** 45,326 ms (vs 107,183 ms Entrega 2)
+- **Tiempo mínimo:** 430 ms
+- **Tiempo máximo:** 78,324 ms (vs 344,100 ms Entrega 2)
+- **0.00% de errores** - En este escenario, en la entrega anterior ya se presentaban errores.
+- **Throughput:** 8.5 requests/segundo (vs 3.4 Entrega 2)
+- **Mediana:** 59,638 ms (vs 139,466 ms Entrega 2)
 
 <img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/2aebf1ce-62e1-4405-a968-3f2d3aac5eea" />
 
 **Análisis de Percentiles:**
-- **90% de las respuestas:** ≤ 146,951 ms
-- **95% de las respuestas:** ≤ 147,586 ms
-- **99% de las respuestas:** ≤ 147,863 ms
+- **90% de las respuestas:** ≤ 74,428 ms (vs 146,951 ms Entrega 2)
+- **95% de las respuestas:** ≤ 74,973 ms (vs 147,586 ms Entrega 2)
+- **99% de las respuestas:** ≤ 76,754 ms (vs 147,863 ms Entrega 2)
 
 <img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/fde28c55-e9fa-4887-a118-1a01a28c1e76" />
 
 **Análisis de Tiempo de Respuesta:**
-El gráfico muestra tiempos de respuesta promedio de aproximadamente 140,000 milisegundos (140 segundos). Es interesante observar un pico descendente después de los 2 minutos y medio (después de la rampa de 3 minutos), lo cual probablemente se debe a la degradación de los servicios que comienzan a fallar y por tanto responden más rápido con errores.
+El gráfico muestra tiempos de respuesta promedio de aproximadamente 72,000 milisegundos (72 segundos).
 
 <img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/aae13d8d-9038-410a-b26b-d5b57f570ba9" />
 
 **Monitoreo de Recursos del Sistema:**
-El análisis de recursos muestra un uso promedio de CPU del 99.76% en el contenedor storeapi. Es curioso notar que aunque este escenario presenta degradación con errores, el uso de CPU es ligeramente menor que en el escenario de 300 usuarios (que no tuvo errores pero sí alcanzó el 160% en algunos picos). El gráfico de recursos del contenedor muestra el mismo comportamiento, con picos que llegan hasta el 140%.
 
 <img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/571fed7e-ef0a-4dfe-8c4a-89ad06601764" />
 
 ## Escenario 1 - Sostenida corta (300 * 0.8 = 240):
 
-Para el escenario de sostenida corta, utilizamos el 80% de la carga máxima que no presentó errores (300 usuarios), es decir, 240 usuarios concurrentes. Este test nos permite confirmar la estabilidad del sistema bajo una carga sostenida.
+Para el escenario de sostenida corta, utilizamos el 80% de la carga máxima que no presentó errores (300 usuarios) de la Entrega 2 (recordemos que en esta entrega en no hubo errores), es decir, 240 usuarios concurrentes. Este test nos permite confirmar la estabilidad del sistema bajo una carga sostenida.
 
 ### Resultados del Test de Sostenida Corta con 240 Usuarios:
 
 **Summary Report:**
-- **1,261 samples** procesados
-- **Tiempo promedio de respuesta:** 59,747 ms (aproximadamente 60 segundos)
-- **Tiempo mínimo:** 648 ms
-- **Tiempo máximo:** 73,171 ms
+- **2,780 samples** procesados
+- **Tiempo promedio de respuesta:** 26,519 ms (vs 59,747 ms Entrega 2)
+- **Tiempo mínimo:** 405 ms
+- **Tiempo máximo:** 36,291 ms
 - **0% de errores** - todas las peticiones fueron exitosas
-- **Throughput:** 3.8 requests/segundo
-- **Mediana:** 69,539 ms
+- **Throughput:** 8.3 requests/segundo (vs 3.8 requests/segundo Entrega 2)
+- **Mediana:** 34,116 ms
 
 <img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/162b44d0-0304-4b09-a2cf-1366d2eea39a" />
 
 **Análisis de Percentiles:**
-- **90% de las respuestas:** ≤ 71,299 ms
-- **95% de las respuestas:** ≤ 72,284 ms
-- **99% de las respuestas:** ≤ 72,911 ms
+- **90% de las respuestas:** ≤ 35,494 ms (vs 71,299 ms Entrega 2)
+- **95% de las respuestas:** ≤ 35711 ms (vs 72,284 ms Entrega 2)
+- **99% de las respuestas:** ≤ 36,077 ms (vs 72,911 ms Entrega 2)
 
 <img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/132a6b10-24b9-4583-9842-a8bef9dd843d" />
 
 **Análisis de Tiempo de Respuesta:**
-El gráfico muestra tiempos de respuesta promedio de aproximadamente 72,000 milisegundos (72 segundos), pero con un comportamiento estable. Aunque el tiempo de respuesta promedio es considerablemente alto, el sistema mantiene la estabilidad sin errores bajo esta carga sostenida.
+El gráfico muestra tiempos de respuesta promedio de aproximadamente 35,000 milisegundos (35 segundos), pero con un comportamiento estable. El sistema mantiene la estabilidad sin errores bajo esta carga sostenida.
 
 <img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/e90e07e2-078a-4769-aa7c-a43d7fdb4e12" />
 
 **Monitoreo de Recursos del Sistema:**
-El análisis de recursos muestra un uso promedio de CPU del 90% en el contenedor storeapi. El gráfico de recursos del contenedor muestra el mismo comportamiento observado en los escenarios anteriores: el CPU se mantiene al 100% con picos ocasionales que llegan hasta el 140%.
 
 <img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/0e002e04-821f-48cf-83d1-0c5bf4fe0af7" />
 
