@@ -137,7 +137,11 @@ El gráfico de métricas confirma que el CPU se mantuvo estable justo por debajo
 
 Además, el uso de memoria y red se mantuvo dentro de rangos normales, sin signos de saturación. En conjunto, las métricas reflejan que la infraestructura está correctamente dimensionada para este nivel de demanda, aunque cualquier incremento leve en la carga habría activado el mecanismo de Auto Scaling, añadiendo una nueva instancia para mantener el rendimiento estable.
 
-<img width="1920" height="912" alt="RhhZzbE1kB" src="https://github.com/user-attachments/assets/8f2fa49c-0de3-4dd6-aea0-e2f08abc2645" />
+<img width="1920" height="781" alt="image" src="https://github.com/user-attachments/assets/c152e943-a087-408f-b4e6-4cf6e866d59a" />
+
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/4366d3b5-d9f7-44fb-88d6-71d37df6d7a7" />
+
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/af658afe-6f01-41bc-ad3c-e77d3cfcbb0c" />
 
 ## Escenario 1 - Escalamiento rápido (Ramp) X = 300:
 
