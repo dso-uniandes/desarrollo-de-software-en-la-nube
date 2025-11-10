@@ -30,6 +30,7 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 - [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega3.md) - Pruebas de estrés
 - [Reporte SonarQube](./docs/Entrega_3/SonarQube_analysis/) - Análisis de calidad
 - [Video de sustentación](./sustentacion/Entrega_1/sustentacion.md)
+- [Video de sustentación 2](https://uniandes-my.sharepoint.com/:v:/g/personal/f_parrav_uniandes_edu_co/EUEUS4CKdkpOmMDBeM1LfdABDajq83a5hs1O8ri2SFNadA?e=KWPA1f)
 
 ---
 
