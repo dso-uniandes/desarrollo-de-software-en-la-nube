@@ -25,7 +25,7 @@
 
 [OnDrive Uniandes](https://uniandes-my.sharepoint.com/:f:/g/personal/f_parrav_uniandes_edu_co/EtvxXrqrufFNpkfZeuNmjfwBA9i94vg42DPS1OzzBPPLeg?e=JfJYyF)
 
-[Video Completo OneDrive Uniandes ]([https://uniandes-my.sharepoint.com/:v:/g/personal/f_parrav_uniandes_edu_co/ER3r_thTDUtIl_MSPDNUhCcB_5fAEr031SXWGbjCHCpuPw?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=98NwJd](https://uniandes-my.sharepoint.com/:v:/g/personal/f_parrav_uniandes_edu_co/ER3r_thTDUtIl_MSPDNUhCcBrekQktN3JTKV2SDKTPWKfA?e=APkA5p))
+[Video Completo OneDrive Uniandes ](https://uniandes-my.sharepoint.com/:v:/g/personal/f_parrav_uniandes_edu_co/ER3r_thTDUtIl_MSPDNUhCcBrekQktN3JTKV2SDKTPWKfA?e=APkA5p)
 
-[Video Completo OneDrive Uniandes 2 ]([https://uniandes-my.sharepoint.com/:v:/g/personal/f_parrav_uniandes_edu_co/ER3r_thTDUtIl_MSPDNUhCcB_5fAEr031SXWGbjCHCpuPw?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=98NwJd](https://uniandes-my.sharepoint.com/:v:/g/personal/f_parrav_uniandes_edu_co/EUEUS4CKdkpOmMDBeM1LfdABDajq83a5hs1O8ri2SFNadA?e=KWPA1f))
+[Video Completo OneDrive Uniandes 2 ](https://uniandes-my.sharepoint.com/:v:/g/personal/f_parrav_uniandes_edu_co/EUEUS4CKdkpOmMDBeM1LfdABDajq83a5hs1O8ri2SFNadA?e=KWPA1f)
 
