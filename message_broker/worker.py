@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import os
+import sys
 import time
 import logging
 import asyncio
@@ -122,6 +123,7 @@ async def consume_messages(topic: str, consumer: SQS):
                 MaxNumberOfMessages=1,
                 WaitTimeSeconds=5,
                 AttributeNames=["All"],
+                VisibilityTimeout=120,
             )
             messages = response.get("Messages", [])
             if not messages:
@@ -157,6 +159,7 @@ async def wrapper_worker():
             await database.disconnect()
         except Exception as e:
             logger.error(f"Error during database disconnection: {e}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":

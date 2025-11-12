@@ -5,7 +5,7 @@ services:
       context: ./
       dockerfile: worker.Dockerfile
     command: ["python", "-m", "message_broker.worker"]
-
+    restart: on-failure
     env_file:
       - ./.env
     volumes:
