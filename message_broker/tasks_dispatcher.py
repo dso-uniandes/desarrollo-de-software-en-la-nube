@@ -1,7 +1,7 @@
 import json
 import logging
 
-from message_broker.client import producer as mb_producer
+from message_broker.client import sqs
 
 logger = logging.getLogger(__name__)
 
@@ -17,19 +17,13 @@ def dispatch_task(task_data: list[dict], topic: str) -> None:
         logger.info("Test environment detected, skipping task dispatch.")
         return
 
+    if sqs is None:
+        logger.error("SQS client is not initialized. Cannot dispatch tasks.")
+        return
     if topic not in TASKS_CONFIG.values():
         raise ValueError(f"Unknown topic: {topic}")
 
     for message in task_data:
-        mb_producer.produce(topic, value=json.dumps(message).encode('utf-8'))
-    mb_producer.flush()
+        sqs.send_message(QueueUrl=config.VIDEO_QUEUE_URL, MessageBody=json.dumps(message), MessageGroupId=topic, MessageDeduplicationId=message["task_id"])
 
     logger.info(f"Dispatched {len(task_data)} tasks to topic '{topic}'")
-
-    # try:
-    #     for message in task_data:
-    #         mb_producer.produce(topic, value=json.dumps(message).encode('utf-8'))
-    #     mb_producer.flush(timeout=10)
-    #     logger.info(f"Dispatched {len(task_data)} tasks to topic '{topic}'")
-    # except Exception as e:
-    #     logger.warning(f"Failed to dispatch tasks to Kafka: {e}. Continuing without task dispatch.")

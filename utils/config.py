@@ -29,17 +29,15 @@ class GlobalConfig(BaseConfig):
 
     REDIS_URL: Optional[str] = None
     RANKING_CACHE_TTL: int = 120
-    KAFKA_BOOTSTRAP_SERVERS: Optional[str] = None
 
     VIDEO_STORAGE_BASE: str = os.getenv("VIDEO_STORAGE_PATH", "videos")
     UPLOADED_FOLDER: str = f"{VIDEO_STORAGE_BASE}/uploaded"
     PROCESSED_FOLDER: str = f"{VIDEO_STORAGE_BASE}/processed"
-    KAFKA_GROUP_ID: str = 'video_tasks_group'
     APP_HOST: Optional[str] = None
+    VIDEO_QUEUE_URL: Optional[str] = None
 
 
 class DevConfig(GlobalConfig):
-    S3_ACCOUNT_ID: Optional[str] = None
     model_config = SettingsConfigDict(
         env_prefix="DEV_"
     )

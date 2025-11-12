@@ -2,38 +2,23 @@ from datetime import datetime
 import json
 import os
 import time
-from confluent_kafka import Consumer, KafkaException
 import logging
 import asyncio
 from utils.ffmpeg import edit_video
 from utils.config import config
+from message_broker.client import SQS, sqs
 from utils.logging_conf import configure_logging
-from utils.storage.s3 import get_object_key_from_url, get_shared_url, get_object, s3_upload_video
+from utils.storage.s3 import (
+    get_object_key_from_url,
+    get_shared_url,
+    get_object,
+    s3_upload_video,
+)
 from storeapi.database import database, video_table
 
 configure_logging()
 
-logger = logging.getLogger('worker')
-
-bootstrap_servers = config.KAFKA_BOOTSTRAP_SERVERS
-
-group_id = config.KAFKA_GROUP_ID
-
-conf = {
-    'bootstrap.servers': bootstrap_servers,
-    'group.id': group_id,
-    'auto.offset.reset': 'earliest'
-}
-
-
-def get_consumer() -> Consumer:
-    try:
-        if config.ENV_STATE == 'test':
-            return None
-        return Consumer(conf)
-    except Exception as e:
-        logger.error(f"Error creating Kafka consumer: {e}")
-        return None
+logger = logging.getLogger("worker")
 
 
 async def process_video_processing(message: dict):
@@ -56,8 +41,8 @@ async def process_video_processing(message: dict):
     """
     # Start timing the task
     task_start_time = time.time()
-    video_id = message.get('video_id', 'unknown')
-    task_id = message.get('task_id', 'unknown')
+    video_id = message.get("video_id", "unknown")
+    task_id = message.get("task_id", "unknown")
 
     logger.info(f"✅ Processing video: {message}")
 
@@ -79,7 +64,9 @@ async def process_video_processing(message: dict):
         s3_download_start = time.time()
         file_bytes = get_object(object_key)
         if not file_bytes:
-            logger.error(f"[task_id={task_id}] Failed to get S3 object for Key: {object_key}")
+            logger.error(
+                f"[task_id={task_id}] Failed to get S3 object for Key: {object_key}"
+            )
             return
         s3_download_duration = time.time() - s3_download_start
 
@@ -89,7 +76,7 @@ async def process_video_processing(message: dict):
         video_processing_duration = time.time() - video_processing_start
 
         # Upload processed video to S3
-        video_name = object_key.split('/')[-1]
+        video_name = object_key.split("/")[-1]
         user_id = video.user_id if hasattr(video, "user_id") else "unknown"
 
         final_video_path = f"videos/processed/user_{user_id}/{video_name}"
@@ -106,7 +93,7 @@ async def process_video_processing(message: dict):
             .values(
                 processed_url=get_shared_url(output_key),
                 status="processed",
-                processed_at=datetime.now()
+                processed_at=datetime.now(),
             )
         )
         db_update_duration = time.time() - db_update_start
@@ -115,45 +102,53 @@ async def process_video_processing(message: dict):
         total_duration = time.time() - task_start_time
         logger.info(f"[video_id={video.id}] Video processing complete: {output_key}")
         logger.info(
-            f"[task_id={task_id}] TOTAL TASK TIME: {total_duration:.2f}s (DB Fetch: {db_fetch_duration:.2f}s, S3 Download: {s3_download_duration:.2f}s, FFmpeg: {video_processing_duration:.2f}s, DB Update: {db_update_duration:.2f}s)")
+            f"[task_id={task_id}] TOTAL TASK TIME: {total_duration:.2f}s (DB Fetch: {db_fetch_duration:.2f}s, S3 Download: {s3_download_duration:.2f}s, FFmpeg: {video_processing_duration:.2f}s, DB Update: {db_update_duration:.2f}s)"
+        )
 
     except Exception as e:
         total_duration = time.time() - task_start_time
-        logger.error(f"[task_id={task_id}] Error processing video after {total_duration:.2f}s: {e}")
+        logger.error(
+            f"[task_id={task_id}] Error processing video after {total_duration:.2f}s: {e}"
+        )
 
 
-async def consume_messages(topic: str, consumer: Consumer):
-    logger.info(f"🎧 Worker listening for Kafka messages on topic '{topic}'...")
-    consumer.subscribe([topic])
+async def consume_messages(topic: str, consumer: SQS):
+    logger.info(f"🎧 Worker listening for SQS messages on topic '{topic}'...")
+
     try:
         while True:
-            msg = consumer.poll(1.0)  # Timeout of 1 second
-            if msg is None:
+            response = consumer.receive_message(
+                QueueUrl=config.VIDEO_QUEUE_URL,
+                MaxNumberOfMessages=1,
+                WaitTimeSeconds=5,
+                AttributeNames=["All"],
+            )
+            messages = response.get("Messages", [])
+            if not messages:
                 continue
-            if msg.error():
-                raise KafkaException(msg.error())
-            decoded_message = msg.value().decode('utf-8')
-            logger.info(f"📩 Received message: {decoded_message}")
 
-            if topic == "video_tasks":
-                await process_video_processing(json.loads(decoded_message))
-
+            for msg in messages:
+                body = msg["Body"]
+                decoded_message = json.loads(body)
+                receipt_handle = msg["ReceiptHandle"]
+                logger.info(f"📩 Received message: {body}")
+                await process_video_processing(decoded_message)
+                consumer.delete_message(
+                    QueueUrl=config.VIDEO_QUEUE_URL, ReceiptHandle=receipt_handle
+                )
     except Exception as e:
         logger.error(f"Error in consumer loop: {e}")
-    finally:
-        if consumer:
-            consumer.close()
 
 
 async def wrapper_worker():
     try:
         await database.connect()
         logger.info("Database connection established.")
-        consumer = get_consumer()
-        if not consumer:
-            logger.error("Kafka consumer not initialized. Check ENV_STATE or Kafka config.")
+
+        if not sqs:
+            logger.error("SQS client not initialized. Check ENV_STATE or SQS config.")
             return
-        await consume_messages("video_tasks", consumer)
+        await consume_messages("video_tasks", sqs)
     except Exception as e:
         logger.error(f"Error connecting to database: {e}")
     finally:
