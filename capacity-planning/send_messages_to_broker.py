@@ -2,15 +2,19 @@
 import argparse
 import json
 import logging
+from dotenv import load_dotenv
 import os
 import uuid
 import signal
 import sys
-from confluent_kafka import Producer
+import boto3
 
+load_dotenv()
 # ---------- CONFIG ----------
-PROD_KAFKA_BOOTSTRAP_SERVERS = os.getenv("PROD_KAFKA_BOOTSTRAP_SERVERS", None)
-TOPIC = "video_tasks"
+PROD_VIDEO_QUEUE_URL = os.getenv("PROD_VIDEO_QUEUE_URL")
+S3_ACCESS_KEY_ID = os.getenv("PROD_S3_ACCESS_KEY_ID")
+S3_SECRET_ACCESS_KEY = os.getenv("PROD_S3_SECRET_ACCESS_KEY")
+S3_REGION = os.getenv("PROD_S3_REGION")
 
 # Fixed list of sample video IDs
 NORMAL_VIDEO_ID = 21
@@ -42,32 +46,33 @@ signal.signal(signal.SIGINT, handle_exit)   # Ctrl+C
 signal.signal(signal.SIGTERM, handle_exit)  # kill
 
 # ---------- PRODUCER ----------
-producer_conf = {"bootstrap.servers": PROD_KAFKA_BOOTSTRAP_SERVERS}
-
-def get_producer() -> Producer:
-    p = Producer(producer_conf)
+sqs = None
+def get_sqs():
     try:
-        # wait up to 2 seconds for broker metadata (acts as a connect timeout)
-        metadata = p.list_topics(timeout=2.0)
+        sqs = boto3.client(
+            "sqs",
+            aws_access_key_id=S3_ACCESS_KEY_ID,
+            aws_secret_access_key=S3_SECRET_ACCESS_KEY,
+            region_name=S3_REGION,
+        )
+        return sqs
     except Exception as e:
-        raise TimeoutError(f"Timed out connecting to Kafka brokers after 2s: {e}")
-    if not getattr(metadata, "brokers", None) or len(metadata.brokers) == 0:
-        raise TimeoutError("No Kafka brokers available after 2s")
-    return p
+        logger.error(f"❌ Error Connecting to SQS Queue: {e}")
+        return None
 
-producer = None
+
 
 # ---------- FUNCTIONS ----------
 def dispatch_task(task_data: list[dict], topic: str) -> None:
-    """Send a list of task dicts to the given Kafka topic."""
-    if producer is None:
-        raise RuntimeError("Producer is not initialized.")
-    
-    for message in task_data:
-        producer.produce(topic, value=json.dumps(message).encode("utf-8"))
-    producer.flush()
-    logger.info(f"✅ Dispatched {len(task_data)} tasks to topic '{topic}'")
+    sqs = get_sqs()
+    if sqs is None:
+        logger.error("SQS client is not initialized. Cannot dispatch tasks.")
+        return
 
+    for message in task_data:
+        sqs.send_message(QueueUrl=PROD_VIDEO_QUEUE_URL, MessageBody=json.dumps(message), MessageGroupId=topic, MessageDeduplicationId=message["task_id"])
+
+    logger.info(f"Dispatched {len(task_data)} tasks to topic '{topic}'")
 
 def generate_tasks(video_ids, user_id, count) -> list[dict]:
     """Generate tasks with random UUIDs for task_id."""
@@ -113,25 +118,20 @@ if __name__ == "__main__":
     # Choose which video IDs to use
     video_ids = [NORMAL_VIDEO_ID] if args.mode == "normal" else [HEAVY_VIDEO_ID]
 
-    logger.info(f"Connecting to Kafka at {PROD_KAFKA_BOOTSTRAP_SERVERS}...")
+    logger.info(f"Connecting to SQS at {PROD_VIDEO_QUEUE_URL}...")
     logger.info(f"Mode: {args.mode} | Count: {args.count} | User: {args.user_id}")
 
     try:
-        producer = get_producer()
+        sqs = get_sqs()
         task_list = generate_tasks(video_ids, args.user_id, args.count)
-        dispatch_task(task_list, TOPIC)
+        dispatch_task(task_list, "video_tasks")
         logger.info("🚀 All messages successfully sent.")
-        if producer is None: 
-            raise RuntimeError("Producer is None after initialization.")
+        if sqs is None: 
+            raise RuntimeError("SQS client is None after initialization.")
     except KeyboardInterrupt:
         logger.warning("⚠️ Interrupted by user (Ctrl+C). Flushing remaining messages...")
-        if producer is not None:
-            producer.flush()
+       
         sys.exit(1)
     except Exception as e:
-        logger.error(f"❌ Error sending messages to Kafka: {e}")
+        logger.error(f"❌ Error sending messages to SQS: {e}")
         sys.exit(1)
-    finally:
-        if producer is not None:
-            producer.flush()
-        logger.info("🧹 Kafka producer closed gracefully.")
