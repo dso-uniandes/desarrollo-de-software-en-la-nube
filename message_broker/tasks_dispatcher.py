@@ -13,7 +13,7 @@ TASKS_CONFIG = {
 
 
 def dispatch_task(task_data: list[dict], topic: str) -> None:
-    if config.ENV_STATE == 'test':
+    if config.ENV_STATE == "test":
         logger.info("Test environment detected, skipping task dispatch.")
         return
 
@@ -24,6 +24,11 @@ def dispatch_task(task_data: list[dict], topic: str) -> None:
         raise ValueError(f"Unknown topic: {topic}")
 
     for message in task_data:
-        sqs.send_message(QueueUrl=config.VIDEO_QUEUE_URL, MessageBody=json.dumps(message), MessageGroupId=topic, MessageDeduplicationId=message["task_id"])
+        sqs.send_message(
+            QueueUrl=config.VIDEO_QUEUE_URL,
+            MessageBody=json.dumps(message),
+            MessageGroupId=topic,
+            MessageDeduplicationId=message["task_id"],
+        )
 
     logger.info(f"Dispatched {len(task_data)} tasks to topic '{topic}'")
