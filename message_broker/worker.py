@@ -120,7 +120,7 @@ async def consume_messages(topic: str, consumer: SQS):
             response = consumer.receive_message(
                 QueueUrl=config.VIDEO_QUEUE_URL,
                 MaxNumberOfMessages=1,
-                WaitTimeSeconds=60,
+                WaitTimeSeconds=5,
                 AttributeNames=["All"],
             )
             messages = response.get("Messages", [])
