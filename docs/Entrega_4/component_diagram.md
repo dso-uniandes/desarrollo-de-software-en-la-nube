@@ -55,5 +55,5 @@ Con **ALB, ASG (Web/Workers), SQS con DLQ, S3, RDS y CloudWatch**, el sistema so
 
 ## 🖼️ Diagrama de Componentes
 
-<!-- Coloca el archivo del diagrama en la ruta indicada para que se renderice en el README/Docs -->
-<img alt="entrega4-component-diagram" src="../../img/entrega4_component_diagram.png" />
+<img width="1671" height="797" alt="diagrama_componentes_entrega4" src="https://github.com/user-attachments/assets/e9c0ea70-8956-45df-9acc-ed54c16f2ebe" />
+
