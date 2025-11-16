@@ -1,3 +1,5 @@
+# Pruebas de carga capa web
+
 ## Escenario 1 - Sanidad (Smoke):
 
 Para este escenario inicial de sanidad, configuramos JMeter con 5 hilos (usuarios concurrentes), un periodo de ramp-up de 5 segundos y una duración total de 60 segundos. Esta configuración nos permite validar que todo el sistema responde correctamente y que la telemetría está funcionando antes de proceder con pruebas más intensivas.
@@ -232,12 +234,12 @@ Basándonos en los resultados de las pruebas, podemos concluir que:
 
 # Pruebas de carga capa worker
 
-Reemplazo de Kafka por SQS - Recepción de los 5 mensajes
+Recepción de 5 mensajes
 <img width="1920" height="864" alt="SQS_recibido_5" src="https://github.com/user-attachments/assets/543c1cdc-808a-4a7f-87d1-7970771fe620" />
 
 ## Escenario 2 50Mb - 1 Worker - 5 Tasks
 
-Para este escenario inyectamos 5 tareas de procesamiento de videos de 50MB directamente en la cola SQS, evitando pasar por la capa web. Actualizamos el script `send_message_to_broker.py` para que tome videos previamente subidos a S3 y registrados en RDS. El script busca los videos por su ID en la base de datos (video ID 54 para 50MB) y genera mensajes con `task_id` únicos que enviamos directamente a la cola SQS. 
+Actualizamos el script `send_message_to_broker.py` para que tome videos previamente subidos a S3 y registrados en RDS. El script busca los videos por su ID en la base de datos (video ID 54 para 50MB) y genera mensajes con `task_id` únicos que enviamos directamente a la cola SQS. 
 
 **Alarma CloudWatch:**
 
