@@ -237,37 +237,65 @@ Reemplazo de Kafka por SQS - Recepción de los 5 mensajes
 
 ## Escenario 2 50Mb - 1 Worker - 5 Tasks
 
-  **Alarma CloudWatch :** 
+Para este escenario inyectamos 5 tareas de procesamiento de videos de 50MB directamente en la cola SQS, evitando pasar por la capa web. Actualizamos el script `send_message_to_broker.py` para que tome videos previamente subidos a S3 y registrados en RDS. El script busca los videos por su ID en la base de datos (video ID 54 para 50MB) y genera mensajes con `task_id` únicos que enviamos directamente a la cola SQS. 
 
-  <img width="1918" height="861" alt="Alarma" src="https://github.com/user-attachments/assets/0ab351ab-7ef4-4ae4-8cb4-121c72e42ceb" />
-  
-  **Métrica de procesamiento:**
-  
-  <img width="1920" height="863" alt="CloudWatch" src="https://github.com/user-attachments/assets/79286980-a380-47d6-8132-c190491868d1" />
+**Alarma CloudWatch:**
 
-  **Uso de recursos de la instancia worker:**
-  
-  <img width="1918" height="865" alt="CPU" src="https://github.com/user-attachments/assets/53665af0-b526-4507-b618-16fd28b1fa3b" />
+Configuramos la política de autoescalado del worker para usar la métrica `ApproximateNumberOfVisibleMessages` de SQS, con un umbral de 5 mensajes visibles para activar el escalado. Sin embargo, durante la prueba observamos que la alarma no se activó y el sistema se mantuvo en 1 instancia durante todo el procesamiento.
 
-  **Autoescalado:**
+Esto ocurre porque cuando inyectamos 5 mensajes en la cola, el worker inmediatamente toma uno para procesarlo, dejando 4 mensajes visibles. Como el umbral está en 5, la condición nunca se cumple. El worker procesa los mensajes lo suficientemente rápido como para mantener la cola por debajo del umbral.
 
-  <img width="1918" height="861" alt="Instancias" src="https://github.com/user-attachments/assets/aa25d5eb-8938-49cb-bb13-01d858ce5fd9" />
+<img width="1918" height="861" alt="Alarma" src="https://github.com/user-attachments/assets/0ab351ab-7ef4-4ae4-8cb4-121c72e42ceb" />
+
+**Métrica de procesamiento:**
+
+La métrica `FFmpegProcessingTime` registró un promedio de **47 segundos** por video. Este tiempo incluye todas las operaciones de FFmpeg: creación del intro con logo, recorte y codificación del video principal, generación del outro, y concatenación final de todos los segmentos. Este comportamiento es consistente con entregas anteriores, donde FFmpeg se identifica como la fase más costosa del pipeline.
+
+Comparado con las otras fases, el tiempo de FFmpeg domina completamente el tiempo total. Las operaciones de descarga desde S3, consulta a la base de datos y actualización de registros consumen tiempos mínimos (menos de 1 segundo cada una), confirmando que el cuello de botella principal está en la codificación y procesamiento de video, no en I/O o acceso a datos. Los 47 segundos de `FFmpegProcessingTime` representan aproximadamente el 98% del tiempo total de procesamiento.
+
+<img width="1920" height="863" alt="CloudWatch" src="https://github.com/user-attachments/assets/79286980-a380-47d6-8132-c190491868d1" />
+
+**Uso de recursos de la instancia worker:**
+
+El monitoreo de CloudWatch muestra un uso de CPU del **28.8%** durante el procesamiento de videos de 50MB. Aunque moderado, refleja que el procesamiento de video es intensivo en CPU, pero la instancia aún tiene capacidad disponible. El hecho de que la CPU no alcance niveles críticos (por encima del 85%) indica que, para este tamaño de archivo y nivel de paralelismo, la instancia tiene margen para manejar más carga.
+
+<img width="1918" height="865" alt="CPU" src="https://github.com/user-attachments/assets/53665af0-b526-4507-b618-16fd28b1fa3b" />
+
+**Autoescalado:**
+
+Como mencionamos en el análisis de la alarma, el sistema se mantuvo en 1 instancia durante todo el procesamiento. La cola nunca alcanzó el umbral de 5 mensajes visibles configurado en la política de autoescalado, por lo que no hubo escalamiento.
+
+<img width="1918" height="861" alt="Instancias" src="https://github.com/user-attachments/assets/aa25d5eb-8938-49cb-bb13-01d858ce5fd9" />
 
 ## Escenario 2 100Mb - 1 Worker - 5 Tasks
 
-  **Alarma CloudWatch :** 
+Repetimos la misma metodología de inyección de carga, pero utilizando videos de 100MB (video ID 44 en la base de datos). El objetivo era evaluar cómo el aumento en el tamaño del archivo impacta el tiempo de procesamiento y el consumo de recursos, manteniendo la misma configuración de 1 worker y 5 tareas.
 
-  <img width="1918" height="860" alt="Alarma" src="https://github.com/user-attachments/assets/8d324174-ea72-49b8-8e56-af2398b12b69" />
+**Alarma CloudWatch:**
 
-  **Métrica de procesamiento:**
-  
-  <img width="1920" height="863" alt="CloudWatch" src="https://github.com/user-attachments/assets/b796203e-e213-4ac6-8ed4-d904185db60e" />
+Al igual que en el escenario de 50MB, la alarma de autoescalado no se activó y el sistema se mantuvo en 1 instancia durante todo el procesamiento. El mismo patrón se repite: el worker consume mensajes lo suficientemente rápido como para mantener la cola por debajo del umbral de 5 mensajes visibles, aunque en este caso el tiempo de procesamiento es más largo. Para cargas pequeñas (5 tareas), el worker puede mantener el ritmo independientemente del tamaño del archivo, pero el throughput se degrada significativamente con archivos más grandes.
 
-  **Uso de recursos de la instancia worker:**
+<img width="1918" height="860" alt="Alarma" src="https://github.com/user-attachments/assets/8d324174-ea72-49b8-8e56-af2398b12b69" />
 
-  <img width="1918" height="860" alt="CPU" src="https://github.com/user-attachments/assets/a5b702e6-b0db-4f23-8db1-f2551a422ee2" />
+**Métrica de procesamiento:**
 
-Se omite autoescalado debido a que no hubo. Se procesó todo en 1 sola instancia worker.
+La métrica `FFmpegProcessingTime` para videos de 100MB registró un promedio de **102 segundos**, más del doble del tiempo observado para videos de 50MB (47 segundos). Esta relación no es exactamente lineal, ya que el tiempo de procesamiento no solo depende del tamaño del archivo, sino también de la complejidad de las operaciones de codificación, la duración del video original, y la cantidad de datos que FFmpeg debe procesar durante la transcodificación.
+
+Al igual que en el escenario de 50MB, el tiempo de procesamiento con FFmpeg sigue siendo dominante sobre las demás fases. Las operaciones de descarga desde S3, consultas a la base de datos y actualizaciones continúan siendo despreciables en comparación, confirmando que el cuello de botella se mantiene en la capa de procesamiento de video, independientemente del tamaño del archivo.
+
+<img width="1920" height="863" alt="CloudWatch" src="https://github.com/user-attachments/assets/b796203e-e213-4ac6-8ed4-d904185db60e" />
+
+**Uso de recursos de la instancia worker:**
+
+El uso de CPU aumentó a **33.8%** durante el procesamiento de videos de 100MB, un incremento del 5% respecto al escenario de 50MB. Este aumento es proporcional al mayor tiempo de procesamiento y al volumen de datos que deben ser procesados, pero aún se mantiene en un rango moderado que indica que la instancia tiene capacidad disponible. Sin embargo, el tiempo de procesamiento por video (102 segundos) es significativamente mayor, lo que impacta directamente el throughput del sistema: mientras que con videos de 50MB podemos procesar aproximadamente 1.3 videos por minuto, con videos de 100MB el throughput cae a aproximadamente 0.6 videos por minuto.
+
+La comparación entre ambos escenarios revela que el tamaño del archivo tiene un impacto directo y significativo en el tiempo de procesamiento, pero no necesariamente en el uso de CPU de forma proporcional. Mientras que el tiempo de procesamiento se duplicó (de 47s a 102s), el uso de CPU solo aumentó en un 17% (de 28.8% a 33.8%). Esto indica que el procesamiento de video, aunque intensivo en CPU, también está limitado por otros factores como el ancho de banda de I/O del disco temporal, la velocidad de lectura/escritura durante la codificación, y posiblemente la memoria disponible para buffers de FFmpeg.
+
+<img width="1918" height="860" alt="CPU" src="https://github.com/user-attachments/assets/a5b702e6-b0db-4f23-8db1-f2551a422ee2" />
+
+**Autoescalado:**
+
+No hubo escalamiento. Se procesó todo en 1 sola instancia worker, ya que la cola nunca alcanzó el umbral de 5 mensajes visibles configurado en la política de autoescalado.
 
 ## Escenario 2 50Mb - 3 Worker - 16 Tasks
 
