@@ -339,18 +339,7 @@ El tiempo promedio de procesamiento por video fue de **49.14 segundos**, con un 
 
 ## Escenario 2 100Mb - 3 Worker - 16 Tasks
 
-  **Recursos de Contenedores:**
-  
-  ![Container Resources](./resultados_entrega_3/worker/container_resources_100mb_5mjs_3w.png)
-
-  **Tiempos de Worker:**
-  
-  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_100mb_5mjs_3w.png)
-
-  **Desglose de Procesamiento:**
-  
-  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_100mb_5mjs_3w.png)
-
+<img width="1918" height="861" alt="CPU" src="https://github.com/user-attachments/assets/30725cb5-74df-4b97-83cf-f8b770bf3c1e" />
 
 ## Conclusiones del Escenario 2 - Capacidad de la Capa Worker:
 
