@@ -230,12 +230,12 @@ Basándonos en los resultados de las pruebas, podemos concluir que:
 - La métrica personalizada en CloudWatch fue necesaria porque la política por defecto de AWS (3 minutos para escalar) era demasiado lenta para nuestro escenario de pruebas con JMeter, donde la carga sube en cuestión de segundos.
 - Aunque la carga fue alta, la CPU de las instancias no superó el 50%, por lo que se decidió trabajar con umbrales más bajos (35% máx., 10% mín.) para evitar que el autoscaling se quedara esperando a que la instancia estuviera ya saturada.
 
-## Escenario 2 
+# Pruebas de carga capa worker
 
 Reemplazo de Kafka por SQS - Recepción de los 5 mensajes
 <img width="1920" height="864" alt="SQS_recibido_5" src="https://github.com/user-attachments/assets/543c1cdc-808a-4a7f-87d1-7970771fe620" />
 
-### 50Mb - 1 Worker - 5 Tasks
+## Escenario 2 50Mb - 1 Worker - 5 Tasks
 
   **Alarma CloudWatch :** 
 
@@ -253,22 +253,23 @@ Reemplazo de Kafka por SQS - Recepción de los 5 mensajes
 
   <img width="1918" height="861" alt="Instancias" src="https://github.com/user-attachments/assets/aa25d5eb-8938-49cb-bb13-01d858ce5fd9" />
 
-## Escenario 2 100Mb-1 Worker - 5 Tasks
+## Escenario 2 100Mb - 1 Worker - 5 Tasks
 
-  **Recursos de Contenedores:**
+  **Alarma CloudWatch :** 
+
+  <img width="1918" height="860" alt="Alarma" src="https://github.com/user-attachments/assets/8d324174-ea72-49b8-8e56-af2398b12b69" />
+
+  **Métrica de procesamiento:**
   
-  ![Container Resources](./resultados_entrega_3/worker/container_resources_100mb_5mjs_1w.png)
+  <img width="1920" height="863" alt="CloudWatch" src="https://github.com/user-attachments/assets/b796203e-e213-4ac6-8ed4-d904185db60e" />
 
-  **Tiempos de Worker:**
-  
-  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_100mb_5mjs_1w.png)
+  **Uso de recursos de la instancia worker:**
 
-  **Desglose de Procesamiento:**
-  
-  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_100mb_5mjs_1w.png)
+  <img width="1918" height="860" alt="CPU" src="https://github.com/user-attachments/assets/a5b702e6-b0db-4f23-8db1-f2551a422ee2" />
 
+Se omite autoescalado debido a que no hubo. Se procesó todo en 1 sola instancia worker.
 
-## Escenario 2 50Mb-3 Worker - 5 Tasks
+## Escenario 2 50Mb - 3 Worker - 16 Tasks
 
   **Recursos de Contenedores:**
   
@@ -283,7 +284,7 @@ Reemplazo de Kafka por SQS - Recepción de los 5 mensajes
   ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_50mb_5mjs_3w.png)
 
 
-## Escenario 2 100Mb-3 Worker - 5 Tasks
+## Escenario 2 100Mb - 3 Worker - 16 Tasks
 
   **Recursos de Contenedores:**
   
