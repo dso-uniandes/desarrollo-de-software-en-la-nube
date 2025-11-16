@@ -230,20 +230,28 @@ Basándonos en los resultados de las pruebas, podemos concluir que:
 - La métrica personalizada en CloudWatch fue necesaria porque la política por defecto de AWS (3 minutos para escalar) era demasiado lenta para nuestro escenario de pruebas con JMeter, donde la carga sube en cuestión de segundos.
 - Aunque la carga fue alta, la CPU de las instancias no superó el 50%, por lo que se decidió trabajar con umbrales más bajos (35% máx., 10% mín.) para evitar que el autoscaling se quedara esperando a que la instancia estuviera ya saturada.
 
-## Escenario 2 50Mb-1 Worker - 5 Tasks
+## Escenario 2 
 
-  **Recursos de Contenedores:**
+Reemplazo de Kafka por SQS - Recepción de los 5 mensajes
+<img width="1920" height="864" alt="SQS_recibido_5" src="https://github.com/user-attachments/assets/543c1cdc-808a-4a7f-87d1-7970771fe620" />
+
+### 50Mb - 1 Worker - 5 Tasks
+
+  **Alarma CloudWatch :** 
+
+  <img width="1918" height="861" alt="Alarma" src="https://github.com/user-attachments/assets/0ab351ab-7ef4-4ae4-8cb4-121c72e42ceb" />
   
-  ![Container Resources](./resultados_entrega_3/worker/container_resources_50mb_5mjs_1w.png)
-
-  **Tiempos de Worker:**
+  **Métrica de procesamiento:**
   
-  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_50mb_5mjs_1w.png)
+  <img width="1920" height="863" alt="CloudWatch" src="https://github.com/user-attachments/assets/79286980-a380-47d6-8132-c190491868d1" />
 
-  **Desglose de Procesamiento:**
+  **Uso de recursos de la instancia worker:**
   
-  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_50mb_5mjs_1w.png)
+  <img width="1918" height="865" alt="CPU" src="https://github.com/user-attachments/assets/53665af0-b526-4507-b618-16fd28b1fa3b" />
 
+  **Autoescalado:**
+
+  <img width="1918" height="861" alt="Instancias" src="https://github.com/user-attachments/assets/aa25d5eb-8938-49cb-bb13-01d858ce5fd9" />
 
 ## Escenario 2 100Mb-1 Worker - 5 Tasks
 
