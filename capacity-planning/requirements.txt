@@ -4,6 +4,12 @@
 # Data visualization
 matplotlib==3.8.2
 
+# AWS SDK for SQS
+boto3>=1.28.0
+
+# Environment variables management
+python-dotenv>=1.0.0
+
 # Note: Python standard libraries used (no additional dependencies needed):
 # - csv
 # - json
