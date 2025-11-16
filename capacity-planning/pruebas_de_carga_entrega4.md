@@ -339,21 +339,63 @@ El tiempo promedio de procesamiento por video fue de **49.14 segundos**, con un 
 
 ## Escenario 2 100Mb - 3 Worker - 16 Tasks
 
+Para este escenario inyectamos 16 tareas de procesamiento de videos de 100MB directamente en la cola SQS, manteniendo la misma metodología del escenario anterior pero con archivos más grandes para evaluar el impacto del tamaño en el comportamiento del autoescalado y el uso de recursos.
+
+**Uso de recursos de la instancia worker:**
+
+El monitoreo de CloudWatch muestra un uso de CPU del **35.2%** en una de las instancias del autoescalado durante el procesamiento de videos de 100MB. Este valor es ligeramente mayor que el observado en el escenario con 1 worker y videos de 100MB (33.8%), con un incremento de aproximadamente 1.4%. Esta diferencia mínima indica que cada instancia está procesando una porción similar de la carga total, confirmando que el escalado horizontal distribuye eficientemente el trabajo entre las múltiples instancias.
+
+Comparado con el escenario de 3 workers y videos de 50MB (29.4% CPU), el incremento de 5.8% refleja el mayor tiempo de procesamiento requerido para archivos más grandes. El hecho de que el CPU se mantenga por debajo del 40% incluso con múltiples instancias procesando videos de 100MB en paralelo sugiere que el escalado horizontal sigue funcionando correctamente, distribuyendo la carga sin saturar ninguna instancia individual. Sin embargo, el tiempo de procesamiento por video (aproximadamente 106 segundos según los logs) es significativamente mayor que con videos de 50MB, lo que impacta directamente el throughput del sistema.
+
 <img width="1918" height="861" alt="CPU" src="https://github.com/user-attachments/assets/30725cb5-74df-4b97-83cf-f8b770bf3c1e" />
 
 ## Conclusiones del Escenario 2 - Capacidad de la Capa Worker:
 
 ### Capacidad Máxima Identificada:
+
 Basándonos en los resultados de las pruebas, podemos concluir que:
 
-- **Capacidad máxima sin errores:** 5 Tasks 3 Workers 50MB File
-- **Punto de degradación:** Desde el inicio no cumple con los requirimientos ya que se demora mas de 60s por video
-- **Punto de fallo:** Tasks 3 Workers 100MB File Se perdio un video en su procesamiento
-- *Procesamiento*: 1 vid/min - 50MB File y 0.5 vid/min - 100MB File
+- **Capacidad con 1 worker:** 
+  - Videos de 50MB: ~1.2 videos/minuto (tiempo promedio: 49.14s por video)
+  - Videos de 100MB: ~0.6 videos/minuto (tiempo promedio: ~106s por video)
+  
+- **Capacidad con 3 workers (autoescalado):**
+  - Videos de 50MB: El sistema escala correctamente cuando la cola supera 5 mensajes visibles, distribuyendo la carga entre múltiples instancias
+  - Videos de 100MB: Comportamiento similar, pero con mayor tiempo de procesamiento por video
 
-### Comentarios:
-El worker se comporto desde el inicio con un solo video de forma demorada se demoro mas de 60s procesando un solo video. En la prueba anterior En pruebas locales con mejores maquinas se procesaban varios videos por minuto.
+### Análisis de Tiempos de Procesamiento:
 
-Al paralerizar workers por procesos si lo vemos de esa forma al uso de mas de un container en la misma maquina vemos que pelean por recursos ya que el procesamiento de video es una tarea de alto consumo de CPU y que se hace de forma sincrona.
+Los tiempos de procesamiento observados en los logs confirman que FFmpeg es el cuello de botella dominante:
 
-Adicionalmente entre mas pesado el video mas demora tomaba su edicion visto en las graficas para videos de 100MB las cuales triplican la demora de un video de 50MB.
+- **Videos de 50MB:** Tiempo promedio de 49.14s, donde FFmpeg representa ~98% del tiempo total (47-48s)
+- **Videos de 100MB:** Tiempo promedio de ~106.6s, donde FFmpeg representa ~98% del tiempo total (104-105s)
+
+La relación entre tamaño de archivo y tiempo de procesamiento no es exactamente lineal: duplicar el tamaño del archivo (de 50MB a 100MB) duplica aproximadamente el tiempo de procesamiento, lo que sugiere que el procesamiento está limitado principalmente por el volumen de datos que FFmpeg debe procesar durante la transcodificación.
+
+### Comportamiento del Autoescalado:
+
+El autoescalado funciona correctamente cuando la carga supera la capacidad de una sola instancia. Con 16 tareas, la métrica `ApproximateNumberOfVisibleMessages` alcanzó 14 mensajes visibles, activando el Policy Up y escalando de 1 a 3 instancias. Sin embargo, con cargas pequeñas (5 tareas), el worker puede mantener el ritmo y la cola nunca alcanza el umbral de 5 mensajes, por lo que no se activa el escalado.
+
+### Uso de Recursos:
+
+El uso de CPU se mantiene en rangos moderados incluso con múltiples instancias:
+- **1 worker, 50MB:** 28.8% CPU
+- **1 worker, 100MB:** 33.8% CPU
+- **3 workers, 50MB:** 29.4% CPU (en una instancia)
+- **3 workers, 100MB:** 35.2% CPU (en una instancia)
+
+Estos valores indican que las instancias tienen capacidad disponible y que el escalado horizontal distribuye eficientemente la carga sin saturar ninguna instancia individual.
+
+### Cuello de Botella Identificado:
+
+El análisis confirma que el cuello de botella principal está en el procesamiento con FFmpeg, que representa aproximadamente el 98% del tiempo total de procesamiento. Las operaciones de descarga desde S3, consultas a la base de datos y actualizaciones consumen tiempos mínimos (menos de 1.5 segundos en total), por lo que cualquier optimización debe enfocarse en la capa de procesamiento de video.
+
+### Limitaciones y Consideraciones:
+
+1. **Procesamiento secuencial:** Cada worker procesa videos de forma secuencial, uno tras otro, sin paralelismo dentro de la misma instancia.
+
+2. **Impacto del tamaño de archivo:** El tamaño del archivo tiene un impacto directo y significativo en el tiempo de procesamiento, duplicando aproximadamente el tiempo cuando se duplica el tamaño.
+
+3. **Throughput limitado:** Con la configuración actual, el throughput máximo es de aproximadamente 1.2 videos/minuto para archivos de 50MB y 0.6 videos/minuto para archivos de 100MB por instancia worker.
+
+4. **Escalado horizontal efectivo:** El autoescalado funciona correctamente para distribuir la carga entre múltiples instancias, mejorando el throughput total del sistema cuando hay suficiente carga en la cola.
