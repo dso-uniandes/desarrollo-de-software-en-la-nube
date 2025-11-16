@@ -17,8 +17,8 @@ S3_SECRET_ACCESS_KEY = os.getenv("PROD_S3_SECRET_ACCESS_KEY")
 S3_REGION = os.getenv("PROD_S3_REGION")
 
 # Fixed list of sample video IDs
-NORMAL_VIDEO_ID = 21
-HEAVY_VIDEO_ID = 22  # example heavy video id
+NORMAL_VIDEO_ID = 54
+HEAVY_VIDEO_ID = 44  # example heavy video id
 
 # Example user
 DEFAULT_USER_ID = 1
