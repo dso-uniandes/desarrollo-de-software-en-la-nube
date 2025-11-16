@@ -301,18 +301,13 @@ No hubo escalamiento. Se procesó todo en 1 sola instancia worker, ya que la col
 
 ## Escenario 2 50Mb - 3 Worker - 16 Tasks
 
-  **Recursos de Contenedores:**
-  
-  ![Container Resources](./resultados_entrega_3/worker/container_resources_50mb_5mjs_3w.png)
+<img width="1918" height="861" alt="Alarma" src="https://github.com/user-attachments/assets/85ea22c8-2da4-4661-89f9-6d270aa2c5f7" />
 
-  **Tiempos de Worker:**
-  
-  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_50mb_5mjs_3w.png)
+<img width="1918" height="482" alt="AutoScaling" src="https://github.com/user-attachments/assets/573944a5-1279-4902-867e-ad9dbee96838" />
 
-  **Desglose de Procesamiento:**
-  
-  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_50mb_5mjs_3w.png)
+<img width="1918" height="862" alt="Instancias" src="https://github.com/user-attachments/assets/4eb13663-f443-46ca-8767-44fa6b7b8950" />
 
+<img width="1918" height="865" alt="CPU" src="https://github.com/user-attachments/assets/7cdba982-204b-4544-8b7d-2d7553ab2dc6" />
 
 ## Escenario 2 100Mb - 3 Worker - 16 Tasks
 
