@@ -3,7 +3,7 @@
 ## 1. Objetivo General
 
 Evaluar la **capacidad máxima** que puede soportar la aplicación en sus dos componentes críticos:
-1. **Capa Web (API HTTP):** endpoint de subida de videos `/api/videos/upload`
+1. **Capa Web (API HTTP):** endpoint de login `/api/auth/login`
 2. **Capa Worker:** procesamiento asíncrono de videos con FFmpeg
 
 El propósito es identificar límites de **concurrencia, rendimiento y estabilidad**, establecer una línea base de desempeño y proponer acciones de mejora basadas en evidencia.
@@ -14,11 +14,11 @@ El propósito es identificar límites de **concurrencia, rendimiento y estabilid
 
 | Nº | Objetivo | Métrica asociada |
 |----|-----------|------------------|
-| 1 | Determinar el número máximo de usuarios concurrentes soportados en upload sin degradación | p95 ≤ 1s, error rate ≤ 5% |
+| 1 | Determinar el número máximo de usuarios concurrentes soportados en login sin degradación | p95 ≤ 1s, error rate ≤ 5% |
 | 2 | Medir la capacidad de procesamiento de los workers (videos/minuto) | Throughput y tiempo medio de servicio |
 | 3 | Identificar cuellos de botella en CPU, memoria, red o almacenamiento | Métricas del host y contenedores |
 | 4 | Evaluar la estabilidad bajo carga sostenida y picos repentinos | Desviación estándar de latencia y uso de recursos |
-| 5 | Validar el tiempo de aceptación de archivos de diferentes tamaños | Tiempo de respuesta para 5 MB, 50 MB, 100 MB |
+| 5 | Validar el tiempo de respuesta del endpoint de login bajo diferentes cargas | Tiempo de respuesta p95, p99 bajo carga variable |
 | 6 | Documentar resultados y recomendaciones de escalabilidad | Informe final con evidencias y gráficos |
 
 ---
@@ -28,10 +28,10 @@ El propósito es identificar límites de **concurrencia, rendimiento y estabilid
 Este plan de pruebas evalúa dos componentes críticos de la arquitectura:
 
 ### 3.1 Capa Web (API HTTP)
-- **Endpoint bajo prueba:** `POST /api/videos/upload`
-- **Función:** Recepción de archivos multipart/form-data, validación, almacenamiento temporal y encolado de tarea
+- **Endpoint bajo prueba:** `POST /api/auth/login`
+- **Función:** Autenticación de usuarios mediante validación de credenciales (login) 
 - **Tecnología:** FastAPI (Python), almacenamiento S3/local, mensajería Kafka
-- **Métricas clave:** Tiempo de aceptación, RPS, concurrencia máxima, error rate
+- **Métricas clave:** Latencia (p50, p95, p99), RPS, concurrencia máxima, error rate
 
 ### 3.2 Capa Worker
 - **Función:** Procesamiento asíncrono de videos con FFmpeg (branding, trim, concatenación)
@@ -57,18 +57,15 @@ Las pruebas se ejecutarán en **entorno local** con **Docker Compose**, garantiz
 
 ## 5. Criterios de Aceptación
 
-### 5.1 Capa Web (Upload)
-- ✅ **p95 de latencia ≤ 1 segundo** para archivos de hasta 100 MB
-- ✅ **Error rate ≤ 5%** (excluyendo errores esperados como 400/413)
+### 5.1 Capa Web (Login)
+- ✅ **p95 de latencia ≤ 1 segundo**
+- ✅ **Error rate ≤ 5%** (excluyendo errores esperados como 401 para credenciales inválidas)
 - ✅ **Sin resets ni timeouts anómalos**
 - ✅ **CPU del contenedor `storeapi` ≤ 85%** sostenido
-- ✅ **Tiempo de aceptación:**
-  - 5 MB: ≤ 500 ms
-  - 50 MB: ≤ 1.5 s
-  - 100 MB: ≤ 2 s
+- ✅ **Tiempo de respuesta consistente:** Latencia estable independientemente del número de usuarios concurrentes
 - ✅ **Validación de errores controlados:**
-  - 400 para tipos de archivo inválidos
-  - 413 para archivos que exceden límite configurado
+  - 401 para credenciales inválidas o incorrectas
+  - 422 para datos de entrada mal formateados
 
 ### 5.2 Capa Worker
 - ✅ **La cola no debe crecer indefinidamente** durante prueba sostenida
@@ -84,9 +81,9 @@ Las pruebas se ejecutarán en **entorno local** con **Docker Compose**, garantiz
 ### 6.1 Para Capa Web
 - **Usuarios simulados:** 5, 50, 100, 200, 300, 400
 - **Duración por escenario:** 1–10 minutos
-- **Tamaños de archivo:** 5 MB, 50 MB, 100 MB
-- **Formato de archivos:** MP4 (válidos) y archivos inválidos para pruebas de error
-- **Credenciales:** Usuario de prueba pre-creado (test@example.com / pass123)
+- **Credenciales válidas:** Usuario de prueba pre-creado (test@example.com / pass123)
+- **Credenciales inválidas:** Para pruebas de error (usuario inexistente, contraseña incorrecta)
+- **Payload de login:** JSON con email y contraseña
 
 ### 6.2 Para Capa Worker
 - **Mensajes en cola:** 10 a 500 por ejecución
@@ -200,13 +197,13 @@ graph TD
 
 ## 11. Escenarios de Prueba
 
-### 11.1 Escenario 1: Capacidad de la Capa Web (Upload)
+### 11.1 Escenario 1: Capacidad de la Capa Web (SignIn)
 
-**Objetivo:** Determinar el máximo de usuarios concurrentes y RPS que soporta `POST /api/videos/upload` cumpliendo SLOs.
+**Objetivo:** Determinar el máximo de usuarios concurrentes y RPS que soporta `POST /api/auth/login` cumpliendo SLOs.
 
 **Estrategia:**
-1. **Smoke Test:** 5 VUs durante 1 minuto (validación básica)
-2. **Ramp Test:** Incremento gradual 0 → X VUs en 3 minutos, mantener 5 minutos
+1. **Smoke Test:** 5 logins durante 1 minuto (validación básica)
+2. **Ramp Test:** Incremento gradual 0 → X logins en 3 minutos, mantener 5 minutos
 3. **Capacity Test:** Encontrar X máximo donde p95 ≤ 1s y error rate ≤ 5%
 4. **Sustained Test:** 5 minutos al 80% de X para validar estabilidad
 
