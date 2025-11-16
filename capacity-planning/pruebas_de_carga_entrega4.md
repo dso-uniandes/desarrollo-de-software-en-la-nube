@@ -349,6 +349,8 @@ Comparado con el escenario de 3 workers y videos de 50MB (29.4% CPU), el increme
 
 <img width="1918" height="861" alt="CPU" src="https://github.com/user-attachments/assets/30725cb5-74df-4b97-83cf-f8b770bf3c1e" />
 
+<img width="1918" height="762" alt="Logs" src="https://github.com/user-attachments/assets/a55c7ec8-72e4-4a08-8903-106016576ea6" />
+
 ## Conclusiones del Escenario 2 - Capacidad de la Capa Worker:
 
 ### Capacidad Máxima Identificada:
