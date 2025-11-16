@@ -32,6 +32,11 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 - [Video de sustentación](./sustentacion/Entrega_1/sustentacion.md)
 - [Video de sustentación 2](https://uniandes-my.sharepoint.com/:v:/g/personal/f_parrav_uniandes_edu_co/EUEUS4CKdkpOmMDBeM1LfdABDajq83a5hs1O8ri2SFNadA?e=KWPA1f)
 
+### ☁️ Entrega 4 - Escalabilidad en la Capa Worker
+---
+- [Documentación técnica](./docs/Entrega_4/) - Arquitectura AWS
+- [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega4.md) - Pruebas de estrés
+
 ---
 
 ## 🚦 Inicio Rápido
@@ -53,48 +58,6 @@ ENV_STATE=test TEST_DATABASE_URL="postgresql+asyncpg://postgres:password@localho
 
 # Tests de integración (Newman)
 newman run collections/Cloud-ANB.postman_collection.json --environment collections/postman_environment.json
-```
-
----
-
-## 📘 Documentación del Proyecto
-
-Dentro del repositorio existe una carpeta `/docs/Entrega_1` que contiene toda la documentación técnica de la primera entrega, incluyendo:
-
-- **Modelo de datos (ERD):** `data_model.md`
-- **Diagrama de componentes de la arquitectura:** `component_diagram.md`
-- **Flujo de procesamiento de videos:** `process_flow.md`
-- **Guía de despliegue e infraestructura:** `deployment.md`
-- **Colecciones de Postman:** `/collections/`
-
-```
-📂 ANB-back/
-├── 📂 capacity-planning/
-│   ├── 📂 postman/
-│   │   ├── collection.json
-│   │   ├── report.html
-│   │   └── report_20.html
-│   └── plan_de_capacidad.md
-├── 📂 collections/
-│   ├── Cloud-ANB.postman_collection.json
-│   └── postman_environment.json
-└── 📂 docs/
-    └── 📂 Entrega_1/
-        ├── component_diagram.md
-        ├── data_model.md
-        ├── deployment.md
-        └── process_flow.md
-```
-
-### 🎥 Video de Sustentación
-
-El video de sustentación de la Entrega No. 1 se encuentra disponible en:
-- **Documento de sustentación:** `/sustentacion/Entrega_1/sustentacion.md`
-
-```
-📂 sustentacion/
-└── 📂 Entrega_1/
-    └── sustentacion.md
 ```
 
 ---
@@ -454,6 +417,8 @@ desarrollo-de-software-en-la-nube/
 │   ├── Makefile                         # Comandos para pruebas
 │   ├── plan_de_pruebas.md               # Plan de pruebas Entrega 1
 │   ├── pruebas_de_carga_entrega2.md     # Análisis de capacidad Entrega 2
+│   ├── pruebas_de_carga_entrega3.md     # Análisis de capacidad Entrega 3
+│   ├── pruebas_de_carga_entrega4.md     # Análisis de capacidad Entrega 4
 │   ├── 📂 postman/                      # Tests de integración (Newman)
 │   │   ├── collection.json              # Colección para Newman CLI
 │   │   ├── environment.json             # Variables de entorno
@@ -464,8 +429,12 @@ desarrollo-de-software-en-la-nube/
 │   │   ├── Esceneario3/                 # Resultados escenario 3
 │   │   ├── Escenario4/                  # Resultados escenario 4
 │   │   └── EscenarioExtra/              # Resultados escenario extra
-│   └── 📂 resultados_entrega_2/         # Resultados Entrega 2
-│       └── worker/                       # Análisis de worker
+│   ├── 📂 resultados_entrega_2/         # Resultados Entrega 2
+│   │   └── worker/                       # Análisis de worker
+│   ├── 📂 Entrega_3/                    # Resultados Entrega 3
+│   │   └── resultados_entrega_3/        # Análisis de capacidad
+│   └── 📂 Entrega_2/                     # Resultados Entrega 2
+│       └── resultados_entrega_2/        # Análisis de capacidad
 │
 ├── 📂 docs/                             # Documentación técnica
 │   ├── 📂 Entrega_1/
@@ -473,13 +442,22 @@ desarrollo-de-software-en-la-nube/
 │   │   ├── component_diagram.md         # Arquitectura
 │   │   ├── process_flow.md              # Flujo de procesamiento
 │   │   └── deployment.md                # Guía de despliegue
-│   └── 📂 Entrega_2/
+│   ├── 📂 Entrega_2/
+│   │   ├── component_diagram.md         # Arquitectura AWS
+│   │   ├── data_model.md                # Modelo de datos actualizado
+│   │   ├── validate_endpoints.md        # Validación de endpoints
+│   │   └── 📂 SonarQube_analysis/        # Análisis de calidad de código
+│   │       ├── sonar_analysis.md        # Reporte de análisis
+│   │       └── sonar_issues_fixed.md    # Issues corregidos
+│   ├── 📂 Entrega_3/
+│   │   ├── component_diagram.md         # Arquitectura AWS
+│   │   ├── data_model.md                # Modelo de datos
+│   │   ├── process_flow.md              # Flujo de procesamiento
+│   │   └── 📂 SonarQube_analysis/        # Análisis de calidad de código
+│   └── 📂 Entrega_4/
 │       ├── component_diagram.md         # Arquitectura AWS
-│       ├── data_model.md                # Modelo de datos actualizado
-│       ├── validate_endpoints.md        # Validación de endpoints
-│       └── 📂 SonarQube_analysis/        # Análisis de calidad de código
-│           ├── sonar_analysis.md        # Reporte de análisis
-│           └── sonar_issues_fixed.md    # Issues corregidos
+│       ├── data_model.md                # Modelo de datos
+│       └── process_flow.md              # Flujo de procesamiento
 │
 ├── 📂 sustentacion/                     # Videos de sustentación
 │   └── 📂 Entrega_1/
