@@ -1,0 +1,308 @@
+## Escenario 1 - Sanidad (Smoke):
+
+Para este escenario inicial de sanidad, configuramos JMeter con 5 hilos (usuarios concurrentes), un periodo de ramp-up de 5 segundos y una duración total de 60 segundos. Esta configuración nos permite validar que todo el sistema responde correctamente y que la telemetría está funcionando antes de proceder con pruebas más intensivas.
+
+La configuración de la petición incluye el endpoint de login con parámetros URL encoded para username y password, realizando una petición POST al DNS público del Application Load Balancer (ALB) que distribuye el tráfico entre las instancias EC2 del grupo de Auto Scaling donde se encuentra desplegada la aplicación.
+
+<img width="1519" height="856" alt="java_GLTQw7kwge" src="https://github.com/user-attachments/assets/5bdb580a-83ad-4bff-a666-e49b65cb069e" />
+
+Configuración de la petición:
+
+<img width="1519" height="856" alt="java_9TiwWWu65a" src="https://github.com/user-attachments/assets/de358d32-885f-40ff-b6bf-f92720e53929" />
+
+---
+
+### Resultados del Test de Sanidad:
+
+Los resultados muestran que todas las peticiones fueron exitosas, lo cual es un excelente indicador de que el sistema está funcionando correctamente bajo carga básica.
+
+**Summary Report:**
+- **208 samples** procesados exitosamente
+- **Tiempo promedio de respuesta:** 1,413 ms
+- **Tiempo mínimo:** 433 ms
+- **Tiempo máximo:** 4,380 ms
+- **0% de errores** - todas las peticiones fueron exitosas
+- **Throughput:** 3.4 requests/segundo
+
+<img width="1519" height="856" alt="java_QME7Z4XvN6" src="https://github.com/user-attachments/assets/824edb86-e7e6-4408-b4b1-3f1b6a5a920d" />
+
+<img width="1519" height="856" alt="java_luNTl2Op3k" src="https://github.com/user-attachments/assets/4adc34c1-761a-4aef-9088-f6c5af82edb2" />
+
+**Análisis de Percentiles:**
+- **90% de las respuestas:** ≤ 1,617 ms
+- **95% de las respuestas:** ≤ 1,711 ms  
+- **99% de las respuestas:** ≤ 2,468 ms
+
+<img width="1519" height="856" alt="java_Lf3vsRDZGB" src="https://github.com/user-attachments/assets/151da9c8-743e-47fb-b153-d54f044e0aaa" />
+
+**Análisis de Tiempo de Respuesta:**
+El gráfico de tiempo de respuesta muestra un comportamiento bastante estable, con un pequeño pico que supera los 1,700 milisegundos, pero la mayoría de las respuestas se mantienen por debajo de este umbral. Esto indica que el sistema maneja bien la carga básica de 5 usuarios concurrentes.
+
+<img width="1519" height="856" alt="java_kEMqX6ccL5" src="https://github.com/user-attachments/assets/9ab25a2d-69f1-4e7e-8e6a-e66166997485" />
+
+**Monitoreo de Recursos del Sistema:**
+El monitoreo se realizó a través de Amazon CloudWatch, el servicio nativo de observabilidad de AWS. En esta ocasión, en lugar de usar el script local calculate-stats dentro del contenedor, se aprovecharon las métricas agregadas de las instancias EC2 pertenecientes al grupo de Auto Scaling donde se encuentra desplegada la capa web.
+
+Los resultados muestran un uso máximo de CPU del 35 %, lo cual representa un comportamiento saludable y evidencia que el sistema tiene amplio margen de capacidad disponible bajo la carga básica de cinco usuarios concurrentes.
+
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/98e0aef0-5949-4e39-8022-ca50efcaa2a8" />
+
+---
+
+## Escenario 1 - Escalamiento rápido (Ramp) X = 100:
+
+Para este escenario de escalamiento rápido, aumentamos significativamente la carga para determinar el punto donde el sistema comienza a mostrar signos de degradación. Configuramos JMeter para escalar desde 0 hasta 100 usuarios concurrentes en 3 minutos, manteniendo esta carga durante 5 minutos adicionales.
+
+### Resultados del Test con 100 Usuarios Concurrentes:
+
+**Summary Report:**
+- **1,787 samples** procesados
+- **Tiempo promedio de respuesta:** 22,657 ms
+- **Tiempo mínimo:** 426 ms
+- **Tiempo máximo:** 33,340 ms
+- **0% de errores** - todas las peticiones fueron exitosas
+- **Throughput:** se mantiene estable
+- **Mediana:** 27,824 ms
+
+<img width="1519" height="856" alt="java_zh5W8gvrAN" src="https://github.com/user-attachments/assets/79cd7fbc-bf88-4943-8b21-6661333e3fe5" />
+
+**Análisis de Percentiles:**
+- **90% de las respuestas:** ≤ 28,583 ms
+- **95% de las respuestas:** ≤ 29,801 ms
+- **99% de las respuestas:** ≤ 30,439 ms
+
+<img width="1519" height="856" alt="java_ibsQTXP2QU" src="https://github.com/user-attachments/assets/00780ba4-fd30-4c4a-99da-c13ada9535f5" />
+
+**Análisis de Tiempo de Respuesta:**
+El gráfico muestra que los tiempos de respuesta aumentan significativamente a aproximadamente 30,000 milisegundos (30 segundos), lo cual indica que el sistema está comenzando a experimentar estrés bajo esta carga. Aunque no hay errores, la degradación en el rendimiento es evidente.
+
+<img width="1519" height="856" alt="java_JPoXx9Ma2Q" src="https://github.com/user-attachments/assets/c4a01b21-d788-452a-a3e2-8d85f8611d6a" />
+
+**Monitoreo de Recursos del Sistema:**
+El análisis de recursos, monitoreado a través de Amazon CloudWatch, muestra un uso máximo de CPU del 49.8 % en la instancia que ejecuta la capa web. Este valor es particularmente interesante, ya que el umbral de autoescalado se configuró precisamente en el 50 % de utilización, por lo que el sistema no alcanzó a disparar la creación de una nueva instancia.
+
+El gráfico de métricas confirma que el CPU se mantuvo estable justo por debajo del umbral durante toda la ejecución, sin superar el 50 %. Este comportamiento sugiere que la capacidad actual del sistema fue suficiente para manejar la carga del escenario sin requerir escalado adicional, demostrando una distribución eficiente del tráfico a través del ALB.
+
+Además, el uso de memoria y red se mantuvo dentro de rangos normales, sin signos de saturación. En conjunto, las métricas reflejan que la infraestructura está correctamente dimensionada para este nivel de demanda, aunque cualquier incremento leve en la carga habría activado el mecanismo de Auto Scaling, añadiendo una nueva instancia para mantener el rendimiento estable.
+
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/af658afe-6f01-41bc-ad3c-e77d3cfcbb0c" />
+
+---
+
+## Escenario 1 - Escalamiento rápido (Ramp) X = 300:
+
+Continuamos con el escalamiento, aumentando la carga a 300 usuarios concurrentes para identificar más claramente los límites del sistema.
+
+### Resultados del Test con 300 Usuarios Concurrentes:
+
+**Summary Report:**
+- **4,535 samples** procesados
+- **Tiempo promedio de respuesta:** 27,031 (vs 68,657 ms Entrega 2)
+- **Tiempo mínimo:** 408 ms
+- **Tiempo máximo:** 51,539 ms (vs 93,516 ms Entrega 2)
+- **0% de errores** - todas las peticiones fueron exitosas
+- **Throughput:** 8.6 requests/segundo (vs 3.3 requests/segundo Entrega 2)
+- **Mediana:** 22,901 ms (vs 87,646 ms Entrega 2)
+
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/8d8763b3-c7f2-4c47-9d7c-2ab9fa3d63c9" />
+
+**Análisis de Percentiles:**
+- **90% de las respuestas:** ≤ 48,357 (vs 90,761 ms Entrega 2)
+- **95% de las respuestas:** ≤ 49,197 (vs 92,577 ms Entrega 2)
+- **99% de las respuestas:** ≤ 50,952 ms (vs 93,230 ms Entrega 2)
+
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/72e46faa-ec49-4275-999a-59475b81b6cf" />
+
+**Análisis de Tiempo de Respuesta:**
+El gráfico de tiempo de respuesta muestra que efectivamente los tiempos suben a aproximadamente 42,000 milisegundos (42 segundos) después de los 3 minutos de rampa. Esta degradación significativa indica que el sistema está operando muy cerca de sus límites máximos.
+
+Sin embargo, a diferencia de la Entrega 2, en esta ocasión se contó con el Application Load Balancer (ALB) y con una configuración de autoescalado más agresiva, lo que permitió que el tráfico se distribuyera mejor entre las instancias y que los tiempos de respuesta se redujeran de manera importante (de 68 s a ~27 s en promedio). También se ajustaron parámetros del ALB como el health check y el connection idle timeout, de forma que las nuevas instancias comenzaran a recibir tráfico solo cuando estuvieran en estado healthy, evitando tiempos muertos durante el escalado.
+
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/dd279e42-aa56-4ec6-814f-3505befb11ca" />
+
+**Monitoreo de Recursos del Sistema:**
+
+<img width="1918" height="887" alt="image" src="https://github.com/user-attachments/assets/4f7e59ee-0028-4087-bd94-8f46263087b9" />
+
+A partir de este comportamiento se decidió **bajar los umbrales de la política de autoescalado** y trabajar con un máximo de **35% de CPU** y un mínimo de **10%**, ya que en nuestro contexto de prueba las cargas eran conocidas y era preferible anticipar el escalado antes de que la instancia se saturara.
+
+---
+
+## Escenario 1 - Escalamiento rápido (Ramp) X = 500:
+
+En este escenario crítico, aumentamos la carga a 500 usuarios concurrentes.
+
+### Resultados del Test con 500 Usuarios Concurrentes:
+
+**Summary Report:**
+- **4,687 samples** procesados
+- **Tiempo promedio de respuesta:** 45,326 ms (vs 107,183 ms Entrega 2)
+- **Tiempo mínimo:** 430 ms
+- **Tiempo máximo:** 78,324 ms (vs 344,100 ms Entrega 2)
+- **0.00% de errores** - En este escenario, en la entrega anterior ya se presentaban errores.
+- **Throughput:** 8.5 requests/segundo (vs 3.4 Entrega 2)
+- **Mediana:** 59,638 ms (vs 139,466 ms Entrega 2)
+
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/2aebf1ce-62e1-4405-a968-3f2d3aac5eea" />
+
+**Análisis de Percentiles:**
+- **90% de las respuestas:** ≤ 74,428 ms (vs 146,951 ms Entrega 2)
+- **95% de las respuestas:** ≤ 74,973 ms (vs 147,586 ms Entrega 2)
+- **99% de las respuestas:** ≤ 76,754 ms (vs 147,863 ms Entrega 2)
+
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/fde28c55-e9fa-4887-a118-1a01a28c1e76" />
+
+**Análisis de Tiempo de Respuesta:**
+El gráfico muestra tiempos de respuesta promedio de aproximadamente 72,000 milisegundos (72 segundos). Aunque siguen siendo tiempos elevados, es evidente la mejora frente a la entrega anterior, en la que ya empezábamos a ver errores y tiempos máximos por encima de los 300,000 ms.
+
+Esta mejora no solo se debe al ALB, sino también a que se creó una métrica personalizada en CloudWatch para monitorear más de cerca el comportamiento de la carga y no depender únicamente de la política por defecto de AWS, la cual espera 3 minutos para escalar y 15 minutos para desescalar. En nuestros escenarios de laboratorio, esperar 3 minutos implicaba que cuando la instancia nueva llegaba, la anterior ya estaba muy cercana a la saturación. Con la métrica personalizada y umbrales más bajos, logramos que el escalado fuera más oportuno y que el balanceador pudiera redirigir tráfico a una instancia nueva apenas estuviera healthy.
+
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/aae13d8d-9038-410a-b26b-d5b57f570ba9" />
+
+**Monitoreo de Recursos del Sistema:**
+Las métricas de CloudWatch para este escenario muestran que, incluso con 500 usuarios, la CPU de la instancia no supera el 50%. Esto es un comportamiento muy distinto al de la Entrega 2, donde el contenedor `storeapi` se mantenía al 100% e incluso llegaba a picos de 120% o 140%. La diferencia ahora es que la carga está siendo distribuida por el ALB y que la instancia no está procesando todo el tráfico de forma directa.
+
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/571fed7e-ef0a-4dfe-8c4a-89ad06601764" />
+
+Para evitar que el autoscaling estuviera encendiendo y apagando instancias constantemente cuando la carga bajaba, se dejó un rango operativo entre 10% y 35% de CPU, que se adapta mejor al patrón de carga usado en las pruebas.
+
+---
+
+## Escenario 1 - Sostenida corta (300 * 0.8 = 240):
+
+Para el escenario de sostenida corta, utilizamos el 80% de la carga máxima que no presentó errores (300 usuarios) de la Entrega 2 (recordemos que en esta entrega no hubo errores), es decir, 240 usuarios concurrentes. Este test nos permite confirmar la estabilidad del sistema bajo una carga sostenida.
+
+### Resultados del Test de Sostenida Corta con 240 Usuarios:
+
+**Summary Report:**
+- **2,780 samples** procesados
+- **Tiempo promedio de respuesta:** 26,519 ms (vs 59,747 ms Entrega 2)
+- **Tiempo mínimo:** 405 ms
+- **Tiempo máximo:** 36,291 ms
+- **0% de errores** - todas las peticiones fueron exitosas
+- **Throughput:** 8.3 requests/segundo (vs 3.8 requests/segundo Entrega 2)
+- **Mediana:** 34,116 ms
+
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/162b44d0-0304-4b09-a2cf-1366d2eea39a" />
+
+**Análisis de Percentiles:**
+- **90% de las respuestas:** ≤ 35,494 ms (vs 71,299 ms Entrega 2)
+- **95% de las respuestas:** ≤ 35,711 ms (vs 72,284 ms Entrega 2)
+- **99% de las respuestas:** ≤ 36,077 ms (vs 72,911 ms Entrega 2)
+
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/132a6b10-24b9-4583-9842-a8bef9dd843d" />
+
+**Análisis de Tiempo de Respuesta:**
+El gráfico muestra tiempos de respuesta promedio de aproximadamente 35,000 milisegundos (35 segundos), pero con un comportamiento estable. El sistema mantiene la estabilidad sin errores bajo esta carga sostenida.
+
+<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/e90e07e2-078a-4769-aa7c-a43d7fdb4e12" />
+
+**Monitoreo de Recursos del Sistema:**
+En este escenario también se monitoreó la instancia desde CloudWatch y se observó un comportamiento similar al de los escenarios anteriores: la CPU no llega a los valores críticos que veíamos cuando todo el tráfico se atendía desde una sola instancia o desde un solo contenedor. La política de autoescalado con umbral bajo (35%) permitió que la infraestructura estuviera lista para escalar.
+
+<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/0e002e04-821f-48cf-83d1-0c5bf4fe0af7" />
+
+---
+
+## Conclusiones del Escenario 1 - Capacidad de la Capa Web:
+
+### Capacidad Máxima Identificada:
+Basándonos en los resultados de las pruebas, podemos concluir que:
+
+- **Capacidad máxima sin errores:** 300 usuarios concurrentes
+- **Punto de degradación:** Entre 300 y 500 usuarios concurrentes
+
+### Análisis de SLOs:
+- **p95 de endpoints:** En el escenario de 300 usuarios, el p95 fue de 49,197 ms, lo que aún excede el SLO establecido de ≤ 1 segundo, pero representa una mejora significativa respecto a la entrega anterior (92,577 ms). La optimización en la distribución de carga mediante el Application Load Balancer (ALB) y la configuración de autoescalado más reactiva permitió reducir los tiempos de respuesta en más de un 45 %, manteniendo la estabilidad bajo carga elevada.
+
+- **Errores:** El sistema mantuvo 0 % de errores incluso en el escenario de 500 usuarios concurrentes, lo que demuestra que la arquitectura actual logra sostener una carga mucho mayor sin degradar la disponibilidad.
+
+- **Bottleneck identificado** En esta entrega, el cuello de botella ya no se encuentra en la CPU de una única instancia, sino en la latencia de respuesta agregada del balanceador y en los tiempos de activación del autoescalado, factores que dependen de la configuración del ALB y de la política de escalamiento. La CPU de las instancias se mantuvo por debajo del 50 %, indicando una capacidad ociosa saludable y margen para admitir más tráfico si se ajustan los umbrales de escalado.
+
+### Recomendaciones:
+1. **Escalado horizontal:** Implementar múltiples instancias del API para distribuir la carga (ya se evidenció en esta entrega que mejora los tiempos).
+2. **Optimización de CPU:** Revisar y optimizar el código para reducir el uso de CPU en escenarios de carga alta.
+3. **Monitoreo proactivo:** Establecer alertas cuando el CPU supere el 35% (de acuerdo con la política nueva) para escalar automáticamente.
+4. **Capacidad recomendada:** Para producción (con esta configuración), no exceder 240–300 usuarios concurrentes a menos que se tenga garantizado el escalado automático y la instancia nueva alcance estado healthy a tiempo.
+
+### Consideraciones adicionales de esta entrega:
+- El ALB tiene varias configuraciones que afectan directamente la prueba de carga (health check interval, timeout, unhealthy threshold, connection idle timeout). Ajustarlas permitió que las nuevas instancias empezaran a recibir tráfico sin causar errores 5xx durante el escalamiento.
+- La métrica personalizada en CloudWatch fue necesaria porque la política por defecto de AWS (3 minutos para escalar) era demasiado lenta para nuestro escenario de pruebas con JMeter, donde la carga sube en cuestión de segundos.
+- Aunque la carga fue alta, la CPU de las instancias no superó el 50%, por lo que se decidió trabajar con umbrales más bajos (35% máx., 10% mín.) para evitar que el autoscaling se quedara esperando a que la instancia estuviera ya saturada.
+
+## Escenario 2 50Mb-1 Worker - 5 Tasks
+
+  **Recursos de Contenedores:**
+  
+  ![Container Resources](./resultados_entrega_3/worker/container_resources_50mb_5mjs_1w.png)
+
+  **Tiempos de Worker:**
+  
+  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_50mb_5mjs_1w.png)
+
+  **Desglose de Procesamiento:**
+  
+  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_50mb_5mjs_1w.png)
+
+
+## Escenario 2 100Mb-1 Worker - 5 Tasks
+
+  **Recursos de Contenedores:**
+  
+  ![Container Resources](./resultados_entrega_3/worker/container_resources_100mb_5mjs_1w.png)
+
+  **Tiempos de Worker:**
+  
+  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_100mb_5mjs_1w.png)
+
+  **Desglose de Procesamiento:**
+  
+  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_100mb_5mjs_1w.png)
+
+
+## Escenario 2 50Mb-3 Worker - 5 Tasks
+
+  **Recursos de Contenedores:**
+  
+  ![Container Resources](./resultados_entrega_3/worker/container_resources_50mb_5mjs_3w.png)
+
+  **Tiempos de Worker:**
+  
+  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_50mb_5mjs_3w.png)
+
+  **Desglose de Procesamiento:**
+  
+  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_50mb_5mjs_3w.png)
+
+
+## Escenario 2 100Mb-3 Worker - 5 Tasks
+
+  **Recursos de Contenedores:**
+  
+  ![Container Resources](./resultados_entrega_3/worker/container_resources_100mb_5mjs_3w.png)
+
+  **Tiempos de Worker:**
+  
+  ![Worker Timing](./resultados_entrega_3/worker/worker_timing_100mb_5mjs_3w.png)
+
+  **Desglose de Procesamiento:**
+  
+  ![Worker Breakdown](./resultados_entrega_3/worker/worker_breakdown_pie_100mb_5mjs_3w.png)
+
+
+## Conclusiones del Escenario 2 - Capacidad de la Capa Worker:
+
+### Capacidad Máxima Identificada:
+Basándonos en los resultados de las pruebas, podemos concluir que:
+
+- **Capacidad máxima sin errores:** 5 Tasks 3 Workers 50MB File
+- **Punto de degradación:** Desde el inicio no cumple con los requirimientos ya que se demora mas de 60s por video
+- **Punto de fallo:** Tasks 3 Workers 100MB File Se perdio un video en su procesamiento
+- *Procesamiento*: 1 vid/min - 50MB File y 0.5 vid/min - 100MB File
+
+### Comentarios:
+El worker se comporto desde el inicio con un solo video de forma demorada se demoro mas de 60s procesando un solo video. En la prueba anterior En pruebas locales con mejores maquinas se procesaban varios videos por minuto.
+
+Al paralerizar workers por procesos si lo vemos de esa forma al uso de mas de un container en la misma maquina vemos que pelean por recursos ya que el procesamiento de video es una tarea de alto consumo de CPU y que se hace de forma sincrona.
+
+Adicionalmente entre mas pesado el video mas demora tomaba su edicion visto en las graficas para videos de 100MB las cuales triplican la demora de un video de 50MB.
