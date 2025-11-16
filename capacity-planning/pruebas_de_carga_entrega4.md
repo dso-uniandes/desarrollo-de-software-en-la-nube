@@ -349,6 +349,15 @@ Comparado con el escenario de 3 workers y videos de 50MB (29.4% CPU), el increme
 
 <img width="1918" height="861" alt="CPU" src="https://github.com/user-attachments/assets/30725cb5-74df-4b97-83cf-f8b770bf3c1e" />
 
+**Análisis de tiempos desde logs de la instancia:**
+
+Como CloudWatch no mostró logs detallados durante el autoescalado, analizamos los logs de la instancia worker para obtener los tiempos reales de procesamiento. Los logs muestran los siguientes tiempos totales por tarea:
+
+- **Tarea 1:** 107.15s (FFmpeg: 105.42s, S3 Download: 1.34s, DB Fetch: 0.01s, DB Update: 0.01s)
+- **Tarea 2:** 106.09s (FFmpeg: 104.46s, S3 Download: 1.24s, DB Fetch: 0.01s, DB Update: 0.01s)
+
+El tiempo promedio de procesamiento por video fue de **106.62 segundos**, con un rango entre 106.09s y 107.15s. Este tiempo es más del doble del observado para videos de 50MB (49.14s), confirmando que el tamaño del archivo tiene un impacto directo y significativo en el tiempo de procesamiento. Al igual que en el escenario de 50MB, el tiempo de FFmpeg domina completamente el tiempo total, representando aproximadamente el 98% del tiempo de procesamiento (104-105 segundos), mientras que las operaciones de S3, base de datos y actualización continúan siendo despreciables en comparación.
+
 <img width="1918" height="762" alt="Logs" src="https://github.com/user-attachments/assets/a55c7ec8-72e4-4a08-8903-106016576ea6" />
 
 ## Conclusiones del Escenario 2 - Capacidad de la Capa Worker:
@@ -362,17 +371,8 @@ Basándonos en los resultados de las pruebas, podemos concluir que:
   - Videos de 100MB: ~0.6 videos/minuto (tiempo promedio: ~106s por video)
   
 - **Capacidad con 3 workers (autoescalado):**
-  - Videos de 50MB: El sistema escala correctamente cuando la cola supera 5 mensajes visibles, distribuyendo la carga entre múltiples instancias
-  - Videos de 100MB: Comportamiento similar, pero con mayor tiempo de procesamiento por video
-
-### Análisis de Tiempos de Procesamiento:
-
-Los tiempos de procesamiento observados en los logs confirman que FFmpeg es el cuello de botella dominante:
-
-- **Videos de 50MB:** Tiempo promedio de 49.14s, donde FFmpeg representa ~98% del tiempo total (47-48s)
-- **Videos de 100MB:** Tiempo promedio de ~106.6s, donde FFmpeg representa ~98% del tiempo total (104-105s)
-
-La relación entre tamaño de archivo y tiempo de procesamiento no es exactamente lineal: duplicar el tamaño del archivo (de 50MB a 100MB) duplica aproximadamente el tiempo de procesamiento, lo que sugiere que el procesamiento está limitado principalmente por el volumen de datos que FFmpeg debe procesar durante la transcodificación.
+  - Videos de 50MB: ~1.2 videos/minuto El sistema escala correctamente cuando la cola supera 5 mensajes visibles, distribuyendo la carga entre múltiples instancias. (tiempo promedio: 48.68s - 50.32s por video)
+  - Videos de 100MB: ~0.6 videos/minuto Comportamiento similar, pero con mayor tiempo de procesamiento por video. (tiempo promedio: 106.09s - 107.15s por video)
 
 ### Comportamiento del Autoescalado:
 
