@@ -36,6 +36,8 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 ---
 - [Documentación técnica](./docs/Entrega_4/) - Arquitectura AWS
 - [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega4.md) - Pruebas de estrés
+- [Documentación técnica](./docs/Entrega_3/) - Arquitectura AWS
+- [Video Sustentacion]()
 
 ---
 
