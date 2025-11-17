@@ -36,6 +36,8 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 ---
 - [Documentación técnica](./docs/Entrega_4/) - Arquitectura AWS
 - [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega4.md) - Pruebas de estrés
+- [Documentación técnica](./docs/Entrega_3/) - Arquitectura AWS
+- [Video Sustentacion](https://uniandes-my.sharepoint.com/:v:/g/personal/d_sernao_uniandes_edu_co/IQDnhMwaJqqEQI-PzO-blM7KAdGrP7bUP5jcnuss5W7x3vU?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=YGMlPa)
 
 ---
 
