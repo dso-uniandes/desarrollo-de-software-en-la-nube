@@ -206,5 +206,66 @@ async def wrapper_worker():
             sys.exit(1)
 
 
+def lambda_handler(event, context):
+    """
+    AWS Lambda handler function for processing SQS messages.
+    
+    Args:
+        event: Lambda event containing SQS records
+        context: Lambda context object
+        
+    Returns:
+        dict: Response with status and processed messages count
+    """
+    logger.info(f"Lambda function invoked with event: {event}")
+    
+    try:
+        # Initialize database connection
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+        async def process_lambda_messages():
+            await database.connect()
+            logger.info("Database connection established.")
+            
+            processed_count = 0
+            
+            # Process SQS records from Lambda event
+            if 'Records' in event:
+                for record in event['Records']:
+                    if record['eventSource'] == 'aws:sqs':
+                        message_body = record['body']
+                        decoded_message = json.loads(message_body)
+                        logger.info(f"📩 Processing Lambda SQS message: {message_body}")
+                        
+                        await process_video_processing(decoded_message)
+                        processed_count += 1
+                        
+            await database.disconnect()
+            return processed_count
+        
+        processed_count = loop.run_until_complete(process_lambda_messages())
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps({
+                'message': f'Successfully processed {processed_count} messages',
+                'processed_count': processed_count
+            })
+        }
+        
+    except Exception as e:
+        logger.error(f"Lambda handler error: {e}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'error': str(e),
+                'message': 'Error processing messages'
+            })
+        }
+    finally:
+        loop.close()
+
+
 if __name__ == "__main__":
     asyncio.run(wrapper_worker())
