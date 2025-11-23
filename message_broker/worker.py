@@ -85,7 +85,7 @@ async def process_video_processing(message: dict):
         # VIDEO PROCESSING (FFmpeg)
         # ---------------------------
         video_processing_start = time.time()
-        edit_video(file_bytes, object_key, video)
+        output_edited_key = edit_video(file_bytes, object_key, video)
         video_processing_duration = time.time() - video_processing_start
 
         # ---------------------------
@@ -94,11 +94,11 @@ async def process_video_processing(message: dict):
         video_name = object_key.split("/")[-1]
         user_id = getattr(video, "user_id", "unknown")
 
-        final_video_path = f"videos/processed/user_{user_id}/{video_name}"
+        
         output_key = f"videos/processed/user_{user_id}/{video_name}"
 
-        s3_upload_video(final_video_path, output_key)
-        os.remove(final_video_path)
+        s3_upload_video(output_edited_key, output_key)
+        os.remove(output_edited_key)
 
         # ---------------------------
         # DATABASE UPDATE

@@ -1,6 +1,7 @@
 import os
 import logging
 import boto3
+from botocore.config import Config
 from utils.config import config
 from typing import Protocol, Any, Dict, runtime_checkable, cast
 
@@ -26,6 +27,11 @@ def get_cloudwatch_client() -> CloudWatch | None:
             aws_access_key_id=config.S3_ACCESS_KEY_ID,
             aws_secret_access_key=config.S3_SECRET_ACCESS_KEY,
             region_name=config.S3_REGION,
+            config=Config(
+                connect_timeout=5,
+                read_timeout=5,
+                retries={'max_attempts': 1}
+            )
         )
         return cast(CloudWatch, cloudwatch)
     except Exception as e:
@@ -97,7 +103,7 @@ def publish_metrics(
         ],
     })
 
-    # Final send
+    # Final send with timeout (using existing client)
     try:
         cloudwatch.put_metric_data(
             Namespace="VideoWorker",
@@ -111,5 +117,3 @@ def publish_metrics(
     if not cloudwatch:
         logger.warning("CloudWatch client is not initialized. Skipping metric publishing.")
         return
-    
-    print(f"[task_id={task_id}] Metrics published to CloudWatch")
