@@ -1,15 +1,16 @@
 # Use AWS Lambda Python base image for guaranteed compatibility
 FROM public.ecr.aws/lambda/python:3.11
 
-# Install tar, xz and FFmpeg using static build for ARM64
+# Install FFmpeg compatible with GLIBC 2.26 (Amazon Linux 2 compatible)
 RUN yum update -y && yum install -y tar xz && \
-    curl -Lo ffmpeg.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz && \
-    tar -xf ffmpeg.tar.xz && \
-    mv ffmpeg-master-latest-linuxarm64-gpl/bin/ffmpeg /usr/local/bin/ && \
-    mv ffmpeg-master-latest-linuxarm64-gpl/bin/ffprobe /usr/local/bin/ && \
+    curl -Lo ffmpeg-release.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-arm64-static.tar.xz && \
+    tar -xf ffmpeg-release.tar.xz && \
+    mv ffmpeg-*-arm64-static/ffmpeg /usr/local/bin/ && \
+    mv ffmpeg-*-arm64-static/ffprobe /usr/local/bin/ && \
     chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe && \
     rm -rf ffmpeg* && \
-    yum clean all
+    yum clean all && \
+    ffmpeg -version
 
 # -------------------------
 # Python dependencies
@@ -22,5 +23,4 @@ RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt --target 
 # -------------------------
 COPY . ${LAMBDA_TASK_ROOT}
 
-# Lambda handler
-CMD ["message_broker.worker.lambda_handler"]
+CMD ["message_broker.handler.lambda_handler"]
