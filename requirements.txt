@@ -34,5 +34,4 @@ pyfakefs==5.10.0
 httpx==0.28.1
 faker==14.0.0
 ffmpeg-python==0.2.0
-confluent-kafka==2.12.0
 tomli==2.3.0

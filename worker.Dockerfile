@@ -1,48 +1,26 @@
-# Use your custom FFmpeg image as base
-FROM jehernandezr/python_313_ffmpeg:latest
+# Use AWS Lambda Python base image for guaranteed compatibility
+FROM public.ecr.aws/lambda/python:3.11
 
-# Install AWS Lambda Runtime Interface Client
-RUN pip install awslambdaric
+# Install tar, xz and FFmpeg using static build for ARM64
+RUN yum update -y && yum install -y tar xz && \
+    curl -Lo ffmpeg.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linuxarm64-gpl.tar.xz && \
+    tar -xf ffmpeg.tar.xz && \
+    mv ffmpeg-master-latest-linuxarm64-gpl/bin/ffmpeg /usr/local/bin/ && \
+    mv ffmpeg-master-latest-linuxarm64-gpl/bin/ffprobe /usr/local/bin/ && \
+    chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe && \
+    rm -rf ffmpeg* && \
+    yum clean all
 
-# Install curl and AWS Lambda Runtime Interface Emulator
-RUN apt-get update && apt-get install -y curl && \
-    curl -Lo /usr/local/bin/aws-lambda-rie https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie && \
-    chmod +x /usr/local/bin/aws-lambda-rie && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
+# -------------------------
+# Python dependencies
+# -------------------------
+COPY requirements.txt  ${LAMBDA_TASK_ROOT}/requirements.txt
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt --target ${LAMBDA_TASK_ROOT}
 
-# Set working directory
-WORKDIR /app
+# -------------------------
+# Application code
+# -------------------------
+COPY . ${LAMBDA_TASK_ROOT}
 
-# Copy requirements and install dependencies
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
-
-# Copy application code
-COPY . /app
-
-# Set Lambda environment variables
-ENV LAMBDA_TASK_ROOT=/app
-ENV LAMBDA_RUNTIME_DIR=/app
-
-# Expose port 8080 (Lambda uses this port in container mode)
-EXPOSE 8080
-
-# Create entrypoint script
-RUN echo '#!/bin/bash' > /entrypoint.sh && \
-    echo 'if [ -z "${AWS_LAMBDA_RUNTIME_API}" ]; then' >> /entrypoint.sh && \
-    echo '    exec /usr/local/bin/aws-lambda-rie python -m awslambdaric $1' >> /entrypoint.sh && \
-    echo 'else' >> /entrypoint.sh && \
-    echo '    exec python -m awslambdaric $1' >> /entrypoint.sh && \
-    echo 'fi' >> /entrypoint.sh && \
-    chmod +x /entrypoint.sh
-
-# Set entrypoint and default handler
-ENTRYPOINT ["/entrypoint.sh"]
+# Lambda handler
 CMD ["message_broker.worker.lambda_handler"]
-
-
-
-
-
-
-
