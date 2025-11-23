@@ -22,5 +22,4 @@ RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt --target 
 # -------------------------
 COPY . ${LAMBDA_TASK_ROOT}
 
-# Lambda handler
-CMD ["message_broker.worker.lambda_handler"]
+CMD ["message_broker.handler.lambda_handler"]
