@@ -233,13 +233,26 @@ def lambda_handler(event, context):
             # Process SQS records from Lambda event
             if 'Records' in event:
                 for record in event['Records']:
-                    if record['eventSource'] == 'aws:sqs':
-                        message_body = record['body']
-                        decoded_message = json.loads(message_body)
-                        logger.info(f"📩 Processing Lambda SQS message: {message_body}")
-                        
-                        await process_video_processing(decoded_message)
-                        processed_count += 1
+                    if record.get('eventSource') == 'aws:sqs':
+                        try:
+                            # Extract message body from SQS record
+                            message_body = record['body']
+                            logger.info(f"📩 Received SQS message body: {message_body}")
+                            
+                            # Parse the JSON message body
+                            decoded_message = json.loads(message_body)
+                            logger.info(f"🔍 Decoded message: {decoded_message}")
+                            
+                            # Process the video processing task
+                            await process_video_processing(decoded_message)
+                            processed_count += 1
+                            
+                        except json.JSONDecodeError as e:
+                            logger.error(f"Failed to decode JSON from message body: {message_body}, error: {e}")
+                        except KeyError as e:
+                            logger.error(f"Missing required field in SQS record: {e}")
+                        except Exception as e:
+                            logger.error(f"Error processing SQS record: {e}")
                         
             await database.disconnect()
             return processed_count
