@@ -30,7 +30,7 @@ class GlobalConfig(BaseConfig):
     REDIS_URL: Optional[str] = None
     RANKING_CACHE_TTL: int = 120
 
-    VIDEO_STORAGE_BASE: str = os.getenv("VIDEO_STORAGE_PATH", "videos")
+    VIDEO_STORAGE_BASE: str = os.getenv("VIDEO_STORAGE_PATH", "/tmp/videos")
     UPLOADED_FOLDER: str = f"{VIDEO_STORAGE_BASE}/uploaded"
     PROCESSED_FOLDER: str = f"{VIDEO_STORAGE_BASE}/processed"
     APP_HOST: Optional[str] = None

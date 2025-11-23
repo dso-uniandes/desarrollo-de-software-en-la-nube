@@ -30,3 +30,6 @@ videos/
 /storeapi/uploads/
 capacity-planning/postman/results/*
 *.pid
+/lambda_build/
+/lambda_build2/
+/lambda_deployment.zip
