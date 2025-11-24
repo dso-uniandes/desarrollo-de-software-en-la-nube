@@ -332,3 +332,27 @@ async def test_stream_video_internal_error(async_client: AsyncClient, mocker):
     assert response.status_code == 500
     body = response.json()
     assert body["detail"] == "Error streaming video"
+
+
+@pytest.mark.anyio
+async def test_mark_uploaded(async_client, mocker, logged_in_token, presigned_fake_user, presigned_fake_video):
+    mocker.patch("storeapi.security.get_current_user", return_value=presigned_fake_user)
+    mocker.patch("message_broker.tasks_dispatcher.dispatch_task", return_value=None)
+
+    await database.execute(video_table.insert().values(
+        id=presigned_fake_video.id,
+        user_id=presigned_fake_user.id,
+        title="Test Video",
+        original_url=presigned_fake_video.original_url,
+        processed_url=None,
+        status="pending_upload",
+        uploaded_at=datetime.now()
+    ))
+
+    response = await async_client.post(
+        f"/api/videos/{presigned_fake_video.id}/uploaded",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+
+    assert response.status_code == 200
+    assert "task_id" in response.json()

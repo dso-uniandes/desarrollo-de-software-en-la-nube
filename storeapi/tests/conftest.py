@@ -1,4 +1,5 @@
 import os
+
 os.environ["ENV_STATE"] = "test"
 
 from storeapi.database import create_tables_async
@@ -32,6 +33,7 @@ def client() -> Generator:
 async def create_test_database():
     await create_tables_async()
     yield
+
 
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
@@ -85,10 +87,33 @@ async def logged_in_token(async_client: AsyncClient, registered_user: dict) -> s
     )
     return response.json()["access_token"]
 
+
 @pytest.fixture(autouse=True)
 def mock_upload_video(mocker):
     return mocker.patch("storeapi.routers.video.upload_video", return_value="https://fakeurl.com")
 
+
 @pytest.fixture(autouse=True)
 def mock_dispatch_task(mocker):
     return mocker.patch("storeapi.routers.video.dispatch_task", return_value=None)
+
+
+@pytest.fixture()
+def presigned_fake_user(mocker, registered_user):
+    user = mocker.Mock()
+    user.id = registered_user["id"]
+    user.email = registered_user["email"]
+    user.first_name = "Fake"
+    user.last_name = "User"
+    user.token = "fake.jwt.token"
+    return user
+
+
+@pytest.fixture()
+def presigned_fake_video(mocker, registered_user):
+    video = mocker.Mock()
+    video.id = 999
+    video.user_id = registered_user["id"]
+    video.title = "Test Video"
+    video.original_url = f"videos/uploaded/user_{registered_user['id']}/fake.mp4"
+    return video
