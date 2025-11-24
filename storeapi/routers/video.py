@@ -11,6 +11,7 @@ from fastapi.responses import StreamingResponse
 
 from message_broker.tasks_dispatcher import dispatch_task
 from storeapi.database import database, video_table
+from utils.config import config
 from utils.storage.s3 import s3_upload_video
 from storeapi.models.user import UserOut
 from storeapi.models.video import VideoOut
@@ -21,6 +22,91 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 CHUNK_SIZE = 1024 * 1024
+
+
+@router.post("/api/videos/presigned", status_code=201)
+async def presigned_url(
+        current_user: Annotated[UserOut, Depends(get_current_user)],
+        title: str = Form(...),
+):
+    try:
+        # Generar key única para S3
+        unique_name = f"{uuid.uuid4()}.mp4"
+        s3_key = f"videos/uploaded/user_{current_user.id}/{unique_name}"
+
+        bucket = config.S3_BUCKET_NAME
+        if not bucket:
+            raise HTTPException(status_code=500, detail="Bucket no configurado")
+
+        # Generar presigned URL para PUT
+        from utils.storage.s3 import create_presigned_url
+        upload_url = create_presigned_url(
+            method="put_object",
+            bucket=bucket,
+            key=s3_key,
+            expiration=3600,  # 1 hora
+            content_type="video/mp4"
+        )
+
+        if not upload_url:
+            raise HTTPException(status_code=500, detail="No se pudo generar presigned URL")
+
+        # Registrar el video en la base
+        query = video_table.insert().values(
+            user_id=current_user.id,
+            title=title,
+            original_url=s3_key,
+            processed_url=None,
+            status="pending_upload",
+            uploaded_at=datetime.now()
+        ).returning(video_table.c.id)
+
+        video_id = await database.execute(query)
+
+        return {
+            "message": "Presigned URL generado. Sube tu video.",
+            "video_id": video_id,
+            "upload_url": upload_url,
+            "s3_key": s3_key
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Error generating presigned upload: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Error generating presigned URL"
+        )
+
+
+@router.post("/api/videos/{video_id}/uploaded")
+async def upload_video_to_s3(
+        video_id: int,
+        current_user: Annotated[UserOut, Depends(get_current_user)],
+):
+    query = video_table.select().where(video_table.c.id == video_id)
+    video = await database.fetch_one(query)
+
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+
+    if video.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access forbidden: not your video")
+
+    update_q = (
+        video_table.update()
+        .where(video_table.c.id == video_id)
+        .values(status="uploaded")
+    )
+    await database.execute(update_q)
+
+    # Enviar tarea al Worker
+    task_id = str(uuid.uuid4())
+    task_info = {"video_id": video_id, "user_id": current_user.id, "task_id": task_id}
+    dispatch_task([task_info], "video_tasks")
+
+    return {"message": "Successfully uploaded", "task_id": task_id, "video_id": video_id}
 
 
 @router.post("/api/videos/upload", status_code=201)
@@ -81,7 +167,7 @@ async def upload_video(current_user: Annotated[UserOut, Depends(get_current_user
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="There was an error uploading the file",
         )
-    return {"message": f"Successfully uploaded {file.filename}", "task_id": task_id}
+    return {"message": f"Successfully uploaded {file.filename}", "task_id": task_id, "video_id": video_id}
 
 
 @router.get("/api/videos", status_code=200)
