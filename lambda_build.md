@@ -6,6 +6,9 @@
 rm -rf lambda_build
 ```
 ```bash
+rm -rf lambda_deployment.zip
+```
+```bash
 mkdir lambda_build
 ```
 
@@ -28,14 +31,7 @@ docker run --platform linux/amd64 --rm \
   -c "pip install -r requirements.txt -t /var/task"
 ```
 
-## 4. Opcional: limpiar archivos innecesarios
-
-```bash
-find lambda_build -name "*.pyc" -delete
-find lambda_build -name "__pycache__" -type d -exec rm -rf {} +
-```
-
-## 5. Crear el archivo ZIP final
+## 4. Crear el archivo ZIP final
 
 ```bash
 cd lambda_build
@@ -43,11 +39,14 @@ zip -r ../lambda_deployment.zip .
 cd ..
 ```
 
-## 6. Subir el ZIP a AWS Lambda
+## 5. Subir el ZIP a AWS Lambda
 
-Entrar a AWS Console → Lambda → tu función → Code → Upload from → .zip file → seleccionar lambda_payload.zip.
+Entrar a AWS Console → Lambda → tu función → Code → Upload from → .zip file → seleccionar lambda_deployment.zip.
+```
+https://anb-s3-storage.s3.us-east-2.amazonaws.com/lambda_deployment.zip
+```
 
-## 7. Payload para probar /health en AWS Lambda
+## 6. Payload para probar /health en AWS Lambda
 
 ```json
 {

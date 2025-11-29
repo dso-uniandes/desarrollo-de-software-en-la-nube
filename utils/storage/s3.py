@@ -14,12 +14,6 @@ s3 = boto3.client(
 
 
 def s3_upload_video(local_file: str, object_name: str) -> str:
-    """Simulate uploading a video to S3 by copying the local file to the
-    desired object path. This streams the copy to avoid loading the whole
-    file into memory and creates parent directories if necessary.
-    Returns a fake URL on success, or an empty string on failure.
-    """
-
     logger.debug("Creating and authorizing S3 AWS (local stub)")
     try:
         s3.upload_file(
@@ -33,6 +27,30 @@ def s3_upload_video(local_file: str, object_name: str) -> str:
         return url
     except Exception as e:
         logger.exception("Error uploading file to S3: %s", e)
+        return ""
+
+
+def create_presigned_url(method: str, bucket: str, key: str, expiration=3600, content_type=None) -> str:
+    """
+    Generates a presigned URL for PUT uploads to S3.
+    """
+    try:
+        params = {
+            "Bucket": bucket,
+            "Key": key,
+        }
+
+        if content_type:
+            params["ContentType"] = content_type
+
+        url = s3.generate_presigned_url(
+            ClientMethod=method,
+            Params=params,
+            ExpiresIn=expiration
+        )
+        return url
+    except Exception as e:
+        logger.exception(f"Error generating presigned URL: {e}")
         return ""
 
 
