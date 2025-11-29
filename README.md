@@ -20,14 +20,14 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 
 ### ☁️ Entrega 2 - Migración AWS
 - [Documentación técnica](./docs/Entrega_2/) - Arquitectura AWS
-- [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega2.md) - Pruebas de estrés
+- [Análisis de capacidad](./capacity-planning/Entrega_2/pruebas_de_carga_entrega2.md) - Pruebas de estrés
 - [Reporte SonarQube](./docs/Entrega_2/SonarQube_analysis/) - Análisis de calidad
 - [Video de sustentación](./sustentacion/Entrega_1/sustentacion.md)
 
 ### ☁️ Entrega 3 - Load balancer/ auto scaling
 ---
 - [Documentación técnica](./docs/Entrega_3/) - Arquitectura AWS
-- [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega3.md) - Pruebas de estrés
+- [Análisis de capacidad](./capacity-planning/Entrega_3/pruebas_de_carga_entrega3.md) - Pruebas de estrés
 - [Reporte SonarQube](./docs/Entrega_3/SonarQube_analysis/) - Análisis de calidad
 - [Video de sustentación](./sustentacion/Entrega_1/sustentacion.md)
 - [Video de sustentación 2](https://uniandes-my.sharepoint.com/:v:/g/personal/f_parrav_uniandes_edu_co/EUEUS4CKdkpOmMDBeM1LfdABDajq83a5hs1O8ri2SFNadA?e=KWPA1f)
@@ -35,9 +35,12 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 ### ☁️ Entrega 4 - Escalabilidad en la Capa Worker
 ---
 - [Documentación técnica](./docs/Entrega_4/) - Arquitectura AWS
-- [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega4.md) - Pruebas de estrés
-- [Documentación técnica](./docs/Entrega_3/) - Arquitectura AWS
+- [Análisis de capacidad](./capacity-planning/Entrega_4/pruebas_de_carga_entrega4.md) - Pruebas de estrés
 - [Video Sustentacion](https://uniandes-my.sharepoint.com/:v:/g/personal/d_sernao_uniandes_edu_co/IQDnhMwaJqqEQI-PzO-blM7KAdGrP7bUP5jcnuss5W7x3vU?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=YGMlPa)
+
+### ☁️ Entrega 5 - PAAS Capa Web y Worker
+---
+- [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega5.md) - Pruebas de estrés
 
 ---
 
@@ -418,25 +421,18 @@ desarrollo-de-software-en-la-nube/
 ├── 📂 capacity-planning/                # Plan de análisis de capacidad
 │   ├── Makefile                         # Comandos para pruebas
 │   ├── plan_de_pruebas.md               # Plan de pruebas Entrega 1
-│   ├── pruebas_de_carga_entrega2.md     # Análisis de capacidad Entrega 2
-│   ├── pruebas_de_carga_entrega3.md     # Análisis de capacidad Entrega 3
-│   ├── pruebas_de_carga_entrega4.md     # Análisis de capacidad Entrega 4
-│   ├── 📂 postman/                      # Tests de integración (Newman)
-│   │   ├── collection.json              # Colección para Newman CLI
-│   │   ├── environment.json             # Variables de entorno
-│   │   └── 📂 results/                   # Resultados de pruebas
-│   ├── 📂 resultados/                    # Resultados Entrega 1
-│   │   ├── Escenario1/                  # Resultados escenario 1
-│   │   ├── Escenario2/                  # Resultados escenario 2
-│   │   ├── Esceneario3/                 # Resultados escenario 3
-│   │   ├── Escenario4/                  # Resultados escenario 4
-│   │   └── EscenarioExtra/              # Resultados escenario extra
-│   ├── 📂 resultados_entrega_2/         # Resultados Entrega 2
-│   │   └── worker/                       # Análisis de worker
-│   ├── 📂 Entrega_3/                    # Resultados Entrega 3
-│   │   └── resultados_entrega_3/        # Análisis de capacidad
-│   └── 📂 Entrega_2/                     # Resultados Entrega 2
-│       └── resultados_entrega_2/        # Análisis de capacidad
+│   ├── pruebas_de_carga_entrega5.md     # Análisis de capacidad Entrega 5
+│   ├── 📂 Entrega_2/                     # Entrega 2
+│   │   ├── pruebas_de_carga_entrega2.md # Análisis de capacidad
+│   │   ├── resultados/                  # Resultados de pruebas
+│   │   └── resultados_entrega_2/        # Análisis de capacidad
+│   ├── 📂 Entrega_3/                     # Entrega 3
+│   │   ├── pruebas_de_carga_entrega3.md # Análisis de capacidad
+│   │   └── resultados_entrega_3/       # Resultados de pruebas
+│   └── 📂 Entrega_4/                     # Entrega 4
+│       ├── plan_de_pruebas.md           # Plan de pruebas
+│       ├── pruebas_de_carga_entrega4.md # Análisis de capacidad
+│       └── postman/                      # Tests de integración (Newman)
 │
 ├── 📂 docs/                             # Documentación técnica
 │   ├── 📂 Entrega_1/
