@@ -185,23 +185,17 @@ Repetimos la misma metodología de inyección de carga, pero utilizando videos d
 
 Al igual que en el escenario de 50MB, la alarma de autoescalado no se activó y el sistema se mantuvo en 1 instancia durante todo el procesamiento. El mismo patrón se repite: el worker consume mensajes lo suficientemente rápido como para mantener la cola por debajo del umbral de 5 mensajes visibles, aunque en este caso el tiempo de procesamiento es más largo. Para cargas pequeñas (5 tareas), el worker puede mantener el ritmo independientemente del tamaño del archivo, pero el throughput se degrada significativamente con archivos más grandes.
 
-<img width="1918" height="860" alt="Alarma" src="https://github.com/user-attachments/assets/8d324174-ea72-49b8-8e56-af2398b12b69" />
-
 **Métrica de procesamiento:**
 
 La métrica `FFmpegProcessingTime` para videos de 100MB registró un promedio de **102 segundos**, más del doble del tiempo observado para videos de 50MB (47 segundos). Esta relación no es exactamente lineal, ya que el tiempo de procesamiento no solo depende del tamaño del archivo, sino también de la complejidad de las operaciones de codificación, la duración del video original, y la cantidad de datos que FFmpeg debe procesar durante la transcodificación.
 
 Al igual que en el escenario de 50MB, el tiempo de procesamiento con FFmpeg sigue siendo dominante sobre las demás fases. Las operaciones de descarga desde S3, consultas a la base de datos y actualizaciones continúan siendo despreciables en comparación, confirmando que el cuello de botella se mantiene en la capa de procesamiento de video, independientemente del tamaño del archivo.
 
-<img width="1920" height="863" alt="CloudWatch" src="https://github.com/user-attachments/assets/b796203e-e213-4ac6-8ed4-d904185db60e" />
-
 **Uso de recursos de la instancia worker:**
 
 El uso de CPU aumentó a **33.8%** durante el procesamiento de videos de 100MB, un incremento del 5% respecto al escenario de 50MB. Este aumento es proporcional al mayor tiempo de procesamiento y al volumen de datos que deben ser procesados, pero aún se mantiene en un rango moderado que indica que la instancia tiene capacidad disponible. Sin embargo, el tiempo de procesamiento por video (102 segundos) es significativamente mayor, lo que impacta directamente el throughput del sistema: mientras que con videos de 50MB podemos procesar aproximadamente 1.3 videos por minuto, con videos de 100MB el throughput cae a aproximadamente 0.6 videos por minuto.
 
 La comparación entre ambos escenarios revela que el tamaño del archivo tiene un impacto directo y significativo en el tiempo de procesamiento, pero no necesariamente en el uso de CPU de forma proporcional. Mientras que el tiempo de procesamiento se duplicó (de 47s a 102s), el uso de CPU solo aumentó en un 17% (de 28.8% a 33.8%). Esto indica que el procesamiento de video, aunque intensivo en CPU, también está limitado por otros factores como el ancho de banda de I/O del disco temporal, la velocidad de lectura/escritura durante la codificación, y posiblemente la memoria disponible para buffers de FFmpeg.
-
-<img width="1918" height="860" alt="CPU" src="https://github.com/user-attachments/assets/a5b702e6-b0db-4f23-8db1-f2551a422ee2" />
 
 **Autoescalado:**
 
