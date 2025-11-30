@@ -4,11 +4,11 @@
 
 Para este escenario inicial de sanidad, configuramos JMeter con 5 hilos (usuarios concurrentes), un periodo de ramp-up de 5 segundos y una duración total de 60 segundos. Esta configuración nos permite validar que todo el sistema responde correctamente y que la telemetría está funcionando antes de proceder con pruebas más intensivas.
 
-En este escenario inicial validamos el funcionamiento básico del endpoint ahora expuesto por **API Gateway** que invoca nuestra **Lambda Web**.
+En este escenario inicial validamos el funcionamiento básico del endpoint ahora expuesto por API Gateway que invoca nuestra Lambda Web.
 
 <img alt="java_F1daE78feS" src="https://github.com/user-attachments/assets/7a2bd856-f0e2-4ac0-b752-a26876ba49d8" />
 
-Aquí se aprecia la configuración de la petición. Ahora usamos **HTTPS (puerto 443)** porque ya no dependemos de un ALB escuchando en puerto 80, sino de un endpoint seguro administrado por API Gateway.
+Aquí se aprecia la configuración de la petición. Ahora usamos HTTPS (puerto 443) porque ya no dependemos de un ALB escuchando en puerto 80, sino de un endpoint seguro administrado por API Gateway.
 
 <img alt="java_HrkLbhf6KN" src="https://github.com/user-attachments/assets/7d94f89f-739c-4f80-a8be-6cbd37ef6e56" />
 
@@ -43,7 +43,7 @@ El gráfico evidencia que la primera petición tarda ~2100 ms mientras que las s
 <img alt="java_wNYcK1Tmix" src="https://github.com/user-attachments/assets/2254d754-ba61-4d76-8ad3-19ef91857c05" />
 
 **Monitoreo de Recursos del Sistema:**
-En CloudWatch se registraron **157 invocaciones**, todas exitosas.
+En CloudWatch se registraron 157 invocaciones, todas exitosas.
 
 <img alt="image" src="https://github.com/user-attachments/assets/f399daa3-6904-4ee4-8758-ccb32c6f63a2" />
 
@@ -73,7 +73,7 @@ Los percentiles (p90≈721 ms, p99≈978 ms) no reflejan la gravedad porque la m
 <img alt="java_vSceHSQpGY" src="https://github.com/user-attachments/assets/ba84b8ea-7af8-4fc6-9d4a-ce99dded4d51" />
 
 **Monitoreo de Recursos del Sistema:**
-En CloudWatch se observan **9380 invocaciones**, todas fallidas, confirmando el problema estructural al trabajar con picos sobre Lambda.
+En CloudWatch se observan 9380 invocaciones, todas fallidas, confirmando el problema estructural al trabajar con picos sobre Lambda.
 
 <img alt="image" src="https://github.com/user-attachments/assets/4b19cd6a-74d4-4f93-9d39-66669dff0963" />
 
@@ -94,8 +94,8 @@ En CloudWatch se observan **9380 invocaciones**, todas fallidas, confirmando el 
 
 De nuestro análisis llegamos a estas conclusiones:
 
-- El límite de concurrencia de la cuenta es **400**, con un mínimo libre obligatorio de 40; solo podemos reservar **360**.  
-- La concurrencia reservada **no** mantiene instancias calientes; solo garantiza cupo.  
+- El límite de concurrencia de la cuenta es 400, con un mínimo libre obligatorio de 40; solo podemos reservar 360.  
+- La concurrencia reservada no mantiene instancias calientes; solo garantiza cupo.  
 - Lambda escala por burst y luego progresivamente; no reacciona de inmediato.  
 - API Gateway también tiene límites propios de burst, más bajos en cuentas educativas.  
 - JMeter genera picos sincronizados que saturan el burst inicial.  
@@ -103,7 +103,7 @@ De nuestro análisis llegamos a estas conclusiones:
 
 ### Alternativas identificadas:
 
-- Usar **Provisioned Concurrency**.  
+- Usar Provisioned Concurrency.  
 - Precalentar la función antes de la prueba.  
 - Optimizar el arranque de la Lambda.  
 
