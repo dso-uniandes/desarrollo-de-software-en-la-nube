@@ -85,6 +85,8 @@ En CloudWatch se observan 9380 invocaciones, todas fallidas, confirmando lo obse
 **Summary Report:**
 <img alt="java_tE0NZXX8tf" src="https://github.com/user-attachments/assets/6d5991ef-0e90-436b-b40b-8a6a108fea8f" />
 
+**99.97% de error**
+
 **Monitoreo de Recursos del Sistema:**
 <img alt="image" src="https://github.com/user-attachments/assets/5968d78b-186b-4d60-a5e6-fa89ce7178ee" />
 
