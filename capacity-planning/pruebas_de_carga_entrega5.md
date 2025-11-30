@@ -158,7 +158,7 @@ Configuramos la política de autoescalado del worker para usar la métrica `Appr
 
 Esto ocurre porque cuando inyectamos 5 mensajes en la cola, el worker inmediatamente toma uno para procesarlo, dejando 4 mensajes visibles. Como el umbral está en 5, la condición nunca se cumple. El worker procesa los mensajes lo suficientemente rápido como para mantener la cola por debajo del umbral.
 
-<img width="1918" height="861" alt="Alarma" src="https://github.com/user-attachments/assets/0ab351ab-7ef4-4ae4-8cb4-121c72e42ceb" />
+<img alt="image" src="https://github.com/user-attachments/assets/964650af-33c1-4d23-ab81-87b769d7ea92" />
 
 **Métrica de procesamiento:**
 
