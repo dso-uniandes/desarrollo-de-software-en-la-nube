@@ -57,6 +57,8 @@ Para este escenario de escalamiento rápido, aumentamos significativamente la ca
 
 ### Resultados del Test con 100 Usuarios Concurrentes:
 
+<img alt="java_YRlmVYzzXV" src="https://github.com/user-attachments/assets/edfa4837-5a16-4929-8058-c1af9b4db3dd" />
+
 **Summary Report:**
 - **1,787 samples** procesados
 - **Tiempo promedio de respuesta:** 22,657 ms
@@ -66,19 +68,19 @@ Para este escenario de escalamiento rápido, aumentamos significativamente la ca
 - **Throughput:** se mantiene estable
 - **Mediana:** 27,824 ms
 
-<img width="1519" height="856" alt="java_zh5W8gvrAN" src="https://github.com/user-attachments/assets/79cd7fbc-bf88-4943-8b21-6661333e3fe5" />
+<img alt="java_rIlqStSM9R" src="https://github.com/user-attachments/assets/c5a9f33f-8826-4805-bc02-60c6b748618f" />
 
 **Análisis de Percentiles:**
 - **90% de las respuestas:** ≤ 28,583 ms
 - **95% de las respuestas:** ≤ 29,801 ms
 - **99% de las respuestas:** ≤ 30,439 ms
 
-<img width="1519" height="856" alt="java_ibsQTXP2QU" src="https://github.com/user-attachments/assets/00780ba4-fd30-4c4a-99da-c13ada9535f5" />
+<img alt="java_MhuykOY2p1" src="https://github.com/user-attachments/assets/b7de3550-209e-43af-8069-6fe4f5e2f306" />
 
 **Análisis de Tiempo de Respuesta:**
 El gráfico muestra que los tiempos de respuesta aumentan significativamente a aproximadamente 30,000 milisegundos (30 segundos), lo cual indica que el sistema está comenzando a experimentar estrés bajo esta carga. Aunque no hay errores, la degradación en el rendimiento es evidente.
 
-<img width="1519" height="856" alt="java_JPoXx9Ma2Q" src="https://github.com/user-attachments/assets/c4a01b21-d788-452a-a3e2-8d85f8611d6a" />
+<img alt="java_vSceHSQpGY" src="https://github.com/user-attachments/assets/ba84b8ea-7af8-4fc6-9d4a-ce99dded4d51" />
 
 **Monitoreo de Recursos del Sistema:**
 El análisis de recursos, monitoreado a través de Amazon CloudWatch, muestra un uso máximo de CPU del 49.8 % en la instancia que ejecuta la capa web. Este valor es particularmente interesante, ya que el umbral de autoescalado se configuró precisamente en el 50 % de utilización, por lo que el sistema no alcanzó a disparar la creación de una nueva instancia.
