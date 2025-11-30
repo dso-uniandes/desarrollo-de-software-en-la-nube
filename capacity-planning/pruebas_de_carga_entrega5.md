@@ -96,10 +96,10 @@ En CloudWatch se observan 9380 invocaciones, todas fallidas, confirmando lo obse
 
 Después de realizar las pruebas y revisar los resultados de JMeter junto con las métricas internas en CloudWatch, entendimos que el comportamiento de la arquitectura API Gateway + Lambda es muy diferente al de la capa web basada en EC2 + ALB utilizada en entregas anteriores.
 
-### 1. La arquitectura serverless no responde bien a picos de carga agresivos
+### 1. Con arquitectura serverless
 JMeter genera oleadas de tráfico que golpean directamente los límites del API Gateway y el burst inicial de Lambda, creando explosiones súbitas que esta arquitectura no amortigua como sí lo hacía el ALB con instancias activas.
 
-### 2. La concurrencia reservada no implica instancias calientes
+### 2. La concurrencia reservada no implica instancias "calientes"
 Concurrencia reservada solo garantiza cupo, no pre-calienta Lambdas ni acelera el escalado inicial. Por eso la primera ola de tráfico cae en cold starts y throttling.
 
 ### 3. API Gateway introduce un cuello de botella propio
@@ -115,7 +115,7 @@ Entre burst reducido, cold starts, ramp agresivo, rate limits y falta de provisi
 Si el sistema falló antes de alcanzar 100 usuarios efectivos, probar 300 o 500 habría sido irrelevante en esta arquitectura.
 
 
-### Recomendaciones:
+### Recomendaciones, en caso de mantener esta arquitectura:
 - Usar Provisioned Concurrency.  
 - Precalentar la función antes de la prueba.  
 - Optimizar el arranque de la Lambda.  
@@ -177,4 +177,4 @@ Todas las tareas tenían el mismo groupId, por lo que Lambda procesó en secuenc
 SQS entrega mensajes de manera constante y controlada. No existen explosiones de tráfico, lo que evita saturar los límites de arranque simultáneo de Lambda.
 
 ### 5. Comparación con la arquitectura anterior
-Los tiempos de procesamiento son similares a los obtenidos con EC2 de 2GB. Esto confirma que Lambda es una alternativa totalmente viable para procesamiento intensivo siempre y cuando el diseño de concurrencia (groupIds) lo permita.
+Los tiempos de procesamiento son prácticamente similares a los obtenidos con EC2 de 2GB. Esto confirma que Lambda es una alternativa totalmente viable para procesamiento intensivo.
