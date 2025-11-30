@@ -204,67 +204,6 @@ La comparación entre ambos escenarios revela que el tamaño del archivo tiene u
 
 No hubo escalamiento. Se procesó todo en 1 sola instancia worker, ya que la cola nunca alcanzó el umbral de 5 mensajes visibles configurado en la política de autoescalado.
 
-## Escenario 2 50Mb - 3 Worker - 16 Tasks
-
-Para este escenario inyectamos 16 tareas de procesamiento de videos de 50MB directamente en la cola SQS, manteniendo la misma metodología del escenario anterior pero con una carga mayor para evaluar el comportamiento del autoescalado.
-
-**Alarma CloudWatch:**
-
-La métrica `ApproximateNumberOfVisibleMessages` de SQS mostró un pico de **14 mensajes visibles** en la cola, superando significativamente el umbral de 5 mensajes configurado en la política de autoescalado. Este comportamiento es diferente al escenario con 1 worker y 5 tareas, donde el worker podía mantener el ritmo y la cola nunca alcanzaba el umbral. Con 16 tareas, la carga es suficiente para que los mensajes se acumulen en la cola antes de ser procesados, activando así la alarma de escalado.
-
-<img width="1918" height="861" alt="Alarma" src="https://github.com/user-attachments/assets/85ea22c8-2da4-4661-89f9-6d270aa2c5f7" />
-
-**Autoescalado:**
-
-En la pestaña de Activity del Auto Scaling Group se puede observar cómo se activó el Policy Up de la alarma, lo que conllevó al escalado automático de las instancias worker. El sistema escaló desde 1 instancia hasta 3 instancias para manejar la carga de 16 tareas. Este comportamiento demuestra que la política de autoescalado funciona correctamente cuando la cola supera el umbral configurado, permitiendo que el sistema se adapte dinámicamente a la demanda.
-
-<img width="1918" height="482" alt="AutoScaling" src="https://github.com/user-attachments/assets/573944a5-1279-4902-867e-ad9dbee96838" />
-
-**Instancias:**
-
-La imagen confirma que efectivamente se crearon y están activas las 3 instancias worker en el grupo de Auto Scaling. El escalado horizontal funcionó como se esperaba, distribuyendo la carga de procesamiento entre las múltiples instancias para mejorar el throughput del sistema.
-
-<img width="1918" height="862" alt="Instancias" src="https://github.com/user-attachments/assets/4eb13663-f443-46ca-8767-44fa6b7b8950" />
-
-**Uso de recursos de la instancia worker:**
-
-El monitoreo de CloudWatch muestra un uso de CPU del **29.4%** en una de las instancias del autoescalado durante el procesamiento de videos de 50MB. Este valor es similar al observado en el escenario con 1 worker (28.8%), lo que indica que cada instancia está procesando una porción de la carga total de manera eficiente. El hecho de que el CPU se mantenga en un rango moderado incluso con múltiples instancias procesando en paralelo sugiere que el escalado horizontal está funcionando correctamente, distribuyendo la carga sin saturar ninguna instancia individual.
-
-<img width="1918" height="865" alt="CPU" src="https://github.com/user-attachments/assets/7cdba982-204b-4544-8b7d-2d7553ab2dc6" />
-**Análisis de tiempos desde logs de la instancia:**
-
-Como CloudWatch no mostró logs detallados durante el autoescalado, analizamos los logs de la instancia worker para obtener los tiempos reales de procesamiento. Los logs muestran los siguientes tiempos totales por tarea:
-
-- **Tarea 1:** 48.78s (FFmpeg: 47.75s, S3 Download: 0.88s, DB Fetch: 0.03s, DB Update: 0.01s)
-- **Tarea 2:** 50.32s (FFmpeg: 49.60s, S3 Download: 0.61s, DB Fetch: 0.00s, DB Update: 0.01s)
-- **Tarea 3:** 48.68s (FFmpeg: 47.92s, S3 Download: 0.63s, DB Fetch: 0.00s, DB Update: 0.01s)
-- **Tarea 4:** 48.78s (FFmpeg: 48.05s, S3 Download: 0.63s, DB Fetch: 0.01s, DB Update: 0.01s)
-
-El tiempo promedio de procesamiento por video fue de **49.14 segundos**, con un rango entre 48.68s y 50.32s. El tiempo total para procesar los 5 videos (desde el inicio del primer procesamiento hasta el final del último) fue de aproximadamente **3 minutos y 19 segundos** (desde 20:53:30 hasta 20:56:49), lo que confirma que el worker procesa los videos de forma secuencial, uno tras otro, sin paralelismo dentro de la misma instancia.
-
-## Escenario 2 100Mb - 3 Worker - 16 Tasks
-
-Para este escenario inyectamos 16 tareas de procesamiento de videos de 100MB directamente en la cola SQS, manteniendo la misma metodología del escenario anterior pero con archivos más grandes para evaluar el impacto del tamaño en el comportamiento del autoescalado y el uso de recursos.
-
-**Uso de recursos de la instancia worker:**
-
-El monitoreo de CloudWatch muestra un uso de CPU del **35.2%** en una de las instancias del autoescalado durante el procesamiento de videos de 100MB. Este valor es ligeramente mayor que el observado en el escenario con 1 worker y videos de 100MB (33.8%), con un incremento de aproximadamente 1.4%. Esta diferencia mínima indica que cada instancia está procesando una porción similar de la carga total, confirmando que el escalado horizontal distribuye eficientemente el trabajo entre las múltiples instancias.
-
-Comparado con el escenario de 3 workers y videos de 50MB (29.4% CPU), el incremento de 5.8% refleja el mayor tiempo de procesamiento requerido para archivos más grandes. El hecho de que el CPU se mantenga por debajo del 40% incluso con múltiples instancias procesando videos de 100MB en paralelo sugiere que el escalado horizontal sigue funcionando correctamente, distribuyendo la carga sin saturar ninguna instancia individual. Sin embargo, el tiempo de procesamiento por video (aproximadamente 106 segundos según los logs) es significativamente mayor que con videos de 50MB, lo que impacta directamente el throughput del sistema.
-
-<img width="1918" height="861" alt="CPU" src="https://github.com/user-attachments/assets/30725cb5-74df-4b97-83cf-f8b770bf3c1e" />
-
-**Análisis de tiempos desde logs de la instancia:**
-
-Como CloudWatch no mostró logs detallados durante el autoescalado, analizamos los logs de la instancia worker para obtener los tiempos reales de procesamiento. Los logs muestran los siguientes tiempos totales por tarea:
-
-- **Tarea 1:** 107.15s (FFmpeg: 105.42s, S3 Download: 1.34s, DB Fetch: 0.01s, DB Update: 0.01s)
-- **Tarea 2:** 106.09s (FFmpeg: 104.46s, S3 Download: 1.24s, DB Fetch: 0.01s, DB Update: 0.01s)
-
-El tiempo promedio de procesamiento por video fue de **106.62 segundos**, con un rango entre 106.09s y 107.15s. Este tiempo es más del doble del observado para videos de 50MB (49.14s), confirmando que el tamaño del archivo tiene un impacto directo y significativo en el tiempo de procesamiento. Al igual que en el escenario de 50MB, el tiempo de FFmpeg domina completamente el tiempo total, representando aproximadamente el 98% del tiempo de procesamiento (104-105 segundos), mientras que las operaciones de S3, base de datos y actualización continúan siendo despreciables en comparación.
-
-<img width="1918" height="762" alt="Logs" src="https://github.com/user-attachments/assets/a55c7ec8-72e4-4a08-8903-106016576ea6" />
-
 ## Conclusiones del Escenario 2 - Capacidad de la Capa Worker:
 
 ### Capacidad Máxima Identificada:
