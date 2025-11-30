@@ -59,3 +59,5 @@ En resumen, la arquitectura evolucionó desde un modelo basado en servidores (Ia
 ---
 
 ## 🖼️ Diagrama de Componentes
+<img alt="image" src="https://github.com/user-attachments/assets/30f48b71-b306-42d3-bb82-cb81df24ceae" />
+
