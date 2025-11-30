@@ -8,7 +8,7 @@ En este escenario inicial validamos el funcionamiento básico del endpoint ahora
 
 <img alt="java_F1daE78feS" src="https://github.com/user-attachments/assets/7a2bd856-f0e2-4ac0-b752-a26876ba49d8" />
 
-Aquí se aprecia la configuración de la petición. Ahora usamos HTTPS (puerto 443) porque ya no dependemos de un ALB escuchando en puerto 80, sino de un endpoint seguro administrado por API Gateway.
+Aquí se aprecia la configuración de la petición. Ahora usamos HTTPS (puerto 443) porque ya no dependemos de un ALB escuchando en puerto 80, sino de un endpoint administrado por API Gateway.
 
 <img alt="java_HrkLbhf6KN" src="https://github.com/user-attachments/assets/7d94f89f-739c-4f80-a8be-6cbd37ef6e56" />
 
