@@ -178,6 +178,9 @@ El monitoreo de CloudWatch muestra un uso de CPU del **28.8%** durante el proces
 
 Repetimos la misma metodología de inyección de carga, pero utilizando videos de 100MB (video ID 44 en la base de datos). El objetivo era evaluar cómo el aumento en el tamaño del archivo impacta el tiempo de procesamiento y el consumo de recursos, manteniendo la misma configuración de 1 worker y 5 tareas.
 
+<img alt="chrome_Ml9oJlY3Ua" src="https://github.com/user-attachments/assets/320cf8a8-ac7a-4823-ace1-d53d5fd34e9a" />
+<img alt="chrome_8onkKUbKQp" src="https://github.com/user-attachments/assets/c47ef014-3a8e-4ef4-806c-9c9a0e6a4724" />
+
 **Alarma CloudWatch:**
 
 Al igual que en el escenario de 50MB, la alarma de autoescalado no se activó y el sistema se mantuvo en 1 instancia durante todo el procesamiento. El mismo patrón se repite: el worker consume mensajes lo suficientemente rápido como para mantener la cola por debajo del umbral de 5 mensajes visibles, aunque en este caso el tiempo de procesamiento es más largo. Para cargas pequeñas (5 tareas), el worker puede mantener el ritmo independientemente del tamaño del archivo, pero el throughput se degrada significativamente con archivos más grandes.
@@ -203,6 +206,9 @@ La comparación entre ambos escenarios revela que el tamaño del archivo tiene u
 **Autoescalado:**
 
 No hubo escalamiento. Se procesó todo en 1 sola instancia worker, ya que la cola nunca alcanzó el umbral de 5 mensajes visibles configurado en la política de autoescalado.
+
+<img alt="chrome_hcwiGtb5pF" src="https://github.com/user-attachments/assets/9ee8cd4e-2b2f-4fc5-acf8-6f9b54f2ec9d" />
+
 
 ## Conclusiones del Escenario 2 - Capacidad de la Capa Worker:
 
