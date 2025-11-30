@@ -73,7 +73,7 @@ Los percentiles (p90≈721 ms, p99≈978 ms) no reflejan la gravedad porque la m
 <img alt="java_vSceHSQpGY" src="https://github.com/user-attachments/assets/ba84b8ea-7af8-4fc6-9d4a-ce99dded4d51" />
 
 **Monitoreo de Recursos del Sistema:**
-En CloudWatch se observan 9380 invocaciones, todas fallidas, confirmando el problema estructural al trabajar con picos sobre Lambda.
+En CloudWatch se observan 9380 invocaciones, todas fallidas, confirmando lo observado desde JMeter.
 
 <img alt="image" src="https://github.com/user-attachments/assets/4b19cd6a-74d4-4f93-9d39-66669dff0963" />
 
