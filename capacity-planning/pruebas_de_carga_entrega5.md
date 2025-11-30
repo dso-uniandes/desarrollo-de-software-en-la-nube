@@ -6,11 +6,11 @@ Para este escenario inicial de sanidad, configuramos JMeter con 5 hilos (usuario
 
 La configuración de la petición incluye el endpoint de login con parámetros URL encoded para username y password, realizando una petición POST al DNS público del Application Load Balancer (ALB) que distribuye el tráfico entre las instancias EC2 del grupo de Auto Scaling donde se encuentra desplegada la aplicación.
 
-<img width="1519" height="856" alt="java_GLTQw7kwge" src="https://github.com/user-attachments/assets/5bdb580a-83ad-4bff-a666-e49b65cb069e" />
+<img alt="java_F1daE78feS" src="https://github.com/user-attachments/assets/7a2bd856-f0e2-4ac0-b752-a26876ba49d8" />
 
 Configuración de la petición:
 
-<img width="1519" height="856" alt="java_9TiwWWu65a" src="https://github.com/user-attachments/assets/de358d32-885f-40ff-b6bf-f92720e53929" />
+<img alt="java_HrkLbhf6KN" src="https://github.com/user-attachments/assets/7d94f89f-739c-4f80-a8be-6cbd37ef6e56" />
 
 ---
 
@@ -26,21 +26,21 @@ Los resultados muestran que todas las peticiones fueron exitosas, lo cual es un 
 - **0% de errores** - todas las peticiones fueron exitosas
 - **Throughput:** 3.4 requests/segundo
 
-<img width="1519" height="856" alt="java_QME7Z4XvN6" src="https://github.com/user-attachments/assets/824edb86-e7e6-4408-b4b1-3f1b6a5a920d" />
+<img alt="java_82Yube57PO" src="https://github.com/user-attachments/assets/e09f52c4-b092-4af0-9029-6314cc7daea9" />
 
-<img width="1519" height="856" alt="java_luNTl2Op3k" src="https://github.com/user-attachments/assets/4adc34c1-761a-4aef-9088-f6c5af82edb2" />
+<img alt="java_ucSYkoJoJs" src="https://github.com/user-attachments/assets/af47183e-243b-475d-897f-401133fa2100" />
 
 **Análisis de Percentiles:**
 - **90% de las respuestas:** ≤ 1,617 ms
 - **95% de las respuestas:** ≤ 1,711 ms  
 - **99% de las respuestas:** ≤ 2,468 ms
 
-<img width="1519" height="856" alt="java_Lf3vsRDZGB" src="https://github.com/user-attachments/assets/151da9c8-743e-47fb-b153-d54f044e0aaa" />
+<img alt="java_lhOjiiQml4" src="https://github.com/user-attachments/assets/bcde8fe3-3a61-4004-a3e5-93f81af53e82" />
 
 **Análisis de Tiempo de Respuesta:**
 El gráfico de tiempo de respuesta muestra un comportamiento bastante estable, con un pequeño pico que supera los 1,700 milisegundos, pero la mayoría de las respuestas se mantienen por debajo de este umbral. Esto indica que el sistema maneja bien la carga básica de 5 usuarios concurrentes.
 
-<img width="1519" height="856" alt="java_kEMqX6ccL5" src="https://github.com/user-attachments/assets/9ab25a2d-69f1-4e7e-8e6a-e66166997485" />
+<img alt="java_wNYcK1Tmix" src="https://github.com/user-attachments/assets/2254d754-ba61-4d76-8ad3-19ef91857c05" />
 
 **Monitoreo de Recursos del Sistema:**
 El monitoreo se realizó a través de Amazon CloudWatch, el servicio nativo de observabilidad de AWS. En esta ocasión, en lugar de usar el script local calculate-stats dentro del contenedor, se aprovecharon las métricas agregadas de las instancias EC2 pertenecientes al grupo de Auto Scaling donde se encuentra desplegada la capa web.
