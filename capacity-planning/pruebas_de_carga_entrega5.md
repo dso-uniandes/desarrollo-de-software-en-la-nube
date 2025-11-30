@@ -166,19 +166,13 @@ La métrica `FFmpegProcessingTime` registró un promedio de **47 segundos** por 
 
 Comparado con las otras fases, el tiempo de FFmpeg domina completamente el tiempo total. Las operaciones de descarga desde S3, consulta a la base de datos y actualización de registros consumen tiempos mínimos (menos de 1 segundo cada una), confirmando que el cuello de botella principal está en la codificación y procesamiento de video, no en I/O o acceso a datos. Los 47 segundos de `FFmpegProcessingTime` representan aproximadamente el 98% del tiempo total de procesamiento.
 
-<img width="1920" height="863" alt="CloudWatch" src="https://github.com/user-attachments/assets/79286980-a380-47d6-8132-c190491868d1" />
+<img alt="chrome_F9RrgpGKCu" src="https://github.com/user-attachments/assets/69038f63-6e5a-44c8-84e1-81ec3786b3df" />
 
 **Uso de recursos de la instancia worker:**
 
 El monitoreo de CloudWatch muestra un uso de CPU del **28.8%** durante el procesamiento de videos de 50MB. Aunque moderado, refleja que el procesamiento de video es intensivo en CPU, pero la instancia aún tiene capacidad disponible. El hecho de que la CPU no alcance niveles críticos (por encima del 85%) indica que, para este tamaño de archivo y nivel de paralelismo, la instancia tiene margen para manejar más carga.
 
 <img width="1918" height="865" alt="CPU" src="https://github.com/user-attachments/assets/53665af0-b526-4507-b618-16fd28b1fa3b" />
-
-**Autoescalado:**
-
-Como mencionamos en el análisis de la alarma, el sistema se mantuvo en 1 instancia durante todo el procesamiento. La cola nunca alcanzó el umbral de 5 mensajes visibles configurado en la política de autoescalado, por lo que no hubo escalamiento.
-
-<img width="1918" height="861" alt="Instancias" src="https://github.com/user-attachments/assets/aa25d5eb-8938-49cb-bb13-01d858ce5fd9" />
 
 ## Escenario 2 100Mb - 1 Worker - 5 Tasks
 
