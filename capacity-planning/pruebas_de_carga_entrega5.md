@@ -142,8 +142,6 @@ Para videos de 100MB, FFmpeg tardó ~102 s.
 
 **Autoescalado:**
 
-No hubo escalamiento. Se procesó todo en 1 sola instancia worker, ya que la cola nunca alcanzó el umbral de 5 mensajes visibles configurado en la política de autoescalado.
-
 <img alt="chrome_hcwiGtb5pF" src="https://github.com/user-attachments/assets/9ee8cd4e-2b2f-4fc5-acf8-6f9b54f2ec9d" />
 
 
