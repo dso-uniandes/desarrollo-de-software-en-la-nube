@@ -92,17 +92,28 @@ En CloudWatch se observan 9380 invocaciones, todas fallidas, confirmando el prob
 
 ## Conclusiones del Escenario 1 - Capacidad de la Capa Web:
 
-De nuestro análisis llegamos a estas conclusiones:
+Después de realizar las pruebas y revisar los resultados de JMeter junto con las métricas internas en CloudWatch, entendimos que el comportamiento de la arquitectura API Gateway + Lambda es muy diferente al de la capa web basada en EC2 + ALB utilizada en entregas anteriores.
 
-- El límite de concurrencia de la cuenta es 400, con un mínimo libre obligatorio de 40; solo podemos reservar 360.  
-- La concurrencia reservada no mantiene instancias calientes; solo garantiza cupo.  
-- Lambda escala por burst y luego progresivamente; no reacciona de inmediato.  
-- API Gateway también tiene límites propios de burst, más bajos en cuentas educativas.  
-- JMeter genera picos sincronizados que saturan el burst inicial.  
-- La primera ola de tráfico cayó en cold starts y throttling.  
+### 1. La arquitectura serverless no responde bien a picos de carga agresivos
+JMeter genera oleadas de tráfico que golpean directamente los límites del API Gateway y el burst inicial de Lambda, creando explosiones súbitas que esta arquitectura no amortigua como sí lo hacía el ALB con instancias activas.
 
-### Alternativas identificadas:
+### 2. La concurrencia reservada no implica instancias calientes
+Concurrencia reservada solo garantiza cupo, no pre-calienta Lambdas ni acelera el escalado inicial. Por eso la primera ola de tráfico cae en cold starts y throttling.
 
+### 3. API Gateway introduce un cuello de botella propio
+Las cuentas educativas tienen límites más estrictos en burst y rate limit, lo que causa rechazos antes de llegar a Lambda cuando el tráfico llega en picos.
+
+### 4. Lambda escala pero no inmediatamente
+El escalado es progresivo, no instantáneo. La primera oleada intenta crear muchas Lambdas a la vez, pero el burst no alcanza y la siguiente oleada llega antes de que Lambda termine de escalar.
+
+### 5. La falla masiva se debe a múltiples factores combinados
+Entre burst reducido, cold starts, ramp agresivo, rate limits y falta de provisioned concurrency, el sistema registró 99.94% de fallos desde el primer segundo del ramp-up.
+
+### 6. Los escenarios de 300 y 500 usuarios no tenían sentido
+Si el sistema falló antes de alcanzar 100 usuarios efectivos, probar 300 o 500 habría sido irrelevante en esta arquitectura.
+
+
+### Recomendaciones:
 - Usar Provisioned Concurrency.  
 - Precalentar la función antes de la prueba.  
 - Optimizar el arranque de la Lambda.  
@@ -112,7 +123,7 @@ De nuestro análisis llegamos a estas conclusiones:
 Recepción de mensajes en la cola.
 <img width="1920" height="864" alt="SQS_recibido_5" src="https://github.com/user-attachments/assets/543c1cdc-808a-4a7f-87d1-7970771fe620" />
 
-## Escenario 2 50Mb - 1 Worker - 5 Tasks
+## Escenario 2 50Mb - 5 Tasks
 
 El script `send_message_to_broker.py` es el mismo de la entrega pasada, que toma videos previamente subidos a S3 y registrados en RDS. El script busca los videos por su ID en la base de datos (video ID 54 para 50MB) y genera mensajes con `task_id` únicos que enviamos directamente a la cola SQS. 
 
@@ -128,7 +139,7 @@ Aquí se muestran los logs de Lambda procesando las tareas.
 
 El tiempo total por video fue ~56 s, siendo FFmpeg (~55 s) el dominante.
 
-## Escenario 2 100Mb - 1 Worker - 5 Tasks
+## Escenario 2 100Mb - 5 Tasks
 
 Repetimos la misma metodología de inyección de carga, pero utilizando videos de 100MB (video ID 44 en la base de datos).
 
@@ -142,9 +153,26 @@ Para videos de 100MB, FFmpeg tardó ~102 s.
 
 **Autoescalado:**
 
+Acá realizamos una prueba de escalamienot horizontal, enviando la misma prueba que en el escenario de 50 MB, pero cada video se procesó éxitosamente en su respectiva lambda.
+
 <img alt="chrome_hcwiGtb5pF" src="https://github.com/user-attachments/assets/9ee8cd4e-2b2f-4fc5-acf8-6f9b54f2ec9d" />
 
 
 ## Conclusiones del Escenario 2 - Capacidad de la Capa Worker
 
-En la capa worker el comportamiento fue estable y predecible. La carga depende principalmente de FFmpeg, y el throughput solo varía según el tamaño del archivo. A diferencia de la capa web, aquí no hay usuarios concurrentes sino tareas intensivas, lo cual hace que el sistema responda de forma más controlada.
+La capa worker mostró un comportamiento mucho más estable y predecible que la capa web. Varias razones explican esta diferencia:
+
+### 1. La carga del worker es intensiva pero predecible
+El procesamiento de video está dominado por FFmpeg, por lo que el tiempo de servicio por tarea es estable.
+
+### 2. El throughput depende casi exclusivamente del tiempo de FFmpeg
+Las operaciones de S3 y la base de datos toman menos de un segundo. El throughput del sistema está determinado casi completamente por la duración del procesamiento de FFmpeg.
+
+### 3. El autoescalado depende del groupId
+Todas las tareas tenían el mismo groupId, por lo que Lambda procesó en secuencia para mantener el orden FIFO. Si enviamos múltiples groupIds, el sistema podría escalar horizontalmente de manera eficiente.
+
+### 4. No existen picos simultáneos como en la capa web
+SQS entrega mensajes de manera constante y controlada. No existen explosiones de tráfico, lo que evita saturar los límites de arranque simultáneo de Lambda.
+
+### 5. Comparación con la arquitectura anterior
+Los tiempos de procesamiento son similares a los obtenidos con EC2 de 2GB. Esto confirma que Lambda es una alternativa totalmente viable para procesamiento intensivo siempre y cuando el diseño de concurrencia (groupIds) lo permita.
