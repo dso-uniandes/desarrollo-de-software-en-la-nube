@@ -108,24 +108,12 @@ Para el escenario de sostenida corta, utilizamos el 80% de la carga máxima que 
 - **Throughput:** 8.3 requests/segundo (vs 3.8 requests/segundo Entrega 2)
 - **Mediana:** 34,116 ms
 
-<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/162b44d0-0304-4b09-a2cf-1366d2eea39a" />
-
-**Análisis de Percentiles:**
-- **90% de las respuestas:** ≤ 35,494 ms (vs 71,299 ms Entrega 2)
-- **95% de las respuestas:** ≤ 35,711 ms (vs 72,284 ms Entrega 2)
-- **99% de las respuestas:** ≤ 36,077 ms (vs 72,911 ms Entrega 2)
-
-<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/132a6b10-24b9-4583-9842-a8bef9dd843d" />
-
-**Análisis de Tiempo de Respuesta:**
-El gráfico muestra tiempos de respuesta promedio de aproximadamente 35,000 milisegundos (35 segundos), pero con un comportamiento estable. El sistema mantiene la estabilidad sin errores bajo esta carga sostenida.
-
-<img width="1497" height="857" alt="image" src="https://github.com/user-attachments/assets/e90e07e2-078a-4769-aa7c-a43d7fdb4e12" />
+<img alt="java_tE0NZXX8tf" src="https://github.com/user-attachments/assets/6d5991ef-0e90-436b-b40b-8a6a108fea8f" />
 
 **Monitoreo de Recursos del Sistema:**
 En este escenario también se monitoreó la instancia desde CloudWatch y se observó un comportamiento similar al de los escenarios anteriores: la CPU no llega a los valores críticos que veíamos cuando todo el tráfico se atendía desde una sola instancia o desde un solo contenedor. La política de autoescalado con umbral bajo (35%) permitió que la infraestructura estuviera lista para escalar.
 
-<img width="1920" height="912" alt="image" src="https://github.com/user-attachments/assets/0e002e04-821f-48cf-83d1-0c5bf4fe0af7" />
+<img alt="image" src="https://github.com/user-attachments/assets/5968d78b-186b-4d60-a5e6-fa89ce7178ee" />
 
 ---
 
