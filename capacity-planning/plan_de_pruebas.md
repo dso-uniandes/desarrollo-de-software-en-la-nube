@@ -4,8 +4,8 @@
 
 Evaluar la **capacidad máxima** que puede soportar la aplicación en sus dos componentes críticos:
 
-1. **Capa Web (API HTTP):** endpoints de la API REST
-2. **Capa Worker:** procesamiento asíncrono de videos con FFmpeg
+1. **Capa Web (API HTTP):** ahora servida por API Gateway + AWS Lambda
+2. **Capa Worker:** procesamiento asíncrono de videos con Lambda disparada por SQS
 
 El propósito es identificar límites de **concurrencia, rendimiento y estabilidad**, establecer una línea base de desempeño y proponer acciones de mejora basadas en evidencia.
 
@@ -40,8 +40,6 @@ Este plan de pruebas evalúa dos componentes críticos de la arquitectura:
 - **Función:** Procesamiento asíncrono de videos con FFmpeg (branding, trim, concatenación)
 - **Tecnología:** Python, SQS Consumer, FFmpeg, S3
 - **Métricas clave:** Videos procesados/minuto, tiempo medio de procesamiento, throughput
-
-Las pruebas se ejecutarán en **entorno AWS** con **Application Load Balancer**, **Auto Scaling Groups** y **Amazon SQS**, garantizando un entorno de producción realista y escalable.
 
 ---
 
@@ -222,69 +220,54 @@ Para cada combinación:
 
 ```mermaid
 graph TD
-  A[JMeter<br/>Generador de carga] --> B[Application Load Balancer<br/>ALB]
-  B --> C[Target Group<br/>Web]
-  C --> D1[ASG Web<br/>Instancia 1<br/>FastAPI]
-  C --> D2[ASG Web<br/>Instancia 2<br/>FastAPI]
-  C --> D3[ASG Web<br/>Instancia 3<br/>FastAPI]
-  
-  D1 --> E[(Amazon RDS<br/>PostgreSQL)]
-  D2 --> E
-  D3 --> E
-  
-  D1 --> F[Amazon S3<br/>Object Storage]
-  D2 --> F
-  D3 --> F
-  
-  D1 --> G[Amazon SQS<br/>video-processing-queue]
-  D2 --> G
-  D3 --> G
-  
-  G --> H1[ASG Workers<br/>Instancia 1<br/>Worker]
-  G --> H2[ASG Workers<br/>Instancia 2<br/>Worker]
-  G --> H3[ASG Workers<br/>Instancia 3<br/>Worker]
-  
-  H1 --> F
-  H2 --> F
-  H3 --> F
-  
-  H1 --> E
-  H2 --> E
-  H3 --> E
-  
-  J[CloudWatch<br/>Métricas y Alarmas] -.-> B
-  J -.-> C
-  J -.-> D1
-  J -.-> D2
-  J -.-> D3
-  J -.-> G
-  J -.-> H1
-  J -.-> H2
-  J -.-> H3
-  
-  style D1 fill:#4A90E2
-  style D2 fill:#4A90E2
-  style D3 fill:#4A90E2
-  style H1 fill:#E27B4A
-  style H2 fill:#E27B4A
-  style H3 fill:#E27B4A
-  style A fill:#50C878
-  style G fill:#FFD700
-  style F fill:#FF6B6B
+
+  A[JMeter<br/>Generador de carga] --> B[API Gateway<br/>HTTPS 443]
+  B --> C[Lambda Web<br/>FastAPI Handler]
+
+  C --> D[(Amazon RDS<br/>PostgreSQL)]
+  C --> E[S3<br/>Object Storage]
+
+  %% Worker path
+  C --> F[SQS<br/>video-processing-queue]
+
+  F --> G1[Lambda Worker<br/>FFmpeg<br/>Worker 1]
+  F --> G2[Lambda Worker<br/>FFmpeg<br/>Worker 2]
+  F --> G3[Lambda Worker<br/>FFmpeg<br/>Worker 3]
+
+  G1 --> D
+  G2 --> D
+  G3 --> D
+
+  G1 --> E
+  G2 --> E
+  G3 --> E
+
+  H[CloudWatch<br/>Logs y Métricas]
+  H -.-> B
+  H -.-> C
+  H -.-> F
+  H -.-> G1
+  H -.-> G2
+  H -.-> G3
+
+  style B fill:#4A90E2
+  style C fill:#50C878
+  style F fill:#FFD700
+  style G1 fill:#E27B4A
+  style G2 fill:#E27B4A
+  style G3 fill:#E27B4A
 ```
 
 ### 9.2 Componentes de Despliegue
 
 La aplicación está desplegada en AWS con los siguientes componentes:
 
-- **Application Load Balancer (ALB):** Punto de entrada público, recibe todas las peticiones y las enruta al Target Group
-- **Target Group (Web):** Agrupa las instancias sanas de la capa web y define health checks
-- **Auto Scaling Group (Web):** Conjunto de instancias EC2 que ejecutan la API FastAPI. Escala en base a métricas de CloudWatch (CPU, peticiones por target, errores 5xx)
-- **Auto Scaling Group (Workers):** Grupo de instancias EC2 que ejecutan los workers de procesamiento de video. Escala por profundidad de cola y/o edad de mensajes en SQS
+- **API Gateway:** Punto de entrada público, recibe todas las peticiones
+- **Lambda:** Servicio de computación sin servidor que ejecuta código en respuesta a eventos, sin que los usuarios tengan que aprovisionar o administrar servidores.
 - **Amazon SQS (video-processing-queue):** Recibe eventos de procesamiento emitidos por la API. Los workers consumen mensajes de aquí
 - **Amazon S3:** Almacenamiento en la nube. Guarda los videos subidos y los procesados en carpetas separadas (`/videos/uploaded` y `/videos/processed`)
 - **Amazon RDS (PostgreSQL):** Base de datos relacional que guarda toda la información estructurada del sistema
-- **Amazon CloudWatch + Alarms:** Recopila métricas del ALB, Target Group, ASG y SQS. Dispara escalado en ambos ASG (Web/Workers)
+- **Amazon CloudWatch + Alarms:** Recopila métricas
 
 ---
 
@@ -293,15 +276,12 @@ La aplicación está desplegada en AWS con los siguientes componentes:
 #### Ejecución con Diferentes Configuraciones
 
 ```bash
-# Configurar autoscaling para 1 worker
 # Ejecutar script de inyección
 python worker_load_test.py --count 5
 
-# Configurar autoscaling para 2 workers
 # Ejecutar script de inyección
 python worker_load_test.py --count 10
 
-# Configurar autoscaling para 3 workers
 # Ejecutar script de inyección
 python worker_load_test.py --count 16
 
