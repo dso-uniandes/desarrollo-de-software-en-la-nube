@@ -42,7 +42,7 @@ Este proyecto implementa una API REST con **FastAPI** que permite subir archivos
 ---
 - [Documentación técnica](./docs/Entrega_5/) - Arquitectura AWS 
 - [Análisis de capacidad](./capacity-planning/pruebas_de_carga_entrega5.md) - Pruebas de estrés
-- [Video Sustentacion](https://uniandes-my.sharepoint.com/:v:/g/personal/d_sernao_uniandes_edu_co/IQDnhMwaJqqEQI-PzO-blM7KAdGrP7bUP5jcnuss5W7x3vU?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=YGMlPa)
+- [Video Sustentacion](https://uniandes-my.sharepoint.com/:v:/g/personal/f_parrav_uniandes_edu_co/IQBRjOmhH5BMTbghtDl0fbI2AZLq6wm1atyjJcscukyMoTg?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=Hj74XB)
 
 ---
 
